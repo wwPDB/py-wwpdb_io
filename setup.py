@@ -45,7 +45,7 @@ setup(
 #        ]
     },
     #
-    install_requires=['wwpdb.utils.config', 'paramiko'],
+    install_requires=['wwpdb.utils.config', 'paramiko', 'mmcif', 'mmcif.utils'],
     packages=find_packages(exclude=['wwpdb.io.tests-io', 'mock-data', 'tests.*']),
     package_data={
         # If any package contains *.md or *.rst ...  files, include them:

@@ -102,3 +102,6 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+# Test output
+wwpdb/io/tests-io/test-output

@@ -45,16 +45,16 @@ setup(
 #        ]
     },
     #
-    install_requires=[],
-    packages=find_packages(exclude=['wwpdb.io.tests-cvs', 'mock-data', 'tests.*']),
+    install_requires=['wwpdb.utils.config', 'paramiko'],
+    packages=find_packages(exclude=['wwpdb.io.tests-io', 'mock-data', 'tests.*']),
     package_data={
         # If any package contains *.md or *.rst ...  files, include them:
         '': ['*.md', '*.rst', "*.txt", "*.cfg"],
     },
     #
     # These basic tests require no database services -
-    test_suite="wwpdb.io.tests-cvs",
-    tests_require=['tox', 'wwpdb.utils.testing'],
+    test_suite="wwpdb.io.tests-io",
+    tests_require=['tox', 'wwpdb.utils.testing', 'nose'],
     #
     # Not configured ...
     extras_require={

@@ -35,7 +35,7 @@ import stat
 import shutil
 import smtplib
 import tempfile
-from email.MIMEText import MIMEText
+from email.mime.text import MIMEText
 
 ##
 ##
@@ -259,7 +259,7 @@ class DataFile:
                 cmd = 'bzcat ' + self.srcPath + '> ' + f1
 
             if (len(cmd) > 0):
-                print "src command:", cmd
+                print("src command: %s" % cmd)
                 os.system(cmd)
 
             cmd = ''
@@ -273,7 +273,7 @@ class DataFile:
                 cmd = 'bzcat ' + self.dstPath + '> ' + f2
 
             if (len(cmd) > 0):
-                print "dst command:", cmd
+                print("dst command: %s" % cmd)
                 os.system(cmd)
 
             if (os.access(f1, os.F_OK) and os.access(f2, os.F_OK)):

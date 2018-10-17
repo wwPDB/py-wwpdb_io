@@ -18,6 +18,7 @@ from wwpdb.io.file.DataExchange import DataExchange
 from wwpdb.io.file.DataFile import DataFile
 from wwpdb.io.file.mmCIFUtil import mmCIFUtil
 from wwpdb.io.file.DataMaintenance import DataMaintenance
+from wwpdb.io.file.ValidateXml import ValidateXml
 
 
 class ImportTests(unittest.TestCase):

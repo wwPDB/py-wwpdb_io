@@ -31,7 +31,7 @@ import glob
 from datetime import datetime
 
 from wwpdb.utils.config.ConfigInfo import ConfigInfo
-from wwpdb.io.locator import PathInfo
+from wwpdb.io.locator.PathInfo import PathInfo
 
 
 class DataExchange(object):

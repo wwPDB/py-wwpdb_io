@@ -119,7 +119,6 @@ class PathInfo(object):
             return rfc.get()
         except Exception as e:
             return (None, None, None, None, None)
-
     #
     def setSessionPath(self, sessionPath):
         """  Set the top path that will be searched for files with fileSource='session'
@@ -130,16 +129,19 @@ class PathInfo(object):
     def getArchivePath(self, dataSetId):
         try:
             if dataSetId.startswith('G_'):
-                return os.path.join(self.__cI.get('SITE_ARCHIVE_STORAGE_PATH'), 'autogroup', dataSetId)
+                return self.getDirPath(dataSetId=dataSetId, fileSource='autogroup')
+                # return os.path.join(self.__cI.get('SITE_ARCHIVE_STORAGE_PATH'), 'autogroup', dataSetId)
             else:
-                return os.path.join(self.__cI.get('SITE_ARCHIVE_STORAGE_PATH'), 'archive', dataSetId)
+                return self.getDirPath(dataSetId=dataSetId, fileSource='archive')
+                # return os.path.join(self.__cI.get('SITE_ARCHIVE_STORAGE_PATH'), 'archive', dataSetId)
             #
         except Exception as e:
             return None
 
     def getInstancePath(self, dataSetId, wfInstanceId):
         try:
-            return os.path.join(self.__cI.get('SITE_ARCHIVE_STORAGE_PATH'), 'workflow', dataSetId, 'instance', wfInstanceId)
+            return self.getDirPath(dataSetId=dataSetId, fileSource='workflow', wfInstanceId=wfInstanceId)
+            # return os.path.join(self.__cI.get('SITE_ARCHIVE_STORAGE_PATH'), 'workflow', dataSetId, 'instance', wfInstanceId)
         except Exception as e:
             return None
 
@@ -151,7 +153,14 @@ class PathInfo(object):
 
     def getDepositPath(self, dataSetId):
         try:
-            return os.path.join(self.__cI.get('SITE_ARCHIVE_STORAGE_PATH'), 'deposit', dataSetId)
+            return self.getDirPath(dataSetId=dataSetId, fileSource='deposit')
+            # return os.path.join(self.__cI.get('SITE_ARCHIVE_STORAGE_PATH'), 'deposit', dataSetId)
+        except Exception as e:
+            return None
+
+    def getTempDepPath(self, dataSetId):
+        try:
+            return self.getDirPath(dataSetId=dataSetId, fileSource='tempdep')
         except Exception as e:
             return None
 
@@ -381,14 +390,20 @@ class PathInfo(object):
                                                        mileStone=mileStone))
 
     def getDirPath(self, dataSetId, wfInstanceId=None, contentType=None, formatType=None, fileSource="archive", versionId="latest", partNumber='1', mileStone=None):
-        return os.path.dirname(self.__getStandardPath(dataSetId=dataSetId,
-                                                      wfInstanceId=wfInstanceId,
-                                                      contentTypeBase=contentType,
-                                                      formatType=formatType,
-                                                      fileSource=fileSource,
-                                                      versionId=versionId,
-                                                      partNumber=partNumber,
-                                                      mileStone=mileStone))
+        dfRef = DataFileReference(siteId=self.__siteId, verbose=self.__verbose, log=self.__lfh)
+        dfRef.setDepositionDataSetId(dataSetId)
+        dfRef.setStorageType(fileSource)
+        dfRef.setWorkflowInstanceId(wfInstanceId)
+        return dfRef.getDirPathReference()
+
+        # return os.path.dirname(self.__getStandardPath(dataSetId=dataSetId,
+        #                                               wfInstanceId=wfInstanceId,
+        #                                               contentTypeBase=contentType,
+        #                                               formatType=formatType,
+        #                                               fileSource=fileSource,
+        #                                               versionId=versionId,
+        #                                               partNumber=partNumber,
+        #                                               mileStone=mileStone))
 
     def getWebDownloadPath(self, dataSetId, wfInstanceId=None, contentType=None, formatType=None, versionId="latest", partNumber='1', mileStone=None):
         fn = os.path.basename(self.__getStandardPath(dataSetId=dataSetId,

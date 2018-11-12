@@ -127,10 +127,9 @@ class PathInfoTests(unittest.TestCase):
             logger.debug("getDepositPath (PDBx):   %s" % fp)
             self.assertIsNotNone(fp, "Failed to find deposit path")
 
-            # TODO add setup for workflow folder as it currently isn't setup in mock data
-            # fp = pI.getInstancePath(dataSetId, wfInstanceId='W_099')
-            # logger.debug("getWfInstancePath (PDBx):   %s" % fp)
-            # self.assertIsNotNone(fp, "Failed to find wf instance path")
+            fp = pI.getInstancePath(dataSetId, wfInstanceId='W_099')
+            logger.debug("getWfInstancePath (PDBx):   %s" % fp)
+            self.assertIsNotNone(fp, "Failed to find wf instance path")
             #
             fp = pI.getDirPath(dataSetId, wfInstanceId=wfInst, fileSource=fs, versionId=vId, partNumber=pId,
                                mileStone=None)

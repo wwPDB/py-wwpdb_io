@@ -140,7 +140,7 @@ class PathInfo(object):
 
     def getInstancePath(self, dataSetId, wfInstanceId):
         try:
-            return self.getDirPath(dataSetId=dataSetId, fileSource='workflow', wfInstanceId=wfInstanceId)
+            return self.getDirPath(dataSetId=dataSetId, fileSource='wf-instance', wfInstanceId=wfInstanceId)
             # return os.path.join(self.__cI.get('SITE_ARCHIVE_STORAGE_PATH'), 'workflow', dataSetId, 'instance', wfInstanceId)
         except Exception as e:
             return None

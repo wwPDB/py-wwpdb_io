@@ -147,7 +147,8 @@ class PathInfo(object):
 
     def getInstanceTopPath(self, dataSetId):
         try:
-            return os.path.join(self.__cI.get('SITE_ARCHIVE_STORAGE_PATH'), 'workflow', dataSetId, 'instance')
+            return os.path.dirname(self.getDirPath(dataSetId=dataSetId, fileSource='wf-instance', wfInstanceId='W_001'))
+            # return os.path.join(self.__cI.get('SITE_ARCHIVE_STORAGE_PATH'), 'workflow', dataSetId, 'instance')
         except Exception as e:
             return None
 

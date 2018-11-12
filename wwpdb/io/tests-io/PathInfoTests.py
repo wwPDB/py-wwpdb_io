@@ -130,6 +130,10 @@ class PathInfoTests(unittest.TestCase):
             fp = pI.getInstancePath(dataSetId, wfInstanceId='W_099')
             logger.debug("getWfInstancePath (PDBx):   %s" % fp)
             self.assertIsNotNone(fp, "Failed to find wf instance path")
+
+            fp = pI.getInstanceTopPath(dataSetId,)
+            logger.debug("getWfInstanceTopPath (PDBx):   %s" % fp)
+            self.assertIsNotNone(fp, "Failed to find wf Top instance path")
             #
             fp = pI.getDirPath(dataSetId, wfInstanceId=wfInst, fileSource=fs, versionId=vId, partNumber=pId,
                                mileStone=None)

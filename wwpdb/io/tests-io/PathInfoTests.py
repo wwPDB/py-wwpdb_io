@@ -113,6 +113,21 @@ class PathInfoTests(unittest.TestCase):
             logger.debug("Sequence match (getFilePath) (PDBx):   %s" % fp)
             self.assertIsNotNone(fp, "Failed to find seq-db match")
             #
+            fp = pI.getArchivePath(dataSetId)
+            logger.debug("(getArchivePath) (PDBx):   %s" % fp)
+            self.assertIsNotNone(fp, "Failed to find dir path")
+
+            fp = pI.getDepositPath(dataSetId)
+            logger.debug("getDepositPath) (PDBx):   %s" % fp)
+            self.assertIsNotNone(fp, "Failed to find deposit path")
+
+            fp = pI.getInstancePath(dataSetId, wfInstanceId=wfInst)
+            logger.debug("(getWfInstancePath) (PDBx):   %s" % fp)
+            self.assertIsNotNone(fp, "Failed to find wf instance path")
+            #
+            fp = pI.getDirPath(dataSetId, wfInstanceId=wfInst, fileSource=fs, versionId=vId, partNumber=pId, mileStone=None)
+            logger.debug("Sequence match (getDirPath) (PDBx):   %s" % fp)
+            self.assertIsNotNone(fp, "Failed to find dir path")
             
             ft = pI.getFilePathVersionTemplate(dataSetId, wfInstanceId=wfInst, contentType='em-volume', formatType='map', fileSource="archive", partNumber=pId, mileStone=None)
             logger.debug("EM volume version template:   %r" % ft)

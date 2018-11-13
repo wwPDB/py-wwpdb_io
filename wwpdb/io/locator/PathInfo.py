@@ -395,8 +395,10 @@ class PathInfo(object):
         dfRef.setDepositionDataSetId(dataSetId)
         dfRef.setStorageType(fileSource)
         if fileSource in ('session', 'wf-session'):
+            dfRef.setStorageType('session')
             dfRef.setSessionPath(self.__sessionPath)
         if fileSource in ('session-download'):
+            dfRef.setStorageType('session')
             dfRef.setSessionPath(self.__sessionDownloadPath)
         dfRef.setSessionDataSetId(dataSetId)
         dfRef.setWorkflowInstanceId(wfInstanceId)

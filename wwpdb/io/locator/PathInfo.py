@@ -396,7 +396,9 @@ class PathInfo(object):
         dfRef.setStorageType(fileSource)
         if fileSource in ('session', 'wf-session'):
             dfRef.setSessionPath(self.__sessionPath)
-            dfRef.setSessionDataSetId(dataSetId)
+        if fileSource in ('session-download'):
+            dfRef.setSessionPath(self.__sessionDownloadPath)
+        dfRef.setSessionDataSetId(dataSetId)
         dfRef.setWorkflowInstanceId(wfInstanceId)
         return dfRef.getDirPathReference()
 

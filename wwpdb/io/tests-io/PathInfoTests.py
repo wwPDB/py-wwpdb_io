@@ -156,10 +156,12 @@ class PathInfoTests(unittest.TestCase):
             logger.debug(
                 "File source %s dataSetId %s  session dir %s" % (fs, dataSetId, session_dir))
 
-            pI = PathInfo(siteId=self.__siteId, sessionPath=session_dir)
-            fp = pI.getDirPath(dataSetId=dataSetId, fileSource='session')
-            logger.debug("session path %s" % fp)
-            self.assertIsNotNone(fp, "Failed to get session path")
+            fileSource = ('session', 'wf-session', 'session-download')
+            for fs in fileSource:
+                pI = PathInfo(siteId=self.__siteId, sessionPath=session_dir)
+                fp = pI.getDirPath(dataSetId=dataSetId, fileSource=fs)
+                logger.debug("session path %s" % fp)
+                self.assertIsNotNone(fp, "Failed to get session path")
 
             # fp = pI.getWebDownloadPath(dataSetId=dataSetId)
             # self.assertIsNotNone(fp, "Failed to get session path")

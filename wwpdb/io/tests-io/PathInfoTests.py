@@ -157,18 +157,19 @@ class PathInfoTests(unittest.TestCase):
                 "File source %s dataSetId %s  session dir %s" % (fs, dataSetId, session_dir))
 
             pI = PathInfo(siteId=self.__siteId, sessionPath=session_dir)
-            session_path = pI.getDirPath(dataSetId=dataSetId, fileSource='session')
-            self.assertIsNotNone(session_path, "Failed to get session path")
+            fp = pI.getDirPath(dataSetId=dataSetId, fileSource='session')
+            logger.debug("session path %s" % fp)
+            self.assertIsNotNone(fp, "Failed to get session path")
 
-            session_download_path = pI.getWebDownloadPath(dataSetId=dataSetId)
-            self.assertIsNotNone(session_download_path, "Failed to get session path")
+            # fp = pI.getWebDownloadPath(dataSetId=dataSetId)
+            # self.assertIsNotNone(fp, "Failed to get session path")
             #
 
 
 def suiteStandardPathTests():
     suiteSelect = unittest.TestSuite()
     suiteSelect.addTest(PathInfoTests("testGetStandardPaths"))
-    suiteSelect.addTest(PathInfoTests("testSessionPath"))
+    # suiteSelect.addTest(PathInfoTests("testSessionPath"))
     return suiteSelect
 
 

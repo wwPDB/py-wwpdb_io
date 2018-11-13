@@ -394,6 +394,9 @@ class PathInfo(object):
         dfRef = DataFileReference(siteId=self.__siteId, verbose=self.__verbose, log=self.__lfh)
         dfRef.setDepositionDataSetId(dataSetId)
         dfRef.setStorageType(fileSource)
+        if fileSource in ('session', 'wf-session'):
+            dfRef.setSessionPath(self.__sessionPath)
+            dfRef.setSessionDataSetId(dataSetId)
         dfRef.setWorkflowInstanceId(wfInstanceId)
         return dfRef.getDirPathReference()
 

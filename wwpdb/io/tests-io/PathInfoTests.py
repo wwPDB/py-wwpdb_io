@@ -169,7 +169,7 @@ class PathInfoTests(unittest.TestCase):
 def suiteStandardPathTests():
     suiteSelect = unittest.TestSuite()
     suiteSelect.addTest(PathInfoTests("testGetStandardPaths"))
-    # suiteSelect.addTest(PathInfoTests("testSessionPath"))
+    suiteSelect.addTest(PathInfoTests("testSessionPath"))
     return suiteSelect
 
 

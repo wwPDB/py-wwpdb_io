@@ -1068,6 +1068,8 @@ class DataFileReference(DataReferenceBase):
 
             return fn
         except Exception as e:
+            logger.exception('failure in getInternalFileNameVersioned')
+            logger.exception(e)
             return None
 
     def __getInternalVersionNumber(self):

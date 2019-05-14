@@ -274,6 +274,7 @@ class ValidateXml(object):
     def __processGlobalValues(self):
         """
         """
+        self.__getSummaryValues()
         global_values = {}
         Entry = self.__doc.getElementsByTagName('Entry')[0]
         for item in ( 'DCC_Rfree', 'PDB-Rfree', 'DCC_R', 'PDB-R' ):

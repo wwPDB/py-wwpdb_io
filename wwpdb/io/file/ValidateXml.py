@@ -98,6 +98,9 @@ class ValidateXml(object):
         """
         return self.__has_cs_referencing_offset_flag
 
+    def getSummary(self):
+        return self.summaryValues
+
     def __getOutlierDefinition(self):
         """
         """

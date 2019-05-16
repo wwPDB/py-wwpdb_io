@@ -266,10 +266,11 @@ class ValidateXml(object):
 
         Entry = self.__doc.getElementsByTagName('Entry')[0]
         for item in summaryList:
-            try:
-                self.summaryValues[item] = float(Entry.getAttribute(item))
-            except:
-                pass
+            if Entry.getAttribute(item) and Entry.getAttribute(item) != 'NotAvailable':
+                try:
+                    self.summaryValues[item] = float(Entry.getAttribute(item))
+                except:
+                    pass
 
     def __processGlobalValues(self):
         """

@@ -35,6 +35,7 @@ class ValidateXml(object):
         #
         self.clashMap = {}
         self.clashOutliers = []
+        self.summaryValues = dict()
         self.__outlierMap = {}
         self.__outlierResult = {}
         self.__calculated_completeness = ''
@@ -96,6 +97,9 @@ class ValidateXml(object):
         """
         """
         return self.__has_cs_referencing_offset_flag
+
+    def getSummary(self):
+        return self.summaryValues
 
     def __getOutlierDefinition(self):
         """
@@ -254,9 +258,23 @@ class ValidateXml(object):
             #
         #
 
+    def __getSummaryValues(self):
+        summaryList = ['DCC_Rfree',
+                       'clashscore',
+                       'percent-RSRZ-outliers',
+                       'percent-rama-outliers']
+
+        Entry = self.__doc.getElementsByTagName('Entry')[0]
+        for item in summaryList:
+            try:
+                self.summaryValues[item] = float(Entry.getAttribute(item))
+            except:
+                pass
+
     def __processGlobalValues(self):
         """
         """
+        self.__getSummaryValues()
         global_values = {}
         Entry = self.__doc.getElementsByTagName('Entry')[0]
         for item in ( 'DCC_Rfree', 'PDB-Rfree', 'DCC_R', 'PDB-R' ):

@@ -1052,7 +1052,7 @@ class DataFileReference(DataReferenceBase):
 
             elif self.__versionId == 'previous':
                 iV = self.__latestVersion(dirPath, baseName)
-                if (iV <= 2):
+                if (iV <= 1):
                     # No previous version.
                     fn = None
                 else:
@@ -1068,6 +1068,8 @@ class DataFileReference(DataReferenceBase):
 
             return fn
         except Exception as e:
+            logger.exception('failure in getInternalFileNameVersioned')
+            logger.exception(e)
             return None
 
     def __getInternalVersionNumber(self):

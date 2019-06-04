@@ -1139,7 +1139,7 @@ class DataFileReference(DataReferenceBase):
             else:
                 return 0
         except Exception as e:
-            if self.debug:
+            if self.__debug:
                 logger.exception("Failing -dirPath %s  baseName %s fN %s with %s" % (dirPath, baseName, fN, str(e)))
 
         return 0

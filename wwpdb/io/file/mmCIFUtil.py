@@ -63,7 +63,7 @@ class mmCIFUtil:
         """
         dList = []
         iList = []
-        if not self.__dataMap.has_key(blockName):
+        if blockName not in self.__dataMap:
             return dList,iList
         #
         catObj = self.__dataList[self.__dataMap[blockName]].getObj(catName)
@@ -97,7 +97,7 @@ class mmCIFUtil:
         text = ''
         dlist = self.GetValue(catName)
         if dlist:
-            if dlist[0].has_key(itemName):
+            if itemName in dlist[0]:
                 text = dlist[0][itemName]
         return text
         #

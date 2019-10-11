@@ -84,6 +84,10 @@ class mmCIFUtil:
         #
         return dList,iList
 
+    def GetValueAndItem(self, catName):
+        dList, iList = self.GetValueAndItemByBlock(self.__blockID, catName)
+        return dList, iList
+    
     def GetValue(self, catName):
         """Get category values based on category name 'catName'. The results are stored
            in a list of dictionaries with item name as key
@@ -161,3 +165,26 @@ class mmCIFUtil:
         pdbxW = PdbxWriter(ofh)
         pdbxW.write(self.__dataList)
         ofh.close()
+
+    def GetCategories(self):
+        return self.__container.getObjNameList()
+    
+    def GetAttributes(self, category):
+        return self.__container.getObj(category).getAttributeList()
+    
+    def category_as_dict(self, category, block=None):
+        if block is None:
+            block = self.__blockID
+        values, attributes = self.GetValueAndItemByBlock(block, category)
+        data = [[x[y] if y in x else None for y in attributes] for x in values]
+        return {category: {'Items': attributes,
+                           'Values': data}}
+        
+    def block_as_dict(self, block=None):
+        if block is None:
+            block = self.__blockID
+        data = {}
+        for category in self.GetCategories():
+            data.update(self.category_as_dict(category, block=block))
+        return data
+    

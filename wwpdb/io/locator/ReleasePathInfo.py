@@ -34,7 +34,8 @@ class ReleasePathInfo(object):
         """Returns path to for-release directory. 
 
         Input Parameters:
-        subdir: If specified,  must be one of "added", "modified", "obsolete", "emd".
+        subdir: If specified,  must be one of "added", "modified", "obsolete", 
+                "emd", "val-reports".
         version: "current" or "previous"
 
         returns path, or raises exception
@@ -49,7 +50,8 @@ class ReleasePathInfo(object):
             basedir = os.path.join(basedir, 'previous')
         
         if subdir:
-            if subdir not in ['added', 'modified', 'obsolete', 'emd']:
+            if subdir not in ['added', 'modified', 'obsolete', 'emd',
+                              'val-reports']:
                 raise NameError('subdir %s not allowed' % subdir)
 
             basedir = os.path.join(basedir, subdir)

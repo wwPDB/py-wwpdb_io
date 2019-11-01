@@ -53,6 +53,7 @@ class ReleasePathInfoTests(unittest.TestCase):
             # subdir, vers
             [None, None],
             ['modified', None],
+            ['val-reports', None],
             [None, 'previous'],
             [None, 'current'],
             ['modified', 'previous'],

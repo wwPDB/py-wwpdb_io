@@ -41,7 +41,7 @@ class ReleasePathInfo(object):
         returns path, or raises exception
         """
         basedir = os.path.join(self.__cI.get('SITE_ARCHIVE_STORAGE_PATH'),
-                               'for-release')
+                               'for_release')
 
         if version not in ['current', 'previous']:
             raise NameError('version %s not allowed' % version)
@@ -51,8 +51,8 @@ class ReleasePathInfo(object):
         
         if subdir:
             if subdir not in ['added', 'modified', 'obsolete', 'emd',
-                              'val-reports',
-                              'em-val-reports']:
+                              'val_reports',
+                              'em_val_reports']:
                 raise NameError('subdir %s not allowed' % subdir)
 
             basedir = os.path.join(basedir, subdir)

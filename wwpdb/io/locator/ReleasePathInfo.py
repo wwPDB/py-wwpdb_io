@@ -51,7 +51,8 @@ class ReleasePathInfo(object):
         
         if subdir:
             if subdir not in ['added', 'modified', 'obsolete', 'emd',
-                              'val-reports']:
+                              'val-reports',
+                              'em-val-reports']:
                 raise NameError('subdir %s not allowed' % subdir)
 
             basedir = os.path.join(basedir, subdir)

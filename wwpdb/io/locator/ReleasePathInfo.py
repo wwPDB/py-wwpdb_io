@@ -20,6 +20,7 @@ import glob
 import shutil
 
 import logging
+
 logger = logging.getLogger(__name__)
 
 from wwpdb.utils.config.ConfigInfo import ConfigInfo, getSiteId
@@ -29,8 +30,8 @@ class ReleasePathInfo(object):
     def __init__(self, siteId=None):
         self.__siteId = siteId
         self.__cI = ConfigInfo(siteId=self.__siteId)
-        
-    def getForReleasePath(self, subdir=None, version='current'):
+
+    def getForReleasePath(self, subdir=None, version="current", em_sub_path=None):
         """Returns path to for-release directory. 
 
         Input Parameters:
@@ -40,22 +41,41 @@ class ReleasePathInfo(object):
 
         returns path, or raises exception
         """
-        basedir = os.path.join(self.__cI.get('SITE_ARCHIVE_STORAGE_PATH'),
-                               'for_release')
+        basedir = os.path.join(
+            self.__cI.get("SITE_ARCHIVE_STORAGE_PATH"), "for_release"
+        )
 
-        if version not in ['current', 'previous']:
-            raise NameError('version %s not allowed' % version)
+        if version not in ["current", "previous"]:
+            raise NameError("version %s not allowed" % version)
 
-        if version == 'previous':
-            basedir = os.path.join(basedir, 'previous')
-        
+        if version == "previous":
+            basedir = os.path.join(basedir, "previous")
+
         if subdir:
-            if subdir not in ['added', 'modified', 'obsolete', 'emd',
-                              'val_reports',
-                              'em_val_reports']:
-                raise NameError('subdir %s not allowed' % subdir)
+            if subdir not in [
+                "added",
+                "modified",
+                "obsolete",
+                "emd",
+                "val_reports",
+                "em_val_reports",
+            ]:
+                raise NameError("subdir %s not allowed" % subdir)
 
             basedir = os.path.join(basedir, subdir)
 
+            if em_sub_path:
+                if em_sub_path not in [
+                    "header",
+                    "map",
+                    "fsc",
+                    "images",
+                    "masks",
+                    "other",
+                    "validation",
+                ]:
+                    raise NameError("em_sub_path %s not allowed" % subdir)
+
+                basedir = os.path.join(basedir, em_sub_path)
+
         return basedir
-        

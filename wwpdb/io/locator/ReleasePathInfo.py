@@ -74,7 +74,7 @@ class ReleasePathInfo(object):
                     "other",
                     "validation",
                 ]:
-                    raise NameError("em_sub_path %s not allowed" % subdir)
+                    raise NameError("em_sub_path %s not allowed" % em_sub_path)
 
                 basedir = os.path.join(basedir, em_sub_path)
 

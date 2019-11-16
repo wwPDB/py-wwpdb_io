@@ -154,10 +154,10 @@ class ReleaseFileNames:
     def get_validation_svg(self, accession, for_release=False):
         return self.__getfname("validsvg", accession, for_release)
 
-    def get_2fofc(self, accession, for_release=False):
+    def get_valiation_2fofc(self, accession, for_release=False):
         return self.__getfname("valid2fo", accession, for_release)
 
-    def get_fofc(self, accession, for_release=False):
+    def get_validation_fofc(self, accession, for_release=False):
         return self.__getfname("validfo", accession, for_release)
 
 

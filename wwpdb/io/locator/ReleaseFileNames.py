@@ -66,7 +66,8 @@ class ReleaseFileNames:
             "emdfsc": ["underscore", "underscore"],
         }
 
-    def __get_emdb_number(self, accession):
+    @staticmethod
+    def __get_emdb_number(accession):
         """gets the EMDB number from the accession """
         return accession[4:]
         # return accession.split("-")[-1]
@@ -97,15 +98,6 @@ class ReleaseFileNames:
             else:
                 accession = self.__process_remap(public, accession)
         return accession
-
-    def __add_gzip(self, filename, set_gzip=False):
-        """adds gzip if required"""
-        if set_gzip:
-            self.__gzip = True
-        self.__gzip = False
-        if self.__gzip:
-            return filename + ".gz"
-        return filename
 
     def __getfname(self, content, accession, for_release):
         """Retrieves the released content file name with compression"""

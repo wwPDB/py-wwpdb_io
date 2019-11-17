@@ -31,7 +31,7 @@ class ReleasePathInfo(object):
         self.__siteId = siteId
         self.__cI = ConfigInfo(siteId=self.__siteId)
 
-    def getForReleasePath(self, subdir=None, version="current", em_sub_path=None):
+    def getForReleasePath(self, subdir=None, version="current", accession=None, em_sub_path=None):
         """Returns path to for-release directory. 
 
         Input Parameters:
@@ -64,7 +64,7 @@ class ReleasePathInfo(object):
 
             basedir = os.path.join(basedir, subdir)
 
-            if em_sub_path:
+            if em_sub_path and accession:
                 if em_sub_path not in [
                     "header",
                     "map",
@@ -76,6 +76,6 @@ class ReleasePathInfo(object):
                 ]:
                     raise NameError("em_sub_path %s not allowed" % em_sub_path)
 
-                basedir = os.path.join(basedir, em_sub_path)
+                basedir = os.path.join(basedir, accession.upper(), em_sub_path)
 
         return basedir

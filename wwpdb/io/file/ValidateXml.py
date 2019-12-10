@@ -262,7 +262,10 @@ class ValidateXml(object):
         summaryList = ['DCC_Rfree',
                        'clashscore',
                        'percent-RSRZ-outliers',
-                       'percent-rama-outliers']
+                       'percent-rama-outliers',
+                       'atom_inclusion_all_atoms',
+                       'atom_inclusion_backbone',
+                       'contour_level_primary_map']
 
         Entry = self.__doc.getElementsByTagName('Entry')[0]
         for item in summaryList:
@@ -282,6 +285,11 @@ class ValidateXml(object):
             if Entry.getAttribute(item) and Entry.getAttribute(item) != 'NotAvailable':
                 global_values[item] = Entry.getAttribute(item)
             #
+        for item in ('atom_inclusion_all_atoms', 'atom_inclusion_backbone'):
+            if Entry.getAttribute(item) and Entry.getAttribute(item) != 'NotAvailable':
+                value = Entry.getAttribute(item)
+                if float(value) < 0.4:
+                    self.__outlierResult[item] = value
         #
         if Entry.getAttribute('DataCompleteness') and Entry.getAttribute('DataCompleteness') != 'NotAvailable':
             self.__calculated_completeness = Entry.getAttribute('DataCompleteness')
@@ -397,12 +405,14 @@ class ValidateXml(object):
 if __name__ == "__main__":
     try:
         obj = ValidateXml(FileName=sys.argv[1])
+        summary = obj.getSummary()
+        print(summary)
 #       list = obj.getOutlier('polymer-rsrz-outlier')
 #       print(list)
-#       list1 = obj.getOutlier('r_free_diff')
-#       print(list1)
-#       list2 = obj.getOutlier('r_work_diff')
-#       print(list2)
+        list1 = obj.getOutlier('r_free_diff')
+        print(list1)
+        ret = obj.getOutlier('atom_inclusion_all_atoms')
+        print(ret)
 #       print(obj.getClashOutliers())
         print(obj.getCsMappingErrorNumber())
         print(obj.getCsMappingWarningNumber())

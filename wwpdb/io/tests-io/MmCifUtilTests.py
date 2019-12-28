@@ -15,18 +15,11 @@ __email__ = "peisach@rcsb.rutgers.edu"
 import unittest
 import os
 import platform
+from wwpdb.io.file.mmCIFUtil import mmCIFUtil  # noqa: E402
 
 HERE = os.path.abspath(os.path.dirname(__file__))
 TOPDIR = os.path.dirname(os.path.dirname(os.path.dirname(HERE)))
-TESTOUTPUT = os.path.join(HERE, "test-output", platform.python_version())
-if not os.path.exists(TESTOUTPUT):
-    os.makedirs(TESTOUTPUT)
 mockTopPath = os.path.join(TOPDIR, "wwpdb", "mock-data")
-
-# Must create config file before importing ConfigInfo
-from wwpdb.utils.testing.SiteConfigSetup import SiteConfigSetup  # noqa: E402,F401
-
-from wwpdb.io.file.mmCIFUtil import mmCIFUtil  # noqa: E402
 
 
 class MmCifUtilTests(unittest.TestCase):

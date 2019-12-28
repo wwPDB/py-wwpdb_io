@@ -20,13 +20,13 @@ __version__ = "V0.001"
 
 #
 import paramiko
-#
 import logging
+
+from wwpdb.io.sftp.ArchiveIoBase import ArchiveIoBase
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger()
 
-
-from wwpdb.io.sftp.ArchiveIoBase import ArchiveIoBase
 
 class ArchiveIoSftp(ArchiveIoBase):
     """ Python implementation of ArchiveIoBase class providing essential

@@ -14,11 +14,11 @@ __version__ = "V0.01"
 
 import unittest
 
-from wwpdb.io.file.DataExchange import DataExchange
-from wwpdb.io.file.DataFile import DataFile
-from wwpdb.io.file.mmCIFUtil import mmCIFUtil
-from wwpdb.io.file.DataMaintenance import DataMaintenance
-from wwpdb.io.file.ValidateXml import ValidateXml
+from wwpdb.io.file.DataExchange import DataExchange  # noqa: F401
+from wwpdb.io.file.DataFile import DataFile  # noqa: F401
+from wwpdb.io.file.mmCIFUtil import mmCIFUtil  # noqa: F401
+from wwpdb.io.file.DataMaintenance import DataMaintenance  # noqa: F401
+from wwpdb.io.file.ValidateXml import ValidateXml  # noqa: F401
 
 
 class ImportTests(unittest.TestCase):
@@ -26,13 +26,11 @@ class ImportTests(unittest.TestCase):
         pass
 
     def testInstantiate(self):
-        vc = DataFile()
-        vc = mmCIFUtil()
+        _vc = DataFile()
+        _vc = mmCIFUtil()  # noqa: F841
         # Will not function without a reqObj
-        #vc = DataExchange()
+        # vc = DataExchange()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()
-
-
-    

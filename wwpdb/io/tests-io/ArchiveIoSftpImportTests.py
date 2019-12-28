@@ -16,16 +16,14 @@ import unittest
 
 from wwpdb.io.sftp.ArchiveIoSftp import ArchiveIoSftp
 
+
 class ImportTests(unittest.TestCase):
     def setUp(self):
         pass
 
     def testInstantiate(self):
-        aio = ArchiveIoSftp()
+        aio = ArchiveIoSftp()  # noqa: F841
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
-
-
-    

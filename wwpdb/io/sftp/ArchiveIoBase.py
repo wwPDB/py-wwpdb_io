@@ -21,9 +21,10 @@ __version__ = "V0.001"
 #
 #
 import logging
-logger = logging.getLogger(__name__)
 
 from wwpdb.utils.config.ConfigInfo import ConfigInfo, getSiteId
+
+logger = logging.getLogger(__name__)
 
 
 class ArchiveIoBase(object):

@@ -39,12 +39,12 @@ import os
 import os.path
 import glob
 import shutil
-
 import logging
-logger = logging.getLogger(__name__)
 
 from wwpdb.utils.config.ConfigInfo import ConfigInfo, getSiteId
 from wwpdb.io.locator.DataReference import DataFileReference, ReferenceFileComponents
+
+logger = logging.getLogger(__name__)
 
 
 class PathInfo(object):
@@ -106,7 +106,7 @@ class PathInfo(object):
         eD = self.__cI.get('FILE_FORMAT_EXTENSION_DICTIONARY')
         try:
             return eD[formatType]
-        except Exception as e:
+        except Exception as e:  # noqa: F841
             return None
 
     def splitFileName(self, fileName):
@@ -117,9 +117,10 @@ class PathInfo(object):
             rfc = ReferenceFileComponents(verbose=self.__verbose, log=self.__lfh)
             rfc.set(fileName=fileName)
             return rfc.get()
-        except Exception as e:
+        except Exception as e:  # noqa: F841
             return (None, None, None, None, None)
     #
+
     def setSessionPath(self, sessionPath):
         """  Set the top path that will be searched for files with fileSource='session'
         """
@@ -135,34 +136,34 @@ class PathInfo(object):
                 return self.getDirPath(dataSetId=dataSetId, fileSource='archive')
                 # return os.path.join(self.__cI.get('SITE_ARCHIVE_STORAGE_PATH'), 'archive', dataSetId)
             #
-        except Exception as e:
+        except Exception as e:  # noqa: F841
             return None
 
     def getInstancePath(self, dataSetId, wfInstanceId):
         try:
             return self.getDirPath(dataSetId=dataSetId, fileSource='wf-instance', wfInstanceId=wfInstanceId)
             # return os.path.join(self.__cI.get('SITE_ARCHIVE_STORAGE_PATH'), 'workflow', dataSetId, 'instance', wfInstanceId)
-        except Exception as e:
+        except Exception as e:  # noqa: F841
             return None
 
     def getInstanceTopPath(self, dataSetId):
         try:
             return os.path.dirname(self.getDirPath(dataSetId=dataSetId, fileSource='wf-instance', wfInstanceId='W_001'))
             # return os.path.join(self.__cI.get('SITE_ARCHIVE_STORAGE_PATH'), 'workflow', dataSetId, 'instance')
-        except Exception as e:
+        except Exception as e:  # noqa: F841
             return None
 
     def getDepositPath(self, dataSetId):
         try:
             return self.getDirPath(dataSetId=dataSetId, fileSource='deposit')
             # return os.path.join(self.__cI.get('SITE_ARCHIVE_STORAGE_PATH'), 'deposit', dataSetId)
-        except Exception as e:
+        except Exception as e:  # noqa: F841
             return None
 
     def getTempDepPath(self, dataSetId):
         try:
             return self.getDirPath(dataSetId=dataSetId, fileSource='tempdep')
-        except Exception as e:
+        except Exception as e:  # noqa: F841  # noqa: F841
             return None
 
     def getModelPdbxFilePath(self, dataSetId, wfInstanceId=None, fileSource="archive", versionId="latest", mileStone=None):

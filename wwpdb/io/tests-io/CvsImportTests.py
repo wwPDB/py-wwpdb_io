@@ -14,21 +14,19 @@ __version__ = "V0.01"
 
 import unittest
 
-from wwpdb.io.cvs.CvsAdmin          import CvsAdmin,CvsSandBoxAdmin
-from wwpdb.io.cvs.CvsUtility      import CvsWrapper
+from wwpdb.io.cvs.CvsAdmin import CvsAdmin, CvsSandBoxAdmin
+from wwpdb.io.cvs.CvsUtility import CvsWrapper
+
 
 class ImportTests(unittest.TestCase):
     def setUp(self):
         pass
 
     def testInstantiate(self):
-        vc = CvsAdmin(tmpPath="./")
-        vc = CvsSandBoxAdmin(tmpPath="./")
-        vc = CvsWrapper(tmpPath="./")
+        vc = CvsAdmin(tmpPath="./")  # noqa: F841
+        vc = CvsSandBoxAdmin(tmpPath="./")  # noqa: F841
+        vc = CvsWrapper(tmpPath="./")  # noqa: F841
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
-
-
-    

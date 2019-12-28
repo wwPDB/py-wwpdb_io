@@ -23,59 +23,56 @@ import time
 import unittest
 import os
 import platform
+import logging
 
 HERE = os.path.abspath(os.path.dirname(__file__))
 TOPDIR = os.path.dirname(os.path.dirname(os.path.dirname(HERE)))
-TESTOUTPUT = os.path.join(HERE, 'test-output', platform.python_version())
+TESTOUTPUT = os.path.join(HERE, "test-output", platform.python_version())
 if not os.path.exists(TESTOUTPUT):
     os.makedirs(TESTOUTPUT)
-mockTopPath = os.path.join(TOPDIR, 'wwpdb', 'mock-data')
+mockTopPath = os.path.join(TOPDIR, "wwpdb", "mock-data")
 
 # Must create config file before importing ConfigInfo
-from wwpdb.utils.testing.SiteConfigSetup import SiteConfigSetup
+from wwpdb.utils.testing.SiteConfigSetup import SiteConfigSetup  # noqa: E402
 
 SiteConfigSetup().setupEnvironment(TESTOUTPUT, mockTopPath)
 
-from wwpdb.utils.config.ConfigInfo import getSiteId
-from wwpdb.io.locator.PathInfo import PathInfo
+from wwpdb.utils.config.ConfigInfo import getSiteId  # noqa: E402
+from wwpdb.io.locator.PathInfo import PathInfo  # noqa: E402
 
-import logging
 
-FORMAT = '[%(levelname)s]-%(module)s.%(funcName)s: %(message)s'
+FORMAT = "[%(levelname)s]-%(module)s.%(funcName)s: %(message)s"
 logging.basicConfig(format=FORMAT, level=logging.DEBUG)
 logger = logging.getLogger()
 
 
 class PathInfoTests(unittest.TestCase):
-
     def setUp(self):
         #
         self.__verbose = True
         self.__siteId = getSiteId(defaultSiteId=None)
 
         self.__startTime = time.time()
-        logger.debug("Starting %s at %s" % (self.id(),
-                                            time.strftime("%Y %m %d %H:%M:%S", time.localtime())))
+        logger.debug("Starting %s at %s" % (self.id(), time.strftime("%Y %m %d %H:%M:%S", time.localtime())))
 
     def tearDown(self):
         endTime = time.time()
-        logger.debug("Completed %s at %s (%.4f seconds)\n" % (self.id(),
-                                                              time.strftime("%Y %m %d %H:%M:%S", time.localtime()),
-                                                              endTime - self.__startTime))
+        logger.debug("Completed %s at %s (%.4f seconds)\n" % (self.id(), time.strftime("%Y %m %d %H:%M:%S", time.localtime()), endTime - self.__startTime))
 
     def testGetStandardPaths(self):
         """ Test getting standard file names within session paths.
         """
         ok = True
         # fileSource, id, partionId, versionId
-        tests = [('archive', "D_1000000000", None, 1, 'latest'),
-                 ('archive', "D_1000000000", None, 'latest', 'latest'),
-                 ('archive', "D_1000000000", None, 'next', 'latest'),
-                 ('archive', "D_1000000000", None, 'previous', 'latest')]
-        eId = '1'
+        tests = [
+            ("archive", "D_1000000000", None, 1, "latest"),
+            ("archive", "D_1000000000", None, "latest", "latest"),
+            ("archive", "D_1000000000", None, "next", "latest"),
+            ("archive", "D_1000000000", None, "previous", "latest"),
+        ]
+        eId = "1"
         for (fs, dataSetId, wfInst, pId, vId) in tests:
-            logger.debug(
-                "File source %s dataSetId %s  partno  %s wfInst %s version %s" % (fs, dataSetId, pId, wfInst, vId))
+            logger.debug("File source %s dataSetId %s  partno  %s wfInst %s version %s" % (fs, dataSetId, pId, wfInst, vId))
 
             pI = PathInfo(siteId=self.__siteId)
             #
@@ -83,13 +80,11 @@ class PathInfoTests(unittest.TestCase):
             logger.debug("Model path (PDBx):   %s" % fp)
             self.assertIsNotNone(fp, "Failed to find model file - default")
 
-            fp = pI.getModelPdbxFilePath(dataSetId, wfInstanceId=wfInst, fileSource=fs, versionId=vId,
-                                         mileStone='deposit')
+            fp = pI.getModelPdbxFilePath(dataSetId, wfInstanceId=wfInst, fileSource=fs, versionId=vId, mileStone="deposit")
             logger.debug("Model path (deposit) (PDBx):   %s" % fp)
             self.assertIsNotNone(fp, "Failed to find model file - deposit")
 
-            fp = pI.getModelPdbxFilePath(dataSetId, wfInstanceId=wfInst, fileSource=fs, versionId=vId,
-                                         mileStone='upload')
+            fp = pI.getModelPdbxFilePath(dataSetId, wfInstanceId=wfInst, fileSource=fs, versionId=vId, mileStone="upload")
             logger.debug("Model path (upload) (PDBx):   %s" % fp)
             self.assertIsNotNone(fp, "Failed to find model file - upload")
 
@@ -105,8 +100,7 @@ class PathInfoTests(unittest.TestCase):
             logger.debug("Sequence stats (PIC):   %s" % fp)
             self.assertIsNotNone(fp, "Failed to find sequence stats file")
 
-            fp = pI.getReferenceSequenceFilePath(dataSetId, entityId=eId, wfInstanceId=wfInst, fileSource=fs,
-                                                 versionId=vId)
+            fp = pI.getReferenceSequenceFilePath(dataSetId, entityId=eId, wfInstanceId=wfInst, fileSource=fs, versionId=vId)
             logger.debug("Reference match entity %s (PDBx):   %s" % (eId, fp))
             self.assertIsNotNone(fp, "Failed to find reference sequence file")
 
@@ -114,8 +108,7 @@ class PathInfoTests(unittest.TestCase):
             logger.debug("Sequence assignment (PDBx):   %s" % fp)
             self.assertIsNotNone(fp, "Failed to find sequence assignment")
 
-            fp = pI.getFilePath(dataSetId, wfInstanceId=wfInst, contentType='seqdb-match', formatType='pdbx',
-                                fileSource=fs, versionId=vId, partNumber=pId, mileStone=None)
+            fp = pI.getFilePath(dataSetId, wfInstanceId=wfInst, contentType="seqdb-match", formatType="pdbx", fileSource=fs, versionId=vId, partNumber=pId, mileStone=None)
             logger.debug("Sequence match (getFilePath) (PDBx):   %s" % fp)
             self.assertIsNotNone(fp, "Failed to find seq-db match")
             #
@@ -127,7 +120,7 @@ class PathInfoTests(unittest.TestCase):
             logger.debug("getDepositPath (PDBx):   %s" % fp)
             self.assertIsNotNone(fp, "Failed to find deposit path")
 
-            fp = pI.getInstancePath(dataSetId, wfInstanceId='W_099')
+            fp = pI.getInstancePath(dataSetId, wfInstanceId="W_099")
             logger.debug("getWfInstancePath (PDBx):   %s" % fp)
             self.assertIsNotNone(fp, "Failed to find wf instance path")
 
@@ -135,28 +128,24 @@ class PathInfoTests(unittest.TestCase):
             logger.debug("getWfInstanceTopPath (PDBx):   %s" % fp)
             self.assertIsNotNone(fp, "Failed to find wf Top instance path")
             #
-            fp = pI.getDirPath(dataSetId, wfInstanceId=wfInst, fileSource=fs, versionId=vId, partNumber=pId,
-                               mileStone=None)
+            fp = pI.getDirPath(dataSetId, wfInstanceId=wfInst, fileSource=fs, versionId=vId, partNumber=pId, mileStone=None)
             logger.debug("Sequence match (getDirPath) (PDBx):   %s" % fp)
             self.assertIsNotNone(fp, "Failed to find dir path")
 
-            ft = pI.getFilePathVersionTemplate(dataSetId, wfInstanceId=wfInst, contentType='em-volume',
-                                               formatType='map', fileSource="archive", partNumber=pId, mileStone=None)
+            ft = pI.getFilePathVersionTemplate(dataSetId, wfInstanceId=wfInst, contentType="em-volume", formatType="map", fileSource="archive", partNumber=pId, mileStone=None)
             logger.debug("EM volume version template:   %r" % ft)
-            ft = pI.getFilePathPartitionTemplate(dataSetId, wfInstanceId=wfInst, contentType='em-mask-volume',
-                                                 formatType='map', fileSource="archive", mileStone=None)
+            ft = pI.getFilePathPartitionTemplate(dataSetId, wfInstanceId=wfInst, contentType="em-mask-volume", formatType="map", fileSource="archive", mileStone=None)
             logger.debug("EM mask partition template:   %r" % ft)
             self.assertIsNotNone(ft, "Failed to mask model file")
 
         self.assertEqual(ok, True)
 
     def testSessionPath(self):
-        tests = [('archive', "D_1000000000", 'session_test/12345')]
+        tests = [("archive", "D_1000000000", "session_test/12345")]
         for (fs, dataSetId, session_dir) in tests:
-            logger.debug(
-                "File source %s dataSetId %s  session dir %s" % (fs, dataSetId, session_dir))
+            logger.debug("File source %s dataSetId %s  session dir %s" % (fs, dataSetId, session_dir))
 
-            fileSource = ('session', 'wf-session', 'session-download')
+            fileSource = ("session", "wf-session", "session-download")
             for fs in fileSource:
                 pI = PathInfo(siteId=self.__siteId, sessionPath=session_dir)
                 fp = pI.getDirPath(dataSetId=dataSetId, fileSource=fs)
@@ -175,7 +164,7 @@ def suiteStandardPathTests():
     return suiteSelect
 
 
-if __name__ == '__main__':
-    if (True):
+if __name__ == "__main__":
+    if True:
         mySuite = suiteStandardPathTests()
         unittest.TextTestRunner(verbosity=2).run(mySuite)

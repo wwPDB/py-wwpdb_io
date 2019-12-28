@@ -38,9 +38,7 @@ class ReleasePathInfo(object):
 
         returns path, or raises exception
         """
-        basedir = os.path.join(
-            self.__cI.get("SITE_ARCHIVE_STORAGE_PATH"), "for_release"
-        )
+        basedir = os.path.join(self.__cI.get("SITE_ARCHIVE_STORAGE_PATH"), "for_release")
 
         if version not in ["current", "previous"]:
             raise NameError("version %s not allowed" % version)

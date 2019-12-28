@@ -18,7 +18,6 @@ ENABLED = True
 
 
 class WrapperBase(object):
-
     def __init__(self, *dArgs, **dKw):
         """
         Base class implementation of function/method wrapper (decorator).
@@ -65,8 +64,8 @@ class WrapperBase(object):
         return
 
     def __getInfo(self, wrapped, instance):
-        fName = ''
-        cName = ''
+        fName = ""
+        cName = ""
         try:
             if instance is None:
                 if inspect.isclass(wrapped):
@@ -107,10 +106,13 @@ class WrapperBase(object):
             return wrapped(*args, **kwargs)
         finally:
             endTime = time.time()
-            msg = "Completed %s.%s %s at %s (%.4f seconds)\n" % (cName, fName,
-                                                                 sys._getframe().f_code.co_name,
-                                                                 time.strftime("%Y %m %d %H:%M:%S", time.localtime()),
-                                                                 endTime - startTime)
+            msg = "Completed %s.%s %s at %s (%.4f seconds)\n" % (
+                cName,
+                fName,
+                sys._getframe().f_code.co_name,
+                time.strftime("%Y %m %d %H:%M:%S", time.localtime()),
+                endTime - startTime,
+            )
             self._log.info(msg)
             try:
                 self._log.debug("Invoking post-operation method for %s %s" % (fName, cName))
@@ -122,7 +124,6 @@ class WrapperBase(object):
 
 
 class WrapperExample(WrapperBase):
-
     def __init__(self, *dArgs, **dKw):
         super(WrapperExample, self).__init__(*dArgs, **dKw)
 
@@ -137,5 +138,3 @@ class WrapperExample(WrapperBase):
     @wrapt.decorator(enabled=ENABLED)
     def __call__(self, wrapped, instance, args, kwargs):
         return super(WrapperExample, self)._callable(wrapped, instance, args, kwargs)
-
-

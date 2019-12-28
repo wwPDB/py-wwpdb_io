@@ -33,21 +33,21 @@ class ArchiveIoBase(object):
     """
 
     def __init__(self, *args, **kwargs):
-        self._raiseExceptions = kwargs.get('raiseExceptions', False)
-        self._siteId = kwargs.get('siteId', getSiteId())
-        self._serverId = kwargs.get('serverId', None)
+        self._raiseExceptions = kwargs.get("raiseExceptions", False)
+        self._siteId = kwargs.get("siteId", getSiteId())
+        self._serverId = kwargs.get("serverId", None)
 
         self.__cI = ConfigInfo(siteId=getSiteId())
         #
         cD = self.__cI.get(self._serverId, {})
-        self._hostName = cD.get('HOST_NAME', None)
-        self._userName = cD.get('HOST_USERNAME', None)
-        self._password = cD.get('HOST_PASSWORD', None)
-        self._hostPort = int(cD.get('HOST_PORT', 22))
-        self._protocol = cD.get('HOST_PROTOCOL', None)
-        self._rootPath = cD.get('HOST_ROOT_PATH', None)
-        self._keyFilePath = cD.get('HOST_KEY_FILE_PATH', None)
-        self._keyFileType = cD.get('HOST_KEY_FILE_TYPE', None)
+        self._hostName = cD.get("HOST_NAME", None)
+        self._userName = cD.get("HOST_USERNAME", None)
+        self._password = cD.get("HOST_PASSWORD", None)
+        self._hostPort = int(cD.get("HOST_PORT", 22))
+        self._protocol = cD.get("HOST_PROTOCOL", None)
+        self._rootPath = cD.get("HOST_ROOT_PATH", None)
+        self._keyFilePath = cD.get("HOST_KEY_FILE_PATH", None)
+        self._keyFileType = cD.get("HOST_KEY_FILE_TYPE", None)
         #
 
     def connect(self, hostName, userName, **kwargs):

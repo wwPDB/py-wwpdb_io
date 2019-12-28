@@ -26,37 +26,12 @@ class ReleaseFileNames:
             "emdmap": ["{}.map", "{}.map", True, True],
             "emdfsc": ["{}_fsc.xml", "{}_fsc.xml", False, False],
             "validpdf": ["{}_validation.pdf", "{}_validation.pdf", False, False],
-            "validpdffull": [
-                "{}_full_validation.pdf",
-                "{}_full_validation.pdf",
-                False,
-                False,
-            ],
+            "validpdffull": ["{}_full_validation.pdf", "{}_full_validation.pdf", False, False],
             "validxml": ["{}_validation.xml", "{}_validation.xml", False, False],
-            "validpng": [
-                "{}_multipercentile_validation.png",
-                "{}_multipercentile_validation.png",
-                False,
-                False,
-            ],
-            "validsvg": [
-                "{}_multipercentile_validation.svg",
-                "{}_multipercentile_validation.svg",
-                False,
-                False,
-            ],
-            "valid2fo": [
-                "{}_validation_2fo-fc_map_coef.cif",
-                "{}_validation_2fo-fc_map_coef.cif",
-                False,
-                False,
-            ],
-            "validfo": [
-                "{}_validation_fo-fc_map_coef.cif",
-                "{}_validation_fo-fc_map_coef.cif",
-                False,
-                False,
-            ],
+            "validpng": ["{}_multipercentile_validation.png", "{}_multipercentile_validation.png", False, False],
+            "validsvg": ["{}_multipercentile_validation.svg", "{}_multipercentile_validation.svg", False, False],
+            "valid2fo": ["{}_validation_2fo-fc_map_coef.cif", "{}_validation_2fo-fc_map_coef.cif", False, False],
+            "validfo": ["{}_validation_fo-fc_map_coef.cif", "{}_validation_fo-fc_map_coef.cif", False, False],
         }
 
         # public for_rel
@@ -106,9 +81,7 @@ class ReleaseFileNames:
         """Retrieves the released content file name with compression"""
         assert content in self.__mapping
         (public, release, pub_gzip, rel_gzip) = self.__mapping[content]
-        accession = self.__do_accession_remap(
-            accession=accession, content=content, for_release=for_release
-        )
+        accession = self.__do_accession_remap(accession=accession, content=content, for_release=for_release)
         if for_release:
             base = release
             gzipflag = rel_gzip

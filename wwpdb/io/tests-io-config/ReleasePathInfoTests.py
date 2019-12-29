@@ -68,6 +68,24 @@ class ReleasePathInfoTests(unittest.TestCase):
             self.assertIsNotNone(ret)
             # print(ret)
 
+    def testGetEMReleaseSubPaths(self):
+        """ Test getting standard file names within session paths.
+        """
+        emsub = [
+            "header",
+            "map",
+            "fsc",
+            "images",
+            "masks",
+            "other",
+            "validation",
+        ]
+        for emsubdir in emsub:
+            rpi = ReleasePathInfo(self.__siteId)
+            ret = rpi.getForReleasePath(subdir="emd", accession="EMD-1000", em_sub_path=emsubdir)
+            # print(ret)
+            self.assertIsNotNone(ret)
+
     def testGetReleasePathsExceptions(self):
         """ Test expected exceptions """
         rpi = ReleasePathInfo(self.__siteId)
@@ -81,10 +99,14 @@ class ReleasePathInfoTests(unittest.TestCase):
         with self.assertRaises(NameError):
             rpi.getForReleasePath(version="some", subdir="something")
 
+        with self.assertRaises(NameError):
+            rpi.getForReleasePath(subdir="emd", accession="EMD-1000", em_sub_path="something")
+
 
 def suiteStandardPathTests():  # pragma: no cover
     suiteSelect = unittest.TestSuite()
     suiteSelect.addTest(ReleasePathInfoTests("testGetReleasePaths"))
+    suiteSelect.addTest(ReleasePathInfoTests("testGetEMReleaseSubPaths"))
     suiteSelect.addTest(ReleasePathInfoTests("testGetReleasePathsExceptions"))
     return suiteSelect
 

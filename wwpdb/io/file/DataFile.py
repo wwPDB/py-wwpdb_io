@@ -323,17 +323,6 @@ class DataFile:
             times = (self.srcStat[stat.ST_ATIME], self.srcStat[stat.ST_MTIME])
             os.utime(self.dstPath, times)
 
-    def __timeStampSet(self, fPath, yyyymmdd):
-        """Reset the atime/mtimes of the input file using the input timestamp.
-        """
-        if len(yyyymmdd) != 8 or not self.__exists(fPath):
-            return
-        #
-        t = datetime.datetime(int(yyyymmdd[0:4]), int(yyyymmdd[4:6]), int(yyyymmdd[6:8]))
-        mtime = int(time.mktime(t.timetuple()))
-        times = (mtime, mtime)
-        os.utime(fPath, times)
-
     def __setTimeStamp(self, fPath, tObj):
         """Reset the atime/mtimes of the input file using the input timestamp.
         """
@@ -562,7 +551,7 @@ class DataFile:
             # no stat for srcPath
             return None
 
-    def eMail(self, toAddr, fromAddr, subject):
+    def eMail(self, toAddr, fromAddr, subject):  # pragma: no cover
         """ Internal method to mail srcPath file as text.
         """
         if not self.srcFileExists():

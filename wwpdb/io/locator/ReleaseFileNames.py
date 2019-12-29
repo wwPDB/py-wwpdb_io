@@ -65,7 +65,7 @@ class ReleaseFileNames:
         elif remap_type == "underscore":
             return self.__get_emdb_underscore_format(accession)
         else:
-            raise NameError("unknown EMDB file remapping: {}".format(remap_type))
+            raise NameError("unknown EMDB file remapping: {}".format(remap_type))  # pragma: no cover
 
     def __do_accession_remap(self, content, accession, for_release):
         """does accession remapping"""
@@ -132,31 +132,3 @@ class ReleaseFileNames:
 
     def get_validation_fofc(self, accession, for_release=False):
         return self.__getfname("validfo", accession, for_release)
-
-
-if __name__ == "__main__":
-    rf = ReleaseFileNames()
-    print("Pub model %s" % rf.get_model("1abc"))
-    print("Rel model %s" % rf.get_model("1abc", True))
-    print("Pub sf: %s" % rf.get_structure_factor("1abc"))
-    print("Rel sf: %s" % rf.get_structure_factor("1abc", True))
-    print("Pub cs: %s" % rf.get_chemical_shifts("1abc"))
-    print("Rel cs: %s" % rf.get_chemical_shifts("1abc", True))
-    print("Pub emdxml: %s" % rf.get_emdb_xml("EMD-1234"))
-    print("Rel emdxml: %s" % rf.get_emdb_xml("EMD-1234", True))
-    print("Pub emdmap: %s" % rf.get_emdb_map("EMD-1234"))
-    print("Rel emdmap: %s" % rf.get_emdb_map("EMD-1234", True))
-    print("Pub validpdf: %s" % rf.get_validation_pdf("1abc"))
-    print("Rel validpdf: %s" % rf.get_validation_pdf("1abc", True))
-    print("Pub validfullpdf: %s" % rf.get_validation_full_pdf("1abc"))
-    print("Rel validfullpdf: %s" % rf.get_validation_full_pdf("1abc", True))
-    print("Pub validxml: %s" % rf.get_validation_xml("1abc"))
-    print("Rel validxml: %s" % rf.get_validation_xml("1abc", True))
-    print("Pub validsvg: %s" % rf.get_validation_svg("1abc"))
-    print("Rel validsvg: %s" % rf.get_validation_svg("1abc", True))
-    print("Pub validpng: %s" % rf.get_validation_svg("1abc"))
-    print("Rel validpng: %s" % rf.get_validation_svg("1abc", True))
-    print("Pub 2fo-fc: %s" % rf.get_validation_2fofc("1abc"))
-    print("Rel 2fo-fc: %s" % rf.get_validation_2fofc("1abc", True))
-    print("Pub fo-fc: %s" % rf.get_validation_fofc("1abc"))
-    print("Rel fo-fc: %s" % rf.get_validation_fofc("1abc", True))

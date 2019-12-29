@@ -22,7 +22,7 @@ class ImportTests(unittest.TestCase):
         pass
 
     def testInstantiate(self):
-        aio = ArchiveIoSftp()  # noqa: F841
+        aio = ArchiveIoSftp()  # noqa: F841 pylint: disable=unused-variable
 
 
 if __name__ == "__main__":

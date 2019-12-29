@@ -94,7 +94,7 @@ class mmCIFUtil:
         """Get category values based on category name 'catName'. The results are stored
            in a list of dictionaries with item name as key
         """
-        dList, iList = self.GetValueAndItemByBlock(self.__blockID, catName)
+        dList, _iList = self.GetValueAndItemByBlock(self.__blockID, catName)
         return dList
 
     def GetSingleValue(self, catName, itemName):

@@ -101,31 +101,31 @@ class ReferenceFileInfo(object):
     def contentTypeExists(self, contentType):
         try:
             return contentType in self.__contentD.keys()
-        except Exception as e:  # noqa: F841
+        except Exception as _e:  # noqa: F841
             return False
 
     def getContentType(self, acronymName):
         try:
             return self.__acronymD[acronymName]
-        except Exception as e:  # noqa: F841
+        except Exception as _e:  # noqa: F841
             return None
 
     def getFormatTypes(self, contentType):
         try:
             return self.__contentD[contentType][0]
-        except Exception as e:  # noqa: F841
+        except Exception as _e:  # noqa: F841
             return []
 
     def getContentTypeAcronym(self, contentType):
         try:
             return self.__contentD[contentType][1]
-        except Exception as e:  # noqa: F841
+        except Exception as _e:  # noqa: F841
             return None
 
     def getExtensionFormats(self, extension):
         try:
             return self.__extD[extension]
-        except Exception as e:  # noqa: F841
+        except Exception as _e:  # noqa: F841
             return []
 
     def dump(self, ofh):
@@ -191,7 +191,7 @@ class ReferenceFileComponents(object):
             self.__depositionDataSetId = str(nFields[0] + "_" + nFields[1]).upper()
             #
             if self.__debug:
-                logger.debug("+DataFileReferenceComponents.__splitFileName() fields %r\n" % nFields)
+                logger.debug("+DataFileReferenceComponents.__splitFileName() fields %r", nFields)
             #
             if self.__rfI.contentTypeExists(str(nFields[2])):
                 self.__contentTypeAcronym = str(nFields[2])
@@ -211,7 +211,7 @@ class ReferenceFileComponents(object):
             return True
         except Exception as e:
             if self.__debug:
-                logger.debug("+DataFileReferenceComponents.__splitFileName() failed for %r %r\n" % (self.__fileName, str(e)))
+                logger.debug("+DataFileReferenceComponents.__splitFileName() failed for %r %r", self.__fileName, str(e))
                 traceback.print_exc(self.__lfh)
         return False
 
@@ -238,7 +238,7 @@ class ReferenceFileComponents(object):
     def getContentTypeAcronym(self):
         """  Return the content type acronym
         """
-        self.__contentTypeAcronym
+        return self.__contentTypeAcronym
 
     def getContentType(self):
         """ Return the content type
@@ -422,7 +422,7 @@ class DataFileReference(DataReferenceBase):
             if pth is None or fn is None:
                 return False
             return True
-        except Exception as e:  # noqa: F841
+        except Exception as _e:  # noqa: F841
             pass
 
         return False
@@ -451,7 +451,7 @@ class DataFileReference(DataReferenceBase):
         try:
             self.__contentInfoD.keys()
         except Exception as e:
-            logger.exception("Failing with %r" % str(e))
+            logger.exception("Failing with %r", str(e))
 
         if tS in self.__contentInfoD.keys():
             self.__contentType = tS
@@ -460,24 +460,24 @@ class DataFileReference(DataReferenceBase):
                 self.__contentType = tS
                 self.__fileFormat = fS
                 if self.__debug:
-                    logger.debug("++setContentTypeAndFormat -- returning True with self.__contentType: %s \n" % (self.__contentType))
-                    logger.debug("++setContentTypeAndFormat -- returning True with self.__fileFormat: %s \n" % (self.__fileFormat))
+                    logger.debug("++setContentTypeAndFormat -- returning True with self.__contentType: %s", self.__contentType)
+                    logger.debug("++setContentTypeAndFormat -- returning True with self.__fileFormat: %s", self.__fileFormat)
                 self.setReferenceType("file")
                 return True
             else:
                 if self.__debug:
-                    logger.debug("++setContentTypeAndFormat -- returning False with tS: %s \n" % (tS))
-                    logger.debug("++setContentTypeAndFormat -- returning False with fS: %s \n" % (fS))
+                    logger.debug("++setContentTypeAndFormat -- returning False with tS: %s", tS)
+                    logger.debug("++setContentTypeAndFormat -- returning False with fS: %s", fS)
                 return False
         else:
             if self.__debug:
-                logger.debug("++setContentTypeAndFormat -- unrecognized cotentent type %r\n" % tS)
+                logger.debug("++setContentTypeAndFormat -- unrecognized cotentent type %r", tS)
             return False
 
     def getStorageTypeList(self):
         return self.__storageTypeList
 
-    def setStorageType(self, type):
+    def setStorageType(self, storageType):
         """Set the storage type for this file reference.
 
            Supported storage types include:
@@ -493,7 +493,7 @@ class DataFileReference(DataReferenceBase):
            True for a recognized storage type or False otherwise.
 
         """
-        tS = str(type).lower()
+        tS = str(storageType).lower()
         if tS in self.__storageTypeList:
             self.__storageType = tS
             if tS not in ["inline", "constant"]:
@@ -525,11 +525,11 @@ class DataFileReference(DataReferenceBase):
         else:
             return False
 
-    def __isInteger(self, str):
+    def __isInteger(self, str_in):
         """ Is the given string an integer?	"""
         ok = True
         try:
-            num = int(str)  # noqa: F841
+            num = int(str_in)  # noqa: F841 pylint: disable=unused-variable
         except ValueError:
             ok = False
         return ok
@@ -611,7 +611,7 @@ class DataFileReference(DataReferenceBase):
         if (wNameSpace is None) or (len(str(wNameSpace)) < 1):
             return False
         for cv in str(wNameSpace):
-            if (cv not in string.letters) and (cv not in string.digits):
+            if (cv not in string.ascii_letters) and (cv not in string.digits):
                 return False
         self.__workflowNameSpace = wNameSpace
         return True
@@ -644,7 +644,7 @@ class DataFileReference(DataReferenceBase):
         except Exception:
             ok = False
         if self.__debug:
-            logger.debug("+DataFileReference.setPartitionNumber() setting is  %r\n" % self.__filePartNumber)
+            logger.debug("+DataFileReference.setPartitionNumber() setting is  %r", self.__filePartNumber)
         return ok
 
     def getPartitionNumber(self):
@@ -769,7 +769,7 @@ class DataFileReference(DataReferenceBase):
                 return True
             else:
                 return False
-        except Exception as e:  # noqa: F841
+        except Exception as _e:  # noqa: F841
             if self.__verbose:
                 traceback.print_exc(self.__lfh)
             return False
@@ -814,15 +814,15 @@ class DataFileReference(DataReferenceBase):
 
         if referenceType == "file":
             if (self.__contentType is None) or (self.__fileFormat is None) or (self.__storageType is None) or (self.__versionId is None):
-                # logger.debug("self.__contentType is: %s \n" % (self.__contentType))
-                # logger.debug("self.__fileFormat is: %s \n" % (self.__fileFormat))
-                # logger.debug("self.__storageType is: %s \n" % (self.__storageType))
-                # logger.debug("self.__versionId is: %s \n" % (self.__versionId))
+                # logger.debug("self.__contentType is: %s", self.__contentType)
+                # logger.debug("self.__fileFormat is: %s", self.__fileFormat)
+                # logger.debug("self.__storageType is: %s", self.__storageType)
+                # logger.debug("self.__versionId is: %s", self.__versionId)
 
                 return False
 
             if (self.__storageType in ["archive", "autogroup", "wf-archive", "wf-instance", "wf-shared", "deposit", "tempdep"]) and (self.__depositionDataSetId is None):
-                logger.debug("self.__depositionDataSetId is: %s \n" % (self.__depositionDataSetId))
+                logger.debug("self.__depositionDataSetId is: %s", self.__depositionDataSetId)
                 return False
 
             if (self.__storageType in ["session", "wf-session"]) and (self.__sessionDataSetId is None):
@@ -865,9 +865,9 @@ class DataFileReference(DataReferenceBase):
            The external file path.  *None* is returned on failure.
         """
         try:
-            (pth, fn) = os.path.split(self.__externalFilePath)
+            (pth, _fn) = os.path.split(self.__externalFilePath)
             return pth
-        except Exception as e:  # noqa: F841
+        except Exception as _e:  # noqa: F841
             return None
 
     def __getExternalFileNameBase(self):
@@ -878,9 +878,9 @@ class DataFileReference(DataReferenceBase):
            The external base file name.  *None* is returned on failure.
         """
         try:
-            (pth, fn) = os.path.split(self.__externalFilePath)
+            (_pth, fn) = os.path.split(self.__externalFilePath)
             return fn
-        except Exception as e:  # noqa: F841
+        except Exception as _e:  # noqa: F841
             return None
 
     def __getInternalPath(self):
@@ -920,7 +920,7 @@ class DataFileReference(DataReferenceBase):
                 tpth = None
             pth = os.path.abspath(tpth)
         except Exception as e:
-            logger.exception("Failing with %r" % str(e))
+            logger.exception("Failing with %r", str(e))
 
             pth = None
 
@@ -977,7 +977,7 @@ class DataFileReference(DataReferenceBase):
             else:
                 fn = None
         except Exception as e:
-            logger.exception("Failing with %r" % str(e))
+            logger.exception("Failing with %r", str(e))
             fn = None
 
         return fn
@@ -1001,7 +1001,7 @@ class DataFileReference(DataReferenceBase):
             fN = self.__getInternalFileNameVersioned()
             pth = os.path.join(dirPath, fN)
             return pth
-        except Exception as e:  # noqa: F841
+        except Exception as _e:  # noqa: F841
             return None
 
     def getVersionIdSearchTarget(self):
@@ -1016,7 +1016,7 @@ class DataFileReference(DataReferenceBase):
             baseName = self.__getInternalFileNameBase()
             vst = baseName + ".V*"
             return vst
-        except Exception as e:  # noqa: F841
+        except Exception as _e:  # noqa: F841
             return None
 
     def __getInternalFileNameVersioned(self):
@@ -1113,7 +1113,7 @@ class DataFileReference(DataReferenceBase):
             return iV
         except Exception as e:
             if self.__debug:
-                logger.exception("Failing with %r" % str(e))
+                logger.exception("Failing with %r", str(e))
         return 0
 
     def __latestVersion(self, dirPath, baseName):
@@ -1133,7 +1133,7 @@ class DataFileReference(DataReferenceBase):
             vList = []
             fileList = os.listdir(dirPath)
             for fN in fileList:
-                # logger.debug("__latestVersion - baseName %s fN %s\n" % (baseName,fN))
+                # logger.debug("__latestVersion - baseName %s fN %s", baseName,fN)
                 if fN.startswith(baseName):
                     fSp = fN.split(".V")
                     if (len(fSp) < 2) or (not fSp[1].isdigit()):
@@ -1147,7 +1147,7 @@ class DataFileReference(DataReferenceBase):
                 return 0
         except Exception as e:
             if self.__debug:
-                logger.exception("Failing -dirPath %s  baseName %s fN %s with %s" % (dirPath, baseName, fN, str(e)))
+                logger.exception("Failing -dirPath %s  baseName %s fN %s with %s", dirPath, baseName, fN, str(e))
 
         return 0
 
@@ -1169,18 +1169,18 @@ class DataFileReference(DataReferenceBase):
             pList = []
             searchPath = os.path.join(dirPath, searchTarget)
             if self.__debug:
-                logger.debug("+DataFileReference.__lastestPartitionNumber() search target %s\n" % searchPath)
+                logger.debug("+DataFileReference.__lastestPartitionNumber() search target %s", searchPath)
             pathList = glob.glob(searchPath)
             for pth in pathList:
                 if self.__debug:
-                    logger.debug("+DataFileReference.__lastestPartitionNumber() search path %s\n" % pth)
-                (td, fN) = os.path.split(pth)
+                    logger.debug("+DataFileReference.__lastestPartitionNumber() search path %s", pth)
+                (_td, fN) = os.path.split(pth)
                 fL1 = fN.split(".")
                 fL2 = fL1[0].split("_")
                 pList.append(int(fL2[3][1:]))
 
             if self.__debug:
-                logger.debug("+DataFileReference.__lastestPartitionNumber() part number list  %r\n" % pList)
+                logger.debug("+DataFileReference.__lastestPartitionNumber() part number list  %r", pList)
             if len(pList) > 0:
                 pList.sort()
                 return pList[-1]
@@ -1188,7 +1188,7 @@ class DataFileReference(DataReferenceBase):
                 return 0
         except Exception as e:
             if self.__debug:
-                logger.exception("Failing with %r" % str(e))
+                logger.exception("Failing with %r", str(e))
 
         return 0
 
@@ -1220,7 +1220,7 @@ class DataFileReference(DataReferenceBase):
             else:
                 fn = None
         except Exception as e:
-            logger.exception("Failing with %r" % str(e))
+            logger.exception("Failing with %r", str(e))
 
             fn = None
 
@@ -1255,7 +1255,7 @@ class DataFileReference(DataReferenceBase):
             else:
                 fn = None
         except Exception as e:
-            logger.exception("Failing storage %r data set id %r content type %r with %r\n" % (self.__storageType, self.__depositionDataSetId, self.__contentType, str(e)))
+            logger.exception("Failing storage %r data set id %r content type %r with %r", self.__storageType, self.__depositionDataSetId, self.__contentType, str(e))
             fn = None
 
         return fn
@@ -1292,6 +1292,6 @@ class DataFileReference(DataReferenceBase):
                 iP = int(self.__filePartNumber)
             return iP
         except Exception as e:
-            logger.exception("Failing with %r" % str(e))
+            logger.exception("Failing with %r", str(e))
 
         return 0

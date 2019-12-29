@@ -4,3 +4,4 @@ mmcif
 mmcif.utils
 # For testing
 wwpdb.utils.testing
+#

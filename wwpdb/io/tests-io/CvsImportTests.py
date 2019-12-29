@@ -23,6 +23,7 @@ class ImportTests(unittest.TestCase):
         pass
 
     def testInstantiate(self):
+        # pylint: disable=unused-variable
         vc = CvsAdmin(tmpPath="./")  # noqa: F841
         vc = CvsSandBoxAdmin(tmpPath="./")  # noqa: F841
         vc = CvsWrapper(tmpPath="./")  # noqa: F841

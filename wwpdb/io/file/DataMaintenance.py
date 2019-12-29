@@ -47,6 +47,7 @@ class DataMaintenance(object):
         # In test mode no deletions are performed -
         self.__testMode = testMode
         self.__debug = False
+        self.__sessionPath = None
         #
         self.__setup(siteId=siteId)
 
@@ -82,13 +83,13 @@ class DataMaintenance(object):
                         self.__lfh.write("+DataMaintenance.purgeLogs() TEST MODE skip remove %s\n" % pth)
                     else:
                         os.remove(pth)
-                except:  # noqa: E722
+                except:  # noqa: E722 pylint: disable=bare-except
                     pass
             #
         return pthList
 
     def reversePurge(self, dataSetId, contentType, formatType="pdbx", partitionNumber=1):
-        fn = self.__getArchiveFileName(contentType=contentType, formatType=formatType, version="none", partitionNumber=partitionNumber)
+        fn = self.__getArchiveFileName(dataSetId, contentType=contentType, formatType=formatType, version="none", partitionNumber=partitionNumber)
 
         archivePath = self.__cI.get("SITE_ARCHIVE_STORAGE_PATH")
         dirPath = os.path.join(archivePath, "archive", dataSetId)
@@ -116,7 +117,7 @@ class DataMaintenance(object):
                     self.__lfh.write("+DataMaintenance.reversePurge() TEST MODE skip remove %s\n" % pth)
                 else:
                     os.remove(pth)
-            except:  # noqa: E722
+            except:  # noqa: E722 pylint: disable=bare-except
                 pass
             #
         return fList
@@ -220,11 +221,11 @@ class DataMaintenance(object):
                 partNumber=partitionNumber,
                 mileStone=mileStone,
             )
-            dir, fn = os.path.split(fPattern)
+            _dir, fn = os.path.split(fPattern)
             altPattern = os.path.join(snPth, fn)
             srcL = self.__getFileListWithVersion([altPattern], sortFlag=True)
             for src in srcL:
-                d, f = os.path.split(src[0])
+                _d, f = os.path.split(src[0])
                 dst = os.path.join(pth, f)
                 if not os.access(dst, os.F_OK):
                     pairL.append((src[0], dst))
@@ -271,7 +272,7 @@ class DataMaintenance(object):
                 traceback.print_exc(file=self.__lfh)
             return []
 
-    def getContentTypeFileList(self, dataSetId, wfInstanceId, fileSource="archive", contentTypeList=["model"]):
+    def getContentTypeFileList(self, dataSetId, wfInstanceId, fileSource="archive", contentTypeList=None):
         """
         For the input content object return a list of file versions sorted by modification time.
 
@@ -279,6 +280,8 @@ class DataMaintenance(object):
               List of [(file path, modification date string,size),...]
 
         """
+        if contentTypeList is None:
+            contentTypeList = ["model"]
         try:
             if fileSource == "session" and self.__sessionPath is not None:
                 self.__pI.setSessionPath(self.__sessionPath)
@@ -298,7 +301,9 @@ class DataMaintenance(object):
                 traceback.print_exc(file=self.__lfh)
             return []
 
-    def getMiscFileList(self, fPatternList=["*"], sortFlag=True):
+    def getMiscFileList(self, fPatternList=None, sortFlag=True):
+        if fPatternList is None:
+            fPatternList = ["*"]
         return self.__getFileList(fPatternList=fPatternList, sortFlag=sortFlag)
 
     def getLogFileList(self, entryId, fileSource="archive"):
@@ -316,7 +321,7 @@ class DataMaintenance(object):
             return []
         return self.__getFileList(fPatternList=patList, sortFlag=True)
 
-    def __getFileListWithVersion(self, fPatternList=["*"], sortFlag=False):
+    def __getFileListWithVersion(self, fPatternList=None, sortFlag=False):
         """
         For the input glob compatible file pattern produce a file list sorted by modification date.
 
@@ -326,6 +331,8 @@ class DataMaintenance(object):
               List of [(file path, modification date string, KBytes),...]
 
         """
+        if fPatternList is None:
+            fPatternList = ["*"]
         try:
             files = []
             for fPattern in fPatternList:
@@ -354,7 +361,7 @@ class DataMaintenance(object):
                 traceback.print_exc(file=self.__lfh)
             return []
 
-    def __getFileList(self, fPatternList=["*"], sortFlag=True):
+    def __getFileList(self, fPatternList=None, sortFlag=True):
         """
         For the input glob compatible file pattern produce a file list sorted by modification date.
 
@@ -364,6 +371,8 @@ class DataMaintenance(object):
               List of [(file path, modification date string, KBytes),...]
 
         """
+        if fPatternList is None:
+            fPatternList = ["*"]
         try:
             files = []
             for fPattern in fPatternList:
@@ -393,7 +402,7 @@ class DataMaintenance(object):
 
     ##
     def __getArchiveFileName(self, dataSetId, wfInstanceId=None, contentType="model", formatType="pdbx", version="latest", partitionNumber="1", mileStone=None):
-        (fp, d, f) = self.__targetFilePath(
+        (_fp, _d, f) = self.__targetFilePath(
             dataSetId=dataSetId,
             wfInstanceId=wfInstanceId,
             fileSource="archive",
@@ -406,7 +415,7 @@ class DataMaintenance(object):
         return f
 
     def __getInstanceFileName(self, dataSetId, wfInstanceId=None, contentType="model", formatType="pdbx", version="latest", partitionNumber="1", mileStone=None):
-        (fp, d, f) = self.__targetFilePath(
+        (_fp, _d, f) = self.__targetFilePath(
             dataSetId=dataSetId,
             wfInstanceId=wfInstanceId,
             fileSource="wf-instance",
@@ -419,7 +428,7 @@ class DataMaintenance(object):
         return f
 
     def __getFilePath(self, dataSetId, wfInstanceId=None, fileSource="archive", contentType="model", formatType="pdbx", version="latest", partitionNumber="1", mileStone=None):
-        (fp, d, f) = self.__targetFilePath(
+        (fp, _d, _f) = self.__targetFilePath(
             dataSetId=dataSetId,
             wfInstanceId=wfInstanceId,
             fileSource=fileSource,
@@ -437,8 +446,8 @@ class DataMaintenance(object):
             If the file path cannot be verified return None for all values
         """
         try:
-            if fileSource == "session" and self.__inputSessionPath is not None:
-                self.__pI.setSessionPath(self.__inputSessionPath)
+            if fileSource == "session" and self.__sessionPath is not None:
+                self.__pI.setSessionPath(self.__sessionPath)
             fP = self.__pI.getFilePath(
                 dataSetId=dataSetId,
                 wfInstanceId=wfInstanceId,
@@ -467,7 +476,7 @@ class DataMaintenance(object):
             cmd = " gzip -cd  %s > %s " % (inpFilePath, outFilePath)
             os.system(cmd)
             return True
-        except:  # noqa: E722
+        except:  # noqa: E722 pylint: disable=bare-except
             if self.__verbose:
                 traceback.print_exc(file=self.__lfh)
             return False

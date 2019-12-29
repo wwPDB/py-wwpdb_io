@@ -32,7 +32,7 @@ class ArchiveIoBase(object):
 
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs):  # pylint: disable=unused-argument
         self._raiseExceptions = kwargs.get("raiseExceptions", False)
         self._siteId = kwargs.get("siteId", getSiteId())
         self._serverId = kwargs.get("serverId", None)

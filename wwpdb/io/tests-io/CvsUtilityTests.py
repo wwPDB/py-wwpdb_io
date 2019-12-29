@@ -18,6 +18,9 @@ __email__ = "jwest@rcsb.rutgers.edu"
 __license__ = "Creative Commons Attribution 3.0 Unported"
 __version__ = "V0.001"
 
+# Disable checks for use of _getframe
+# pylint: disable=protected-access
+
 import sys
 import unittest
 import os
@@ -50,43 +53,43 @@ class CvsUtilityTests(unittest.TestCase):
     def testCvsHistory(self):
         """
         """
-        self.__logger.info("Starting %s %s\n" % (self.__class__.__name__, sys._getframe().f_code.co_name))
+        self.__logger.info("Starting %s %s", self.__class__.__name__, sys._getframe().f_code.co_name)
         try:
             text = ""
             vc = CvsWrapper(tmpPath="./")
             vc.setRepositoryPath(host=self.__cvsRepositoryHost, path=self.__cvsRepositoryPath)
             vc.setAuthInfo(user=self.__cvsUser, password=self.__cvsPassword)
             text = vc.getHistory(cvsPath=self.__testFilePath)
-            self.__logger.debug("CVS history for %s is:\n%s\n" % (self.__testFilePath, text))
+            self.__logger.debug("CVS history for %s is:\n%s\n", self.__testFilePath, text)
             #
             revList = vc.getRevisionList(cvsPath=self.__testFilePath)
-            self.__logger.debug("CVS revision list for %s is:\n%r\n" % (self.__testFilePath, revList))
+            self.__logger.debug("CVS revision list for %s is:\n%r\n", self.__testFilePath, revList)
             vc.cleanup()
         except Exception as e:
-            self.__logger.exception("Exception in %s %s\n" % (self.__class__.__name__, str(e)))
+            self.__logger.exception("Exception in %s %s", self.__class__.__name__, str(e))
             self.fail()
 
     def testCvsCheckOutFile(self):
         """
         """
-        self.__logger.info("Starting %s %s\n" % (self.__class__.__name__, sys._getframe().f_code.co_name))
+        self.__logger.info("Starting %s %s", self.__class__.__name__, sys._getframe().f_code.co_name)
         try:
             text = ""
             vc = CvsWrapper(tmpPath="./")
             vc.setRepositoryPath(host=self.__cvsRepositoryHost, path=self.__cvsRepositoryPath)
             vc.setAuthInfo(user=self.__cvsUser, password=self.__cvsPassword)
             text = vc.checkOutFile(cvsPath=self.__testFilePath, outPath="ATP-latest.cif")
-            self.__logger.debug("CVS checkout output %s is:\n%s\n" % (self.__testFilePath, text))
+            self.__logger.debug("CVS checkout output %s is:\n%s\n", self.__testFilePath, text)
             #
             vc.cleanup()
-        except:  # noqa: E722
-            self.__logger.exception("Exception in %s\n" % self.__class__.__name__)
+        except:  # noqa: E722 pylint: disable=bare-except
+            self.__logger.exception("Exception in %s", self.__class__.__name__)
             self.fail()
 
     def testCvsCheckOutRevisions(self):
         """
         """
-        self.__logger.info("Starting %s %s\n" % (self.__class__.__name__, sys._getframe().f_code.co_name))
+        self.__logger.info("Starting %s %s", self.__class__.__name__, sys._getframe().f_code.co_name)
         try:
             text = ""
             vc = CvsWrapper(tmpPath="./")
@@ -94,24 +97,21 @@ class CvsUtilityTests(unittest.TestCase):
             vc.setAuthInfo(user=self.__cvsUser, password=self.__cvsPassword)
 
             revList = vc.getRevisionList(cvsPath=self.__testFilePath)
-            self.__logger.debug("CVS revision list for %s is:\n%r\n" % (self.__testFilePath, revList))
+            self.__logger.debug("CVS revision list for %s is:\n%r\n", self.__testFilePath, revList)
 
-            (pth, fn) = os.path.split(self.__testFilePath)
+            (_pth, fn) = os.path.split(self.__testFilePath)
             (base, ext) = os.path.splitext(fn)
 
             for revId in revList:
                 rId = revId[0]
                 outPath = base + "-" + rId + "." + ext
                 text = vc.checkOutFile(cvsPath=self.__testFilePath, outPath=outPath, revId=rId)
-                self.__logger.debug("CVS checkout output %s is:\n%s\n" % (self.__testFilePath, text))
+                self.__logger.debug("CVS checkout output %s is:\n%s\n", self.__testFilePath, text)
             #
             vc.cleanup()
-        except:  # noqa: E722
-            self.__logger.exception("Exception in %s\n" % self.__class__.__name__)
+        except:  # noqa: E722 pylint: disable=bare-except
+            self.__logger.exception("Exception in %s", self.__class__.__name__)
             self.fail()
-
-    def suite():
-        return unittest.makeSuite(CvsUtilityTests, "test")
 
 
 if __name__ == "__main__":

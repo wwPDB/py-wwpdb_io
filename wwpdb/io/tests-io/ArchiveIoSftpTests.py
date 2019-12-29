@@ -56,11 +56,11 @@ class ArchiveIoSftpTests(unittest.TestCase):
         self.__testLocalOutputFilePath = "./JUNK.JUNK"
         #
         self.__startTime = time.time()
-        logger.debug("Starting %s at %s" % (self.id(), time.strftime("%Y %m %d %H:%M:%S", time.localtime())))
+        logger.debug("Starting %s at %s", self.id(), time.strftime("%Y %m %d %H:%M:%S", time.localtime()))
 
     def tearDown(self):
         endTime = time.time()
-        logger.debug("Completed %s at %s (%.4f seconds)\n" % (self.id(), time.strftime("%Y %m %d %H:%M:%S", time.localtime()), endTime - self.__startTime))
+        logger.debug("Completed %s at %s (%.4f seconds)\n", self.id(), time.strftime("%Y %m %d %H:%M:%S", time.localtime()), endTime - self.__startTime)
 
     def testSftpConnect(self):
         """Test case - for connection-
@@ -72,7 +72,7 @@ class ArchiveIoSftpTests(unittest.TestCase):
             aio.close()
             self.assertEqual(ok, True)
         except Exception as e:
-            logger.exception("Failing with %s" % str(e))
+            logger.exception("Failing with %s", str(e))
             self.fail()
 
     #
@@ -84,13 +84,13 @@ class ArchiveIoSftpTests(unittest.TestCase):
             aio = ArchiveIoSftp(serverId=self.__serverId)
             ok = aio.connectToServer()
             result = aio.listdir(".")
-            logger.info("listdir: %r" % result)
+            logger.info("listdir: %r", result)
             result = aio.stat(".")
-            logger.info("stat: %r" % result)
+            logger.info("stat: %r", result)
             ok = aio.close()
             self.assertEqual(ok, True)
         except Exception as e:
-            logger.exception("Failing with %s" % str(e))
+            logger.exception("Failing with %s", str(e))
             self.fail()
 
     def testSftpDirOps(self):
@@ -102,23 +102,23 @@ class ArchiveIoSftpTests(unittest.TestCase):
             testPath = os.path.join(self.__rootPath, "test")
             ok = aio.mkdir(testPath)
             result = aio.listdir(self.__rootPath)
-            logger.debug("listdir: %r" % result)
+            logger.debug("listdir: %r", result)
             result = aio.stat(testPath)
-            logger.info("stat good: %r" % result)
+            logger.info("stat good: %r", result)
             ok = aio.rmdir(testPath)
             result = aio.listdir(self.__rootPath)
-            logger.debug("listdir after remove: %r" % result)
+            logger.debug("listdir after remove: %r", result)
             #
             testPathBad = os.path.join(self.__rootPath, "test_bad")
             result = aio.listdir(testPathBad)
-            logger.debug("listdir bad : %r" % result)
+            logger.debug("listdir bad : %r", result)
             result = aio.stat(testPathBad)
-            logger.info("bad stat: %r" % result)
+            logger.info("bad stat: %r", result)
 
             ok = aio.close()
             self.assertEqual(ok, True)
         except Exception as e:
-            logger.exception("Failing with %s" % str(e))
+            logger.exception("Failing with %s", str(e))
             self.fail()
 
     def testSftpTransferOps(self):
@@ -138,20 +138,20 @@ class ArchiveIoSftpTests(unittest.TestCase):
             aio.get(testFilePath2, self.__testLocalOutputFilePath)
             #
             result = aio.listdir(testDirPath)
-            logger.debug("listdir: %r" % result)
+            logger.debug("listdir: %r", result)
             ok = aio.remove(testFilePath1)
             ok = aio.remove(testFilePath2)
             #
             result = aio.listdir(testDirPath)
-            logger.debug("listdir: %r" % result)
+            logger.debug("listdir: %r", result)
             #
             ok = aio.rmdir(testDirPath)
             result = aio.listdir(self.__rootPath)
-            logger.debug("listdir after remove: %r" % result)
+            logger.debug("listdir after remove: %r", result)
             ok = aio.close()
             self.assertEqual(ok, True)
         except Exception as e:
-            logger.exception("Failing with %s" % str(e))
+            logger.exception("Failing with %s", str(e))
             self.fail()
 
 
@@ -165,7 +165,5 @@ def suiteSftpTests():
 
 
 if __name__ == "__main__":
-    if True:
-        mySuite = suiteSftpTests()
-        unittest.TextTestRunner(verbosity=2).run(mySuite)
-    #
+    mySuite = suiteSftpTests()
+    unittest.TextTestRunner(verbosity=2).run(mySuite)

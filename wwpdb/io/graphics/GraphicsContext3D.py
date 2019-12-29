@@ -252,7 +252,7 @@ class GraphicsContext3D(object):
         #
         contextList = []
         for rowDict in rowDictList:
-            cS = self.__createContext(app3D=self.__app3D, categoryName=categoryName, rowDict=rowDict)
+            cS = self.__createContext(categoryName=categoryName, rowDict=rowDict)
             if (cS is not None) and (len(cS) > 0):
                 contextList.extend(cS)
 
@@ -272,15 +272,15 @@ class GraphicsContext3D(object):
     #
     # Internal methods for here on --
     #
-    def __createContext(self, app3D=None, categoryName=None, rowDict=None):
+    def __createContext(self, categoryName=None, rowDict=None):
         """  Wrapper to create the feature selection ---
         """
         contextL = []
 
         if categoryName in self.__rangeTypeCategoryList:
-            contextL = self.__createComponentRangeContext(app3D=app3D, categoryName=categoryName, rowDict=rowDict)
+            contextL = self.__createComponentRangeContext(categoryName=categoryName, rowDict=rowDict)
         elif categoryName in self.__d.keys():
-            contextL = self.__createContextSimple(app3D=app3D, categoryName=categoryName, rowDict=rowDict)
+            contextL = self.__createContextSimple(categoryName=categoryName, rowDict=rowDict)
         else:
             pass
 
@@ -298,7 +298,7 @@ class GraphicsContext3D(object):
             #
             rDL = []
             for rowDict in rowDictList:
-                keyValue = self.__getStringValue("id", rowDict)
+                keyValue = self.__getStringValue(rowDict)
                 rDL.extend(self.__searchAttribute(keyValue=keyValue, searchKeyName=searchKeyName, searchCategoryName=searchCategoryName))
             #
             #
@@ -309,7 +309,7 @@ class GraphicsContext3D(object):
             #
             rDL = []
             for rowDict in rowDictList:
-                keyValue = self.__getStringValue("id", rowDict)
+                keyValue = self.__getStringValue(rowDict)
                 rDL.extend(self.__searchAttribute(keyValue=keyValue, searchKeyName=searchKeyName, searchCategoryName=searchCategoryName))
             #
             #
@@ -319,7 +319,7 @@ class GraphicsContext3D(object):
 
         return gcS
 
-    def __createContextSimple(self, app3D=None, categoryName=None, rowDict=None):
+    def __createContextSimple(self, categoryName=None, rowDict=None):
         """  Create a graphics context from the list of feature templates for this category.
 
              The features are treated independently and the associated contexts are returned as
@@ -344,7 +344,7 @@ class GraphicsContext3D(object):
         #
         return contextL
 
-    def __createComponentRangeContext(self, app3D=None, categoryName=None, rowDict=None):
+    def __createComponentRangeContext(self, categoryName=None, rowDict=None):
         """  Create a "component range" graphics context from a pair of features templates for this category.
 
              The feature pair are treated as defining a contiguous range of components and a range style
@@ -437,7 +437,7 @@ class GraphicsContext3D(object):
         try:
             myPersist = PdbxPersist(self.__verbose, self.__lfh)
             indexD = myPersist.getIndex(dbFileName=persistFilePath)
-            (firstContainerName, type) = indexD["__containers__"][0]
+            (firstContainerName, _type) = indexD["__containers__"][0]
 
             if self.__debug:
                 self.__lfh.write("GraphicsContext3D.getFirstObject() container name list %r\n" % indexD.items())
@@ -454,7 +454,7 @@ class GraphicsContext3D(object):
                 traceback.print_exc(file=self.__lfh)
             return None
 
-    def __getStringValue(self, ky, rowDict):
+    def __getStringValue(self, rowDict):
         if "id" in rowDict and len(rowDict["id"]) > 0 and rowDict["id"] != "?" and rowDict["id"] != ".":
             return rowDict["id"]
         else:

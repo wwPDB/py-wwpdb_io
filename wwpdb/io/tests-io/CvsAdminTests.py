@@ -21,6 +21,9 @@ __email__ = "jwest@rcsb.rutgers.edu"
 __license__ = "Creative Commons Attribution 3.0 Unported"
 __version__ = "V0.001"
 
+# Disable checks for use of _getframe
+# pylint: disable=protected-access
+
 import sys
 import unittest
 import os
@@ -104,7 +107,7 @@ class CvsAdminTests(unittest.TestCase):
             ok, revList = vc.getRevisionList(cvsPath=self.__testFilePath)
             self.__lfh.write("CVS revision list status %r for %s is:\n%r\n" % (ok, self.__testFilePath, revList))
 
-            (pth, fn) = os.path.split(self.__testFilePath)
+            (_pth, fn) = os.path.split(self.__testFilePath)
             (base, ext) = os.path.splitext(fn)
 
             for revId in revList:
@@ -230,7 +233,7 @@ def suiteCvsSandBoxTests():
 
 
 if __name__ == "__main__":
-    if False:
+    if False:  # pylint: disable=using-constant-test
         mySuite = suiteCvsTests()
         unittest.TextTestRunner(verbosity=2).run(mySuite)
         #

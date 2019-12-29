@@ -18,6 +18,9 @@ __email__ = "jwest@rcsb.rutgers.edu"
 __license__ = "Creative Commons Attribution 3.0 Unported"
 __version__ = "V0.01"
 
+# Disable checks for use of _getframe
+# pylint: disable=protected-access
+
 import unittest
 import traceback
 import time
@@ -59,7 +62,7 @@ class GraphicsContext3DTests(unittest.TestCase):
         try:
             myPersist = PdbxPersist(self.__verbose, self.__lfh)
             indexD = myPersist.getIndex(dbFileName=persistFilePath)
-            (firstContainerName, type) = indexD["__containers__"][0]
+            (firstContainerName, _firstContainerType) = indexD["__containers__"][0]
 
             if self.__debug:
                 self.__lfh.write("GraphicsContext3D.getFirstObject() container name list %r\n" % indexD.items())
@@ -89,7 +92,7 @@ class GraphicsContext3DTests(unittest.TestCase):
 
             self.__lfh.write("Persistent index dictionary %r\n" % indexD.items())
 
-            for containerName, containerType in indexD["__containers__"]:
+            for containerName, _containerType in indexD["__containers__"]:
                 objNameList = indexD[containerName]
                 #
                 # For a selection of categories with obvious graphics contexts --
@@ -117,7 +120,7 @@ class GraphicsContext3DTests(unittest.TestCase):
                             gcS = gC.getGraphicsContext(categoryName=objectName, rowDictList=[rD])
                             self.__lfh.write("Context : %s\n" % gcS)
 
-        except:  # noqa: E722
+        except:  # noqa: E722 pylint: disable=bare-except
             traceback.print_exc(file=self.__lfh)
             self.fail()
 
@@ -153,7 +156,7 @@ class GraphicsContext3DTests(unittest.TestCase):
                 #
                 gcS = gC.getGraphicsContext(categoryName="struct_site", rowDictList=[rD])
                 self.__lfh.write("Site context : %s\n" % gcS)
-        except:  # noqa: E722
+        except:  # noqa: E722 pylint: disable=bare-except
             traceback.print_exc(file=self.__lfh)
             self.fail()
 
@@ -193,10 +196,10 @@ class GraphicsContext3DTests(unittest.TestCase):
             #
             #  Get the graphics context for structure details for each site.
             gC = GraphicsContext3D(app3D="JMol", verbose=self.__verbose, log=self.__lfh)
-            for id in idList:
+            for eid in idList:
                 rDL = []
                 for row in mySiteGen.getRowList():
-                    if id == row[idx]:
+                    if eid == row[idx]:
                         # create a row dictionary
                         rD = {}
                         for ii, rVal in enumerate(row):
@@ -204,9 +207,9 @@ class GraphicsContext3DTests(unittest.TestCase):
                         # self.__lfh.write("Row dictionary: %r\n" % rD.items())
                         rDL.append(rD)
                 gcS = gC.getGraphicsContext(categoryName="struct_site_gen", rowDictList=rDL)
-                self.__lfh.write("Site %s context : %s\n" % (id, gcS))
+                self.__lfh.write("Site %s context : %s\n" % (eid, gcS))
 
-        except:  # noqa: E722
+        except:  # noqa: E722 pylint: disable=bare-except
             traceback.print_exc(file=self.__lfh)
             self.fail()
 

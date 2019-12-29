@@ -92,14 +92,14 @@ class DataFile:
 
     def __ftype(self, fExt):
         if fExt == ".Z":
-            type = "zlib"
+            ftype = "zlib"
         elif fExt == ".gz":
-            type = "gzip"
+            ftype = "gzip"
         elif fExt == ".bz2":
-            type = "bzip"
+            ftype = "bzip"
         else:
-            type = None
-        return type
+            ftype = None
+        return ftype
 
     def __exists(self, fPath):
         if fPath is not None:
@@ -115,7 +115,7 @@ class DataFile:
             try:
                 tup = os.stat(fPath)
                 return tup
-            except:  # noqa: E722
+            except:  # noqa: E722 pylint: disable=bare-except
                 return None
         else:
             return None
@@ -124,7 +124,9 @@ class DataFile:
         if not os.path.isdir(path):
             os.makedirs(path, 0o755)
 
-    def __pathDivide(self, p, rest=[]):
+    def __pathDivide(self, p, rest=None):
+        if rest is None:
+            rest = []
         (h, t) = os.path.split(p)
         if len(h) < 1:
             return [t] + rest
@@ -132,7 +134,9 @@ class DataFile:
             return [h] + rest
         return self.__pathDivide(h, [t] + rest)
 
-    def __findCommonMembers(self, l1, l2, common=[]):
+    def __findCommonMembers(self, l1, l2, common=None):
+        if common is None:
+            common = []
         if len(l1) < 1:
             return (common, l1, l2)
         if len(l2) < 1:
@@ -144,7 +148,7 @@ class DataFile:
     def __makeRelativePath(self, src, dst):
         #        self.vout.write("++INFO - src %s\n" % src)
         #        self.vout.write("++INFO - dst %s\n" % dst)
-        (common, l1, l2) = self.__findCommonMembers(self.__pathDivide(dst), self.__pathDivide(src))
+        (_common, l1, l2) = self.__findCommonMembers(self.__pathDivide(dst), self.__pathDivide(src))
         p = []
         #        if (len(l1) > 0):
         #            p = [ '../' * len(l1) ]
@@ -345,7 +349,7 @@ class DataFile:
         try:
             os.chmod(fPath, mode)
             return True
-        except:  # noqa: E722
+        except:  # noqa: E722 pylint: disable=bare-except
             return False
 
     def setSrcFileMode(self, mode):

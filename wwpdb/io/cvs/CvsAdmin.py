@@ -108,7 +108,7 @@ class CvsWrapperBase(object):
         try:
             self._cvsRoot = ":pserver:" + self._cvsUser + ":" + self._cvsPassword + "@" + self._repositoryHost + ":" + self._repositoryPath
             return True
-        except:  # noqa: E722
+        except:  # noqa: E722 pylint: disable=bare-except
             return False
 
     def _getOutputFilePath(self):
@@ -147,7 +147,7 @@ class CvsWrapperBase(object):
 
         return text
 
-    def __getTextFile(self, filePath, filterInfo=False):
+    def __getTextFile(self, filePath, filterInfo=False):  # pylint: disable=unused-argument
         text = ""
         try:
             ifh = open(filePath, "r")
@@ -159,7 +159,7 @@ class CvsWrapperBase(object):
                     tL.append(line[:-1])
             ifh.close()
             text = "\n".join(set(tL))
-        except:  # noqa: E722
+        except:  # noqa: E722 pylint: disable=bare-except
             pass
 
         return text
@@ -181,7 +181,7 @@ class CvsWrapperBase(object):
             try:
                 shutil.rmtree(self._wrkPath)
                 return True
-            except:  # noqa: E722
+            except:  # noqa: E722 pylint: disable=bare-except
                 return False
         else:
             return True
@@ -226,7 +226,7 @@ class CvsAdmin(CvsWrapperBase):
             ok = self._runCvsCommand(myCommand=cmd)
             revList = self.__extractRevisions()
         else:
-            text = "Revision history command failed with repository command processing error"  # noqa: F841
+            _text = "Revision history command failed with repository command processing error"  # noqa: F841
 
         return (ok, revList)
 
@@ -345,7 +345,6 @@ class CvsAdmin(CvsWrapperBase):
         except Exception as e:
             if self.__verbose:
                 self.__lfh.write("+CvsAdmin(__extraRevisions) Extracting revision list for : %s %s\n" % (fName, str(e)))
-            pass
 
         revList.reverse()
         self.__lfh.write("Ordered revision list %r\n" % revList)
@@ -406,7 +405,7 @@ class CvsSandBoxAdmin(CvsWrapperBase):
 
         return (ok, text)
 
-    def updateList(self, dataList, procName, optionsD, workingDir):
+    def updateList(self, dataList, procName, optionsD, workingDir):  # pylint: disable=unused-argument
         """  Implements an interface for multiprocessing module --
 
              input is [(CvsProjectDir, relativePath, pruneFlag),...]
@@ -416,7 +415,7 @@ class CvsSandBoxAdmin(CvsWrapperBase):
         retList = []
         diagTextList = []
         for dTup in dataList:
-            pDir, relPath, prune = dTup
+            pDir, relPath, _prune = dTup
             ok, text = self.update(projectDir=pDir, relProjectPath=relPath, prune=True, fetchErrorLog=True, appendErrors=True)
             diagTextList.append(text)
             if self.__verbose:
@@ -534,7 +533,7 @@ class CvsSandBoxAdmin(CvsWrapperBase):
         if os.access(targetPath, os.W_OK):
             #
             if saveCopy:
-                (pth, fn) = os.path.split(relProjectPath)
+                (_pth, fn) = os.path.split(relProjectPath)
                 savePath = os.path.join(self.__sandBoxTopPath, projectDir, "REMOVED", fn)
 
                 # relSavePath = os.path.join("REMOVED", fn)

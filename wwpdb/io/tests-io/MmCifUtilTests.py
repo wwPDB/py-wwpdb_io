@@ -14,7 +14,6 @@ __email__ = "peisach@rcsb.rutgers.edu"
 
 import unittest
 import os
-import platform
 from wwpdb.io.file.mmCIFUtil import mmCIFUtil  # noqa: E402
 
 HERE = os.path.abspath(os.path.dirname(__file__))
@@ -44,6 +43,5 @@ def mmcifStandardTests():
 
 
 if __name__ == "__main__":
-    if True:
-        mySuite = mmcifStandardTests()
-        unittest.TextTestRunner(verbosity=2).run(mySuite)
+    mySuite = mmcifStandardTests()
+    unittest.TextTestRunner(verbosity=2).run(mySuite)

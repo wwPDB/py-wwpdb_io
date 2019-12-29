@@ -29,7 +29,7 @@ class FormatOut(object):
     def writeStream(self, fObj):
         try:
             fObj.write("".join(self.__buffer))
-        except:  # noqa: E722
+        except:  # noqa: E722 pylint: disable=bare-except
             traceback.print_exc(file=sys.stderr)
 
     def write(self, filename):
@@ -104,15 +104,15 @@ class FormatOut(object):
 
 def unitTest1(fileName="formatOut.log"):
 
-    list = ["L1", "L2", "L3", "L4", "L5"]
-    tuple = ("T1", "T2", "T3", "T4", "T5")
-    dict = {}
+    list_in = ["L1", "L2", "L3", "L4", "L5"]
+    tuple_in = ("T1", "T2", "T3", "T4", "T5")
+    dict_in = {}
     for i in range(1, 10):
-        t = ["D1", list, tuple]
-        dict[i] = t
+        t = ["D1", list_in, tuple_in]
+        dict_in[i] = t
 
     out = FormatOut()
-    out.autoFormat("unitTest1 results", dict, 3, 3)
+    out.autoFormat("unitTest1 results", dict_in, 3, 3)
     out.write(fileName)
 
 

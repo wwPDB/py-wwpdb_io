@@ -138,15 +138,15 @@ class ValidateXml(object):
                     if not residueInfo:
                         residueInfo = self.__getMapInfo(node, items)
                     #
-                    dir = self.__getMapInfo(node, self.__outlierMap["torsion-outlier"])
+                    dirmap = self.__getMapInfo(node, self.__outlierMap["torsion-outlier"])
                     outlier = residueInfo.copy()
-                    outlier.update(dir)
+                    outlier.update(dirmap)
                     if "torsion-outlier" in self.__outlierResult:
                         self.__outlierResult["torsion-outlier"].append(outlier)
                     else:
-                        list = []
-                        list.append(outlier)
-                        self.__outlierResult["torsion-outlier"] = list
+                        listout = []
+                        listout.append(outlier)
+                        self.__outlierResult["torsion-outlier"] = listout
                     #
                 #
             #
@@ -161,9 +161,9 @@ class ValidateXml(object):
                     if "polymer-rsrz-outlier" in self.__outlierResult:
                         self.__outlierResult["polymer-rsrz-outlier"].append(outlier)
                     else:
-                        list = []
-                        list.append(outlier)
-                        self.__outlierResult["polymer-rsrz-outlier"] = list
+                        listout = []
+                        listout.append(outlier)
+                        self.__outlierResult["polymer-rsrz-outlier"] = listout
                     #
                 #
             #
@@ -178,9 +178,9 @@ class ValidateXml(object):
                     if "ligand-rsrz-outlier" in self.__outlierResult:
                         self.__outlierResult["ligand-rsrz-outlier"].append(outlier)
                     else:
-                        list = []
-                        list.append(outlier)
-                        self.__outlierResult["ligand-rsrz-outlier"] = list
+                        listout = []
+                        listout.append(outlier)
+                        self.__outlierResult["ligand-rsrz-outlier"] = listout
                     #
                 #
             #
@@ -195,10 +195,10 @@ class ValidateXml(object):
                 if not residueInfo:
                     residueInfo = self.__getMapInfo(node, items)
                 #
-                dir = self.__getMapInfo(childnode, self.__outlierMap[childnode.tagName])
+                dirmap = self.__getMapInfo(childnode, self.__outlierMap[childnode.tagName])
                 # jmb - removed cut off in reporting outliers in standard bond lengths and bond angles. Uses validation XML cut off instead.
                 # if childnode.tagName == 'bond-outlier' or childnode.tagName == 'angle-outlier':
-                #    if abs(float(dir['z'])) <= 10:
+                #    if abs(float(dirmap['z'])) <= 10:
                 #        continue
                 #
                 # skip bonds between standard residues in reporting,
@@ -206,36 +206,36 @@ class ValidateXml(object):
                 # - the validation is limited to a maxiumum distance
                 # of 1.999 Angstroms in the validation report for unusual bonds
                 if childnode.tagName == "bond-outlier":
-                    if dir["atom0"] in ("C", "O3'") and dir["atom1"] in ("N", "P"):
+                    if dirmap["atom0"] in ("C", "O3'") and dirmap["atom1"] in ("N", "P"):
                         continue
 
                 if childnode.tagName == "mog-angle-outlier" or childnode.tagName == "mog-bond-outlier":
-                    if abs(float(dir["Zscore"])) <= 10:
+                    if abs(float(dirmap["Zscore"])) <= 10:
                         continue
                     #
                 #
                 if childnode.tagName == "clash":
                     atom_dict = {
-                        "dist": dir["dist"],
-                        "atom": dir["atom"],
-                        "clashmag": dir["clashmag"],
+                        "dist": dirmap["dist"],
+                        "atom": dirmap["atom"],
+                        "clashmag": dirmap["clashmag"],
                         "chain": node.getAttribute("chain").strip(),
                         "model": node.getAttribute("model").strip(),
                         "altcode": node.getAttribute("altcode").strip(),
                         "resnum": node.getAttribute("resnum").strip(),
                         "resname": node.getAttribute("resname").strip(),
                     }
-                    if float(dir["dist"]) < 2.2:
-                        self.clashMap.setdefault(dir["cid"], []).append(atom_dict)
+                    if float(dirmap["dist"]) < 2.2:
+                        self.clashMap.setdefault(dirmap["cid"], []).append(atom_dict)
 
                 outlier = residueInfo.copy()
-                outlier.update(dir)
+                outlier.update(dirmap)
                 if childnode.tagName in self.__outlierResult:
                     self.__outlierResult[childnode.tagName].append(outlier)
                 else:
-                    list = []
-                    list.append(outlier)
-                    self.__outlierResult[childnode.tagName] = list
+                    listout = []
+                    listout.append(outlier)
+                    self.__outlierResult[childnode.tagName] = listout
                 #
             #
         #
@@ -284,7 +284,7 @@ class ValidateXml(object):
             if Entry.getAttribute(item) and Entry.getAttribute(item) != "NotAvailable":
                 try:
                     self.summaryValues[item] = float(Entry.getAttribute(item))
-                except:  # noqa: E722
+                except:  # noqa: E722 pylint: disable=bare-except
                     pass
 
     def __processGlobalValues(self):
@@ -404,15 +404,15 @@ class ValidateXml(object):
     def __getMapInfo(self, node, items):
         """
         """
-        map = {}
+        mapping = {}
         for item in items:
             val = ""
             if node.hasAttribute(item):
                 val = node.getAttribute(item).strip()
             #
-            map[item] = val
+            mapping[item] = val
         #
-        return map
+        return mapping
 
 
 if __name__ == "__main__":
@@ -432,6 +432,6 @@ if __name__ == "__main__":
         print(len(obj.getNotFoundInStructureCsList()))
         print(len(obj.getCsOutliers()))
         print(obj.getCsReferencingOffsetFlag())
-    except:  # noqa: E722
+    except:  # noqa: E722 pylint: disable=bare-except
         traceback.print_exc(file=sys.stderr)
         sys.exit(1)

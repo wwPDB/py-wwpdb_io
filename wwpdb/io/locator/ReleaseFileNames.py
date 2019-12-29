@@ -127,7 +127,7 @@ class ReleaseFileNames:
     def get_validation_svg(self, accession, for_release=False):
         return self.__getfname("validsvg", accession, for_release)
 
-    def get_valiation_2fofc(self, accession, for_release=False):
+    def get_validation_2fofc(self, accession, for_release=False):
         return self.__getfname("valid2fo", accession, for_release)
 
     def get_validation_fofc(self, accession, for_release=False):
@@ -156,7 +156,7 @@ if __name__ == "__main__":
     print("Rel validsvg: %s" % rf.get_validation_svg("1abc", True))
     print("Pub validpng: %s" % rf.get_validation_svg("1abc"))
     print("Rel validpng: %s" % rf.get_validation_svg("1abc", True))
-    print("Pub 2fo-fc: %s" % rf.get_2fofc("1abc"))
-    print("Rel 2fo-fc: %s" % rf.get_2fofc("1abc", True))
-    print("Pub fo-fc: %s" % rf.get_fofc("1abc"))
-    print("Rel fo-fc: %s" % rf.get_fofc("1abc", True))
+    print("Pub 2fo-fc: %s" % rf.get_validation_2fofc("1abc"))
+    print("Rel 2fo-fc: %s" % rf.get_validation_2fofc("1abc", True))
+    print("Pub fo-fc: %s" % rf.get_validation_fofc("1abc"))
+    print("Rel fo-fc: %s" % rf.get_validation_fofc("1abc", True))

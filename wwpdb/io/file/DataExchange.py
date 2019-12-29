@@ -54,6 +54,7 @@ class DataExchange(object):
         self.__lfh = log
         #
         self.__debug = False
+        self.__inputSessionPath = None
         #
         self.__setup(siteId=siteId)
 
@@ -105,7 +106,7 @@ class DataExchange(object):
             for pth in pthList:
                 try:
                     os.remove(pth)
-                except:  # noqa: E722
+                except:  # noqa: E722 pylint: disable=bare-except
                     pass
             #
         return pthList
@@ -136,7 +137,7 @@ class DataExchange(object):
         for pth in fList:
             try:
                 os.remove(pth)
-            except:  # noqa: E722
+            except:  # noqa: E722 pylint: disable=bare-except
                 pass
             #
         return fList
@@ -181,7 +182,7 @@ class DataExchange(object):
                     if self.__verbose:
                         self.__lfh.write("+DataExchange.export() archive directory exists: %s\n" % dirPath)
                     return False
-        except:  # noqa: E722
+        except:  # noqa: E722 pylint: disable=bare-except
             if self.__verbose:
                 traceback.print_exc(file=self.__lfh)
             return False
@@ -198,7 +199,7 @@ class DataExchange(object):
 
         try:
             if os.access(inpFilePath, os.R_OK):
-                (dirPath, fileName) = os.path.split(inpFilePath)
+                (_dirPath, fileName) = os.path.split(inpFilePath)
                 # trim of the trailing version -
                 # lastIdx=tfileName.rfind(".V")
                 # if lastIdx > 0:
@@ -214,7 +215,7 @@ class DataExchange(object):
                 if self.__verbose:
                     self.__lfh.write("+DataExchange.fetch() missing input file at path %s\n" % inpFilePath)
                 return None
-        except:  # noqa: E722
+        except:  # noqa: E722 pylint: disable=bare-except
             if self.__verbose:
                 traceback.print_exc(file=self.__lfh)
             return None
@@ -242,7 +243,7 @@ class DataExchange(object):
                 if self.__verbose:
                     self.__lfh.write("+DataExchange.export() missing or zero length input file at path %s\n" % inpFilePath)
                 return False
-        except:  # noqa: E722
+        except:  # noqa: E722 pylint: disable=bare-except
             if self.__verbose:
                 traceback.print_exc(file=self.__lfh)
             return False
@@ -254,7 +255,7 @@ class DataExchange(object):
             cmd = " gzip -cd  %s > %s " % (inpFilePath, outFilePath)
             os.system(cmd)
             return True
-        except:  # noqa: E722
+        except:  # noqa: E722 pylint: disable=bare-except
             if self.__verbose:
                 traceback.print_exc(file=self.__lfh)
             return False
@@ -283,14 +284,14 @@ class DataExchange(object):
             fPattern = os.path.join(srcPath, "*")
             fpL = filter(os.path.isfile, glob.glob(fPattern))
             for fp in fpL:
-                dN, fN = os.path.split(fp)
+                _dN, fN = os.path.split(fp)
                 oP = os.path.join(dstPath, fN)
                 shutil.copyfile(fp, oP)
 
             if self.__verbose:
                 self.__lfh.write("+DataExchange.copyDirToSession() successful session copy of dirName %s\n" % (dirName))
             return True
-        except:  # noqa: E722
+        except:  # noqa: E722 pylint: disable=bare-except
             if self.__verbose:
                 self.__lfh.write("+DataExchange.copyDirToSession() fails for dirName %s\n" % (dirName))
                 traceback.print_exc(file=self.__lfh)
@@ -321,7 +322,7 @@ class DataExchange(object):
                 if self.__debug:
                     self.__lfh.write("+DataExchange.copyToSession() missing input file at path %s\n" % inpFilePath)
                 return None
-        except:  # noqa: E722
+        except:  # noqa: E722 pylint: disable=bare-except
             if self.__verbose:
                 if self.__verbose:
                     self.__lfh.write("+DataExchange.copyToSession() Failing for content type %s format %s with session path %s\n" % (contentType, formatType, outFilePath))
@@ -351,7 +352,7 @@ class DataExchange(object):
                 if self.__verbose:
                     self.__lfh.write("+DataExchange.updateArchiveFrom() missing session input file at path %s\n" % inpFilePath)
                 return None
-        except:  # noqa: E722
+        except:  # noqa: E722 pylint: disable=bare-except
             if self.__verbose:
                 traceback.print_exc(file=self.__lfh)
             return None
@@ -418,7 +419,7 @@ class DataExchange(object):
                 traceback.print_exc(file=self.__lfh)
             return []
 
-    def getContentTypeFileList(self, fileSource="archive", contentTypeList=["model"]):
+    def getContentTypeFileList(self, fileSource="archive", contentTypeList=None):
         """
         For the input content object return a list of file versions sorted by modification time.
 
@@ -426,6 +427,8 @@ class DataExchange(object):
               List of [(file path, modification date string,size),...]
 
         """
+        if contentTypeList is None:
+            contentTypeList = ["model"]
         try:
             if fileSource == "session" and self.__inputSessionPath is not None:
                 self.__pI.setSessionPath(self.__inputSessionPath)
@@ -446,7 +449,9 @@ class DataExchange(object):
                 traceback.print_exc(file=self.__lfh)
             return []
 
-    def getMiscFileList(self, fPatternList=["*"], sortFlag=True):
+    def getMiscFileList(self, fPatternList=None, sortFlag=True):
+        if fPatternList is None:
+            fPatternList = ["*"]
         return self.__getFileList(fPatternList=fPatternList, sortFlag=sortFlag)
 
     def getLogFileList(self, entryId, fileSource="archive"):
@@ -464,7 +469,7 @@ class DataExchange(object):
             return []
         return self.__getFileList(fPatternList=patList, sortFlag=True)
 
-    def __getFileList(self, fPatternList=["*"], sortFlag=True):
+    def __getFileList(self, fPatternList=None, sortFlag=True):
         """
         For the input glob compatible file pattern produce a file list sorted by modification date.
 
@@ -474,6 +479,8 @@ class DataExchange(object):
               List of [(file path, modification date string, KBytes),...]
 
         """
+        if fPatternList is None:
+            fPatternList = ["*"]
         rTup = []
         try:
             files = []
@@ -504,19 +511,19 @@ class DataExchange(object):
 
     ##
     def __getArchiveFileName(self, contentType="model", formatType="pdbx", version="latest", partitionNumber="1", mileStone=None):
-        (fp, d, f) = self.__targetFilePath(
+        (_fp, _d, f) = self.__targetFilePath(
             fileSource="archive", contentType=contentType, formatType=formatType, version=version, partitionNumber=partitionNumber, mileStone=mileStone
         )
         return f
 
     def __getInstanceFileName(self, contentType="model", formatType="pdbx", version="latest", partitionNumber="1", mileStone=None):
-        (fp, d, f) = self.__targetFilePath(
+        (_fp, _d, f) = self.__targetFilePath(
             fileSource="wf-instance", contentType=contentType, formatType=formatType, version=version, partitionNumber=partitionNumber, mileStone=mileStone
         )
         return f
 
     def __getFilePath(self, fileSource="archive", contentType="model", formatType="pdbx", version="latest", partitionNumber="1", mileStone=None):
-        (fp, d, f) = self.__targetFilePath(
+        (fp, _d, _f) = self.__targetFilePath(
             fileSource=fileSource, contentType=contentType, formatType=formatType, version=version, partitionNumber=partitionNumber, mileStone=mileStone
         )
         return fp

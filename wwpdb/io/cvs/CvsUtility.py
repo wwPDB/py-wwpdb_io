@@ -35,7 +35,7 @@ class CvsWrapper(object):
         self.__verbose = None
         self.__lfh = None
         self.__logger = logging.getLogger("wwpdb.utils.rcsb.CvsWrapper")
-        self.__logger.debug("Created instance of CvsWrapper\n")
+        self.__logger.debug("Created instance of CvsWrapper")
         #
         self.__debug = True
         self.__repositoryHost = None
@@ -60,7 +60,7 @@ class CvsWrapper(object):
         text = ""
         cmd = self.__getHistoryCmd(cvsPath)
         if cmd is not None:
-            ok = self.__runCvsCommand(myCommand=cmd)  # noqa: F841
+            _ok = self.__runCvsCommand(myCommand=cmd)  # noqa: F841
             text = self.__getOutputText()
 
         return text
@@ -73,7 +73,7 @@ class CvsWrapper(object):
         revList = []
         cmd = self.__getHistoryCmd(cvsPath)
         if cmd is not None:
-            ok = self.__runCvsCommand(myCommand=cmd)  # noqa: F841
+            _ok = self.__runCvsCommand(myCommand=cmd)  # noqa: F841
             revList = self.__extractRevisions()
         return revList
 
@@ -85,11 +85,11 @@ class CvsWrapper(object):
     def checkOutFile(self, cvsPath, outPath, revId=None):
         text = ""
         (pth, fn) = os.path.split(cvsPath)
-        self.__logger.debug("Cvs directory %s   target file name %s\n" % (pth, fn))
+        self.__logger.debug("Cvs directory %s   target file name %s", pth, fn)
         if len(fn) > 0:
             cmd = self.__getCheckOutCmd(cvsPath, outPath, revId)
             if cmd is not None:
-                ok = self.__runCvsCommand(myCommand=cmd)  # noqa: F841
+                _ok = self.__runCvsCommand(myCommand=cmd)  # noqa: F841
                 text = self.__getErrorText()
         else:
             pass
@@ -111,7 +111,7 @@ class CvsWrapper(object):
             self.__makeTempWorkingDir()
         errPath = os.path.join(self.__wrkPath, self.__cvsErrorFileName)
         (pth, fn) = os.path.split(cvsPath)
-        self.__logger.debug("CVS directory %s  target file name %s\n" % (pth, fn))
+        self.__logger.debug("CVS directory %s  target file name %s", pth, fn)
         lclPath = os.path.join(self.__wrkPath, fn)
         #
         #
@@ -174,24 +174,24 @@ class CvsWrapper(object):
     def __runCvsCommand(self, myCommand):
         retcode = -100
         try:
-            self.__logger.debug("Command: %s\n" % myCommand)
+            self.__logger.debug("Command: %s", myCommand)
 
             # if (self.__debug):
             #    self.__lfh.write("+CvsWrapper(__runCvsCommand) command: %s\n" % myCommand)
 
             retcode = subprocess.call(myCommand, shell=True)
             if retcode < 0:
-                self.__logger.debug("Child was terminated by signal %r\n" % retcode)
+                self.__logger.debug("Child was terminated by signal %r", retcode)
                 # if self.__verbose:
                 #    self.__lfh.write("+CvsWrapper(__runCvsCommand) Child was terminated by signal %r\n" % retcode)
                 return False
             else:
-                self.__logger.debug("Child was terminated by signal %r\n" % retcode)
+                self.__logger.debug("Child was terminated by signal %r", retcode)
                 # if self.__verbose:
                 #    self.__lfh.write("+CvsWrapper(__runCvsCommand) Child was terminated by signal %r\n" % retcode)
                 return True
         except OSError as e:
-            self.__logger.exception("cvs command exception: %r %r\n" % (retcode, str(e)))
+            self.__logger.exception("cvs command exception: %r %r", retcode, str(e))
             # if self.__verbose:
             #    self.__lfh.write("+CvsWrapper(__runCvsCommand) Execution failed: %r\n" % e)
             return False
@@ -200,7 +200,7 @@ class CvsWrapper(object):
         try:
             self.__cvsRoot = ":pserver:" + self.__cvsUser + ":" + self.__cvsPassword + "@" + self.__repositoryHost + ":" + self.__repositoryPath
             return True
-        except:  # noqa: E722
+        except:  # noqa: E722 pylint: disable=bare-except
             return False
 
     def __extractRevisions(self):
@@ -209,7 +209,7 @@ class CvsWrapper(object):
         revList = []
         try:
             fName = os.path.join(self.__wrkPath, self.__cvsInfoFileName)
-            self.__logger.debug("Reading revisions from %r\n" % fName)
+            self.__logger.debug("Reading revisions from %r", fName)
             ifh = open(fName, "r")
             for line in ifh.readlines():
                 fields = line[:-1].split()
@@ -217,12 +217,11 @@ class CvsWrapper(object):
                 revId = str(fields[5])
                 timeStamp = str(fields[1] + ":" + fields[2])
                 revList.append((revId, typeCode, timeStamp))
-        except:  # noqa: E722
-            self.__logger.exception("Extracting revision list for : %s\n" % fName)
-            pass
+        except:  # noqa: E722 pylint: disable=bare-except
+            self.__logger.exception("Extracting revision list for : %s", fName)
 
         revList.reverse()
-        self.__logger.debug("Ordered revision list %r\n" % revList)
+        self.__logger.debug("Ordered revision list %r", revList)
 
         return revList
 
@@ -232,8 +231,8 @@ class CvsWrapper(object):
             fPath = os.path.join(self.__wrkPath, self.__cvsInfoFileName)
             ifh = open(fPath, "r")
             text = ifh.read()
-        except:  # noqa: E722
-            self.__logger.exception("Execption reading cvs output file: %s\n" % fPath)
+        except:  # noqa: E722 pylint: disable=bare-except
+            self.__logger.exception("Execption reading cvs output file: %s", fPath)
 
         return text
 
@@ -243,7 +242,7 @@ class CvsWrapper(object):
             fName = os.path.join(self.__wrkPath, self.__cvsErrorFileName)
             ifh = open(fName, "r")
             text = ifh.read()
-        except:  # noqa: E722
+        except:  # noqa: E722 pylint: disable=bare-except
             pass
 
         return text
@@ -253,4 +252,4 @@ class CvsWrapper(object):
             self.__wrkPath = tempfile.mkdtemp("tmpdir", "rcsbCVS", self.__tmpPath)
         else:
             self.__wrkPath = tempfile.mkdtemp("tmpdir", "rcsbCVS")
-        self.__logger.debug("Working directory path set to  %r\n" % self.__wrkPath)
+        self.__logger.debug("Working directory path set to  %r", self.__wrkPath)

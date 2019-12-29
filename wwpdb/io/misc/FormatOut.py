@@ -29,7 +29,7 @@ class FormatOut(object):
     def writeStream(self, fObj):
         try:
             fObj.write("".join(self.__buffer))
-        except:  # noqa: E722 pylint: disable=bare-except
+        except:  # noqa: E722 pylint: disable=bare-except # pragma: no cover
             traceback.print_exc(file=sys.stderr)
 
     def write(self, filename):
@@ -83,7 +83,7 @@ class FormatOut(object):
                     self.indent("\n", ind)
                     str1 = "CONTENTS OF DICTIONARY: %s\n" % name
                     self.indent(str1, ind)
-                keys = thing.keys()
+                keys = list(thing.keys())
                 keys.sort()
                 for k in keys:
                     self.autoFormat(str(k), thing[k], ind + indInc)
@@ -102,7 +102,7 @@ class FormatOut(object):
             self.indent("\nAUTOFORMAT: CANNOT PRINT %s TYPE %s\n" % (name, inOt), ind)
 
 
-def unitTest1(fileName="formatOut.log"):
+def unitTest1(fileName="formatOut.log"):  # pragma: no cover
 
     list_in = ["L1", "L2", "L3", "L4", "L5"]
     tuple_in = ("T1", "T2", "T3", "T4", "T5")
@@ -116,5 +116,5 @@ def unitTest1(fileName="formatOut.log"):
     out.write(fileName)
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     unitTest1("formatOut.log")

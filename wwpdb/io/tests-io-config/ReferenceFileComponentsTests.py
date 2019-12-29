@@ -24,7 +24,7 @@ HERE = os.path.abspath(os.path.dirname(__file__))
 TOPDIR = os.path.dirname(os.path.dirname(os.path.dirname(HERE)))
 TESTOUTPUT = os.path.join(HERE, "test-output", platform.python_version())
 if not os.path.exists(TESTOUTPUT):
-    os.makedirs(TESTOUTPUT)
+    os.makedirs(TESTOUTPUT)  # pragma: no cover
 mockTopPath = os.path.join(TOPDIR, "wwpdb", "mock-data")
 
 # Must create config file before importing ConfigInfo
@@ -68,18 +68,18 @@ class ReferenceFileComponentsTests(unittest.TestCase):
                     "RFC- fileName %s idcode %s contentType %s contentFormat %s partNo %d versionId %s\n" % (fileName, idCode, contentType, contentFormat, partNo, versionNo)
                 )
                 self.assertEqual(valid[fileName], [idCode, contentType, contentFormat, partNo, versionNo])
-        except:  # noqa: E722
+        except:  # noqa: E722  # pragma: no cover
             traceback.print_exc(file=self.__lfh)
             self.fail()
 
 
-def suiteComponentAccessorsTests():
+def suiteComponentAccessorsTests():  # pragma: no cover
     suiteSelect = unittest.TestSuite()
     suiteSelect.addTest(ReferenceFileComponentsTests("testAccessors"))
     return suiteSelect
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     if True:
         mySuite = suiteComponentAccessorsTests()
         unittest.TextTestRunner(verbosity=2).run(mySuite)

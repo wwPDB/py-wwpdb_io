@@ -21,7 +21,7 @@ HERE = os.path.abspath(os.path.dirname(__file__))
 TOPDIR = os.path.dirname(os.path.dirname(os.path.dirname(HERE)))
 TESTOUTPUT = os.path.join(HERE, "test-output", platform.python_version())
 if not os.path.exists(TESTOUTPUT):
-    os.makedirs(TESTOUTPUT)
+    os.makedirs(TESTOUTPUT)  # pragma: no cover
 mockTopPath = os.path.join(TOPDIR, "wwpdb", "mock-data")
 
 # Must create config file before importing ConfigInfo
@@ -82,14 +82,14 @@ class ReleasePathInfoTests(unittest.TestCase):
             rpi.getForReleasePath(version="some", subdir="something")
 
 
-def suiteStandardPathTests():
+def suiteStandardPathTests():  # pragma: no cover
     suiteSelect = unittest.TestSuite()
     suiteSelect.addTest(ReleasePathInfoTests("testGetReleasePaths"))
     suiteSelect.addTest(ReleasePathInfoTests("testGetReleasePathsExceptions"))
     return suiteSelect
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     if True:
         mySuite = suiteStandardPathTests()
         unittest.TextTestRunner(verbosity=2).run(mySuite)

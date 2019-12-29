@@ -37,7 +37,7 @@ from wwpdb.io.graphics.GraphicsContext3D import GraphicsContext3D
 HERE = os.path.abspath(os.path.dirname(__file__))
 TOPDIR = os.path.dirname(os.path.dirname(os.path.dirname(HERE)))
 TESTOUTPUT = os.path.join(HERE, "test-output", platform.python_version())
-if not os.path.exists(TESTOUTPUT):
+if not os.path.exists(TESTOUTPUT):  # pragma: no cover
     os.makedirs(TESTOUTPUT)
 mockTopPath = os.path.join(TOPDIR, "wwpdb", "mock-data")
 
@@ -64,11 +64,11 @@ class GraphicsContext3DTests(unittest.TestCase):
             indexD = myPersist.getIndex(dbFileName=persistFilePath)
             (firstContainerName, _firstContainerType) = indexD["__containers__"][0]
 
-            if self.__debug:
+            if self.__debug:  # pragma: no cover
                 self.__lfh.write("GraphicsContext3D.getFirstObject() container name list %r\n" % indexD.items())
             myObj = myPersist.fetchOneObject(dbFileName=persistFilePath, containerName=firstContainerName, objectName=objectName)
             return myObj
-        except Exception as e:
+        except Exception as e:  # pragma: no cover
             if self.__verbose:
                 self.__lfh.write("+ERROR- GraphicsContext3D.getFirstObject() Read failed for file %s - %s\n" % (persistFilePath, str(e)))
                 traceback.print_exc(file=self.__lfh)
@@ -120,7 +120,7 @@ class GraphicsContext3DTests(unittest.TestCase):
                             gcS = gC.getGraphicsContext(categoryName=objectName, rowDictList=[rD])
                             self.__lfh.write("Context : %s\n" % gcS)
 
-        except:  # noqa: E722 pylint: disable=bare-except
+        except:  # noqa: E722 pylint: disable=bare-except  # pragma: no cover
             traceback.print_exc(file=self.__lfh)
             self.fail()
 
@@ -156,7 +156,7 @@ class GraphicsContext3DTests(unittest.TestCase):
                 #
                 gcS = gC.getGraphicsContext(categoryName="struct_site", rowDictList=[rD])
                 self.__lfh.write("Site context : %s\n" % gcS)
-        except:  # noqa: E722 pylint: disable=bare-except
+        except:  # noqa: E722 pylint: disable=bare-except # pragma: no cover
             traceback.print_exc(file=self.__lfh)
             self.fail()
 
@@ -209,23 +209,19 @@ class GraphicsContext3DTests(unittest.TestCase):
                 gcS = gC.getGraphicsContext(categoryName="struct_site_gen", rowDictList=rDL)
                 self.__lfh.write("Site %s context : %s\n" % (eid, gcS))
 
-        except:  # noqa: E722 pylint: disable=bare-except
+        except:  # noqa: E722 pylint: disable=bare-except # pragma: no cover
             traceback.print_exc(file=self.__lfh)
             self.fail()
 
 
-def suite():
-    return unittest.makeSuite(GraphicsContext3DTests, "test")
-
-
-def suiteFile():
+def suiteFile():  # pragma: no cover
     suiteSelect = unittest.TestSuite()
     suiteSelect.addTest(GraphicsContext3DTests("testSimpleContexts"))
     suiteSelect.addTest(GraphicsContext3DTests("testSiteContexts"))
     return suiteSelect
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     #
     mySuite = suiteFile()
     unittest.TextTestRunner(verbosity=2).run(mySuite)

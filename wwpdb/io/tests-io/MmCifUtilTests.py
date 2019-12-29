@@ -36,12 +36,12 @@ class MmCifUtilTests(unittest.TestCase):
         self.assertEqual(val, "REL", "Status code not correct")
 
 
-def mmcifStandardTests():
+def mmcifStandardTests():  # pragma: no cover
     suiteSelect = unittest.TestSuite()
     suiteSelect.addTest(MmCifUtilTests("testRead"))
     return suiteSelect
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     mySuite = mmcifStandardTests()
     unittest.TextTestRunner(verbosity=2).run(mySuite)

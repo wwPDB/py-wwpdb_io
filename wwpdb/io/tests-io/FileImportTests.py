@@ -32,5 +32,5 @@ class ImportTests(unittest.TestCase):
         # vc = DataExchange()
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     unittest.main()

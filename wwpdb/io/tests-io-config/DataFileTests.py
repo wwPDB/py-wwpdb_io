@@ -17,7 +17,7 @@ HERE = os.path.abspath(os.path.dirname(__file__))
 TOPDIR = os.path.dirname(os.path.dirname(os.path.dirname(HERE)))
 TESTOUTPUT = os.path.join(HERE, "test-output", platform.python_version())
 if not os.path.exists(TESTOUTPUT):
-    os.makedirs(TESTOUTPUT)
+    os.makedirs(TESTOUTPUT)  # pragma: no cover
 mockTopPath = os.path.join(TOPDIR, "wwpdb", "mock-data")
 
 # Must create config file before importing ConfigInfo
@@ -52,7 +52,7 @@ class DataFileTests(unittest.TestCase):
             fPath = os.path.join(self.__testFilePath, self.__testFile)
             f1 = DataFile(fPath)
             f1.pr(self.lfh)
-        except:  # noqa: E722
+        except:  # noqa: E722  # pragma: no cover
             traceback.print_exc(file=sys.stdout)
             self.fail()
 
@@ -73,7 +73,7 @@ class DataFileTests(unittest.TestCase):
                 f2 = DataFile(fp)
                 if f2.srcFileExists():
                     f2.remove()
-        except:  # noqa: E722
+        except:  # noqa: E722  # pragma: no cover
             traceback.print_exc(file=sys.stdout)
             self.fail()
 
@@ -94,7 +94,7 @@ class DataFileTests(unittest.TestCase):
                 f2 = DataFile(fp)
                 if f2.srcFileExists():
                     f2.remove()
-        except:  # noqa: E722
+        except:  # noqa: E722  # pragma: no cover
             traceback.print_exc(file=sys.stdout)
             self.fail()
 
@@ -115,7 +115,7 @@ class DataFileTests(unittest.TestCase):
                 f2 = DataFile(fp)
                 if f2.srcFileExists():
                     f2.remove()
-        except:  # noqa: E722
+        except:  # noqa: E722  # pragma: no cover
             traceback.print_exc(file=sys.stdout)
             self.fail()
 
@@ -134,12 +134,12 @@ class DataFileTests(unittest.TestCase):
                 f2 = DataFile(fp)
                 if f2.srcFileExists():
                     f2.remove()
-        except:  # noqa: E722
+        except:  # noqa: E722  # pragma: no cover
             traceback.print_exc(file=sys.stdout)
             self.fail()
 
     @unittest.skip("Not sending email during tests")
-    def testFileEMail(self):
+    def testFileEMail(self):  # pragma: no cover
         self.lfh.write("\nStarting %s %s\n" % (self.__class__.__name__, sys._getframe().f_code.co_name))
         try:
             fPath = os.path.join(self.__testFilePath, self.__testFile)
@@ -149,9 +149,6 @@ class DataFileTests(unittest.TestCase):
             traceback.print_exc(file=sys.stdout)
             self.fail()
 
-    def suite():
-        return unittest.makeSuite(DataFileTests, "test")
 
-
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     unittest.main()

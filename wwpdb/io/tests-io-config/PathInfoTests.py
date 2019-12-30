@@ -69,12 +69,14 @@ class PathInfoTests(unittest.TestCase):
             ("archive", "D_1000000000", None, "latest", "latest"),
             ("archive", "D_1000000000", None, "next", "latest"),
             ("archive", "D_1000000000", None, "previous", "latest"),
+            ("deposit", "D_1000000000", None, 1, "latest"),
         ]
         eId = "1"
         for (fs, dataSetId, wfInst, pId, vId) in tests:
             logger.debug("File source %s dataSetId %s  partno  %s wfInst %s version %s" % (fs, dataSetId, pId, wfInst, vId))
 
             pI = PathInfo(siteId=self.__siteId)
+            pI.setDebugFlag(False)
             #
             fp = pI.getModelPdbxFilePath(dataSetId, wfInstanceId=wfInst, fileSource=fs, versionId=vId)
             logger.debug("Model path (PDBx):   %s" % fp)
@@ -92,13 +94,25 @@ class PathInfoTests(unittest.TestCase):
             logger.debug("Model path (PDB):    %s" % fp)
             self.assertIsNotNone(fp, "Failed to find PDB model file")
 
+            fp = pI.getStructureFactorsPdbxFilePath(dataSetId, wfInstanceId=wfInst, fileSource=fs, versionId=vId)
+            logger.debug("SF path (pdbx):    %s" % fp)
+            self.assertIsNotNone(fp, "Failed to find SF file")
+
             fp = pI.getPolyLinkFilePath(dataSetId, wfInstanceId=wfInst, fileSource=fs, versionId=vId)
             logger.debug("Link dist  (PDBx):   %s" % fp)
             self.assertIsNotNone(fp, "Failed to find PDBx model file")
 
+            fp = pI.getPolyLinkReportFilePath(dataSetId, wfInstanceId=wfInst, fileSource=fs, versionId=vId)
+            logger.debug("Link Report dist  (PDBx):   %s" % fp)
+            self.assertIsNotNone(fp, "Failed to find link report file")
+
             fp = pI.getSequenceStatsFilePath(dataSetId, wfInstanceId=wfInst, fileSource=fs, versionId=vId)
             logger.debug("Sequence stats (PIC):   %s" % fp)
             self.assertIsNotNone(fp, "Failed to find sequence stats file")
+
+            fp = pI.getSequenceAlignFilePath(dataSetId, wfInstanceId=wfInst, fileSource=fs, versionId=vId)
+            logger.debug("Sequence align (PIC):   %s" % fp)
+            self.assertIsNotNone(fp, "Failed to find sequence align file")
 
             fp = pI.getReferenceSequenceFilePath(dataSetId, entityId=eId, wfInstanceId=wfInst, fileSource=fs, versionId=vId)
             logger.debug("Reference match entity %s (PDBx):   %s" % (eId, fp))
@@ -108,10 +122,22 @@ class PathInfoTests(unittest.TestCase):
             logger.debug("Sequence assignment (PDBx):   %s" % fp)
             self.assertIsNotNone(fp, "Failed to find sequence assignment")
 
+            fp = pI.getAssemblyAssignmentFilePath(dataSetId, wfInstanceId=wfInst, fileSource=fs, versionId=vId)
+            logger.debug("Assembly assignment (PDBx):   %s" % fp)
+            self.assertIsNotNone(fp, "Failed to find assembly assignment")
+
+            fp = pI.getBlastMatchFilePath(dataSetId, wfInstanceId=wfInst, fileSource=fs, versionId=vId)
+            logger.debug("Blast match (xml):   %s" % fp)
+            self.assertIsNotNone(fp, "Failed to find blast match file")
+
             fp = pI.getFilePath(dataSetId, wfInstanceId=wfInst, contentType="seqdb-match", formatType="pdbx", fileSource=fs, versionId=vId, partNumber=pId, mileStone=None)
             logger.debug("Sequence match (getFilePath) (PDBx):   %s" % fp)
             self.assertIsNotNone(fp, "Failed to find seq-db match")
             #
+            fp = pI.getFilePathContentTypeTemplate(dataSetId, wfInstanceId=wfInst, contentType="model", fileSource=fs)
+            logger.debug("Model template:   %s" % fp)
+            self.assertIsNotNone(fp, "Failed to find model template")
+
             fp = pI.getArchivePath(dataSetId)
             logger.debug("getArchivePath (PDBx):   %s" % fp)
             self.assertIsNotNone(fp, "Failed to find dir path")
@@ -127,6 +153,10 @@ class PathInfoTests(unittest.TestCase):
             fp = pI.getInstanceTopPath(dataSetId,)
             logger.debug("getWfInstanceTopPath (PDBx):   %s" % fp)
             self.assertIsNotNone(fp, "Failed to find wf Top instance path")
+
+            fp = pI.getTempDepPath(dataSetId)
+            logger.debug("getTempDepPath):   %s" % fp)
+            self.assertIsNotNone(fp, "Failed to find TempDep path")
             #
             fp = pI.getDirPath(dataSetId, wfInstanceId=wfInst, fileSource=fs, versionId=vId, partNumber=pId, mileStone=None)
             logger.debug("Sequence match (getDirPath) (PDBx):   %s" % fp)
@@ -156,11 +186,43 @@ class PathInfoTests(unittest.TestCase):
             # self.assertIsNotNone(fp, "Failed to get session path")
             #
 
+    def testFileNames(self):
+        """Tests parsing and validity functions"""
+        tests = [("D_000001_model_P1.cif.V1", True), ("D_000001_model_P1.cif", False), ("D_000001_P1.cif.V1", False), ("D_000001_model.cif.V1", False), ("D_000001.cif", False)]
+        # Matches w/o version number
+        tests2 = [("D_000001_model_P1.cif.V1", True), ("D_000001_model_P1.cif", True), ("D_000001_P1.cif.V1", False), ("D_000001_model.cif.V1", False), ("D_000001.cif", False)]
+
+        for t in tests:
+            pI = PathInfo(siteId=self.__siteId)
+            ret = pI.isValidFileName(t[0])
+            self.assertEqual(ret, t[1], "Parsing mismatch %s" % t[0])
+
+        # Withot version
+        for t in tests2:
+            pI = PathInfo(siteId=self.__siteId)
+            ret = pI.isValidFileName(t[0], False)
+            self.assertEqual(ret, t[1], "Parsing mismatch %s" % t[0])
+
+        pI = PathInfo(siteId=self.__siteId)
+        self.assertEqual(pI.parseFileName("D_000001_model_P1.cif.V1"), ("D_000001", "model", "pdbx", 1, 1))
+
+        self.assertEqual(pI.parseFileName("D_000001_model.cif.V1"), (None, None, None, None, None))
+
+        # spiltFileName will give partials
+        self.assertEqual(pI.splitFileName("D_000001_model_P1.cif.V1"), ("D_000001", "model", "pdbx", 1, 1))
+
+        self.assertEqual(pI.splitFileName("D_000001_model.cif.V1"), ("D_000001", "model", None, None, 1))
+
+        self.assertEqual(pI.getFileExtension("gif"), "gif", "Getting file extension")
+        self.assertEqual(pI.getFileExtension("pdbx"), "cif", "Getting file extension")
+        self.assertEqual(pI.getFileExtension("unk"), None, "Getting file extension")
+
 
 def suiteStandardPathTests():  # pragma: no cover
     suiteSelect = unittest.TestSuite()
     suiteSelect.addTest(PathInfoTests("testGetStandardPaths"))
     suiteSelect.addTest(PathInfoTests("testSessionPath"))
+    suiteSelect.addTest(PathInfoTests("testFileNames"))
     return suiteSelect
 
 

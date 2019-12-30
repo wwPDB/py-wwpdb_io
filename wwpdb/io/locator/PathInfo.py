@@ -37,8 +37,6 @@ __version__ = "V0.07"
 
 import os
 import os.path
-import glob
-import shutil
 import logging
 
 from wwpdb.utils.config.ConfigInfo import ConfigInfo, getSiteId
@@ -595,19 +593,3 @@ class PathInfo(object):
         except Exception as e:
             logger.exception("Failing for source %s id %s wf id %s contentType %r with %r", fileSource, dataSetId, wfInstanceId, contentType, str(e))
         return None, None, None, None
-
-    #
-
-    def __getcopyContentType(self, sourcePath, sourcePattern, destPath):
-        """  internal method  -- not used --
-        """
-        fpattern = os.path.join(sourcePath, sourcePattern)
-        pthList = []
-        pthList = glob.glob(fpattern)
-        #
-        fileList = []
-        for pth in pthList:
-            (_dirName, fileName) = os.path.split(pth)
-            fileList.append(fileName)
-            shutil.copyfile(pth, os.path.join(destPath, fileName))
-        return fileList

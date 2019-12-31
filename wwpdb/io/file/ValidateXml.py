@@ -415,7 +415,7 @@ class ValidateXml(object):
         return mapping
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     try:
         obj = ValidateXml(FileName=sys.argv[1])
         summary = obj.getSummary()

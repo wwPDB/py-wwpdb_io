@@ -16,14 +16,11 @@ __version__ = "V0.07"
 
 import os
 import os.path
-import glob
-import shutil
-
 import logging
 
-logger = logging.getLogger(__name__)
+from wwpdb.utils.config.ConfigInfo import ConfigInfo
 
-from wwpdb.utils.config.ConfigInfo import ConfigInfo, getSiteId
+logger = logging.getLogger(__name__)
 
 
 class ReleasePathInfo(object):
@@ -32,18 +29,16 @@ class ReleasePathInfo(object):
         self.__cI = ConfigInfo(siteId=self.__siteId)
 
     def getForReleasePath(self, subdir=None, version="current", accession=None, em_sub_path=None):
-        """Returns path to for-release directory. 
+        """Returns path to for-release directory.
 
         Input Parameters:
-        subdir: If specified,  must be one of "added", "modified", "obsolete", 
+        subdir: If specified,  must be one of "added", "modified", "obsolete",
                 "emd", "val-reports".
         version: "current" or "previous"
 
         returns path, or raises exception
         """
-        basedir = os.path.join(
-            self.__cI.get("SITE_ARCHIVE_STORAGE_PATH"), "for_release"
-        )
+        basedir = os.path.join(self.__cI.get("SITE_ARCHIVE_STORAGE_PATH"), "for_release")
 
         if version not in ["current", "previous"]:
             raise NameError("version %s not allowed" % version)

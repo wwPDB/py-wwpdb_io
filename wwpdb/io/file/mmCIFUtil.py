@@ -6,28 +6,30 @@ Version: 001  Initial version
 
 """
 
-__author__  = "Zukang Feng"
-__email__   = "zfeng@rcsb.rutgers.edu"
+__author__ = "Zukang Feng"
+__email__ = "zfeng@rcsb.rutgers.edu"
 __version__ = "V0.001"
 
 import sys
 
-from mmcif.api.DataCategory       import DataCategory
-from mmcif.api.PdbxContainers     import *
-from mmcif.io.PdbxReader         import PdbxReader
-from mmcif.io.PdbxWriter         import PdbxWriter
+from mmcif.api.DataCategory import DataCategory
+from mmcif.api.PdbxContainers import DataContainer
+from mmcif.io.PdbxReader import PdbxReader
+from mmcif.io.PdbxWriter import PdbxWriter
+
 
 class mmCIFUtil:
     """Using pdbx mmCIF utility to parse mmCIF file
     """
+
     def __init__(self, verbose=False, log=sys.stderr, filePath=None):
-        self.__verbose   = verbose
-        self.__lfh       = log
-        self.__filePath  = filePath
-        self.__dataList  = []
-        self.__dataMap   = {}
+        self.__verbose = verbose
+        self.__lfh = log
+        self.__filePath = filePath
+        self.__dataList = []
+        self.__dataMap = {}
         self.__container = None
-        self.__blockID   = None
+        self.__blockID = None
         self.__read()
         #
 
@@ -36,7 +38,7 @@ class mmCIFUtil:
             return
         #
         try:
-            ifh = open(self.__filePath, 'r')
+            ifh = open(self.__filePath, "r")
             pRd = PdbxReader(ifh)
             pRd.read(self.__dataList)
             ifh.close()
@@ -49,8 +51,8 @@ class mmCIFUtil:
                     idx += 1
                 #
             #
-        except:
-            self.__lfh.write("Read %s failed.\n" % self.__filePath)
+        except Exception as e:
+            self.__lfh.write("Read %s failed %s.\n" % (self.__filePath, str(e)))
         #
 
     def GetBlockID(self):
@@ -64,41 +66,41 @@ class mmCIFUtil:
         dList = []
         iList = []
         if blockName not in self.__dataMap:
-            return dList,iList
+            return dList, iList
         #
         catObj = self.__dataList[self.__dataMap[blockName]].getObj(catName)
         if not catObj:
-            return dList,iList
+            return dList, iList
         #
         iList = catObj.getAttributeList()
         rowList = catObj.getRowList()
         for row in rowList:
             tD = {}
             for idxIt, itName in enumerate(iList):
-                if row[idxIt] != '?' and row[idxIt] != '.':
+                if row[idxIt] != "?" and row[idxIt] != ".":
                     tD[itName] = row[idxIt]
             #
             if tD:
                 dList.append(tD)
             #
         #
-        return dList,iList
+        return dList, iList
 
     def GetValueAndItem(self, catName):
         dList, iList = self.GetValueAndItemByBlock(self.__blockID, catName)
         return dList, iList
-    
+
     def GetValue(self, catName):
         """Get category values based on category name 'catName'. The results are stored
            in a list of dictionaries with item name as key
         """
-        dList,iList = self.GetValueAndItemByBlock(self.__blockID, catName)
+        dList, _iList = self.GetValueAndItemByBlock(self.__blockID, catName)
         return dList
 
     def GetSingleValue(self, catName, itemName):
         """Get the first value of item name 'itemName' from 'itemName' item in 'catName' category.
         """
-        text = ''
+        text = ""
         dlist = self.GetValue(catName)
         if dlist:
             if itemName in dlist[0]:
@@ -108,22 +110,22 @@ class mmCIFUtil:
 
     def UpdateSingleRowValue(self, catName, itemName, row, value):
         """Update value in single row
-        """  
+        """
         catObj = self.__container.getObj(catName)
-        if catObj == None:
+        if catObj is None:
             return
         #
         catObj.setValue(value, itemName, row)
 
     def UpdateMultipleRowsValue(self, catName, itemName, value):
         """Update value in multiple rows
-        """  
+        """
         catObj = self.__container.getObj(catName)
-        if catObj == None:
+        if catObj is None:
             return
         #
         rowNo = catObj.getRowCount()
-        for row in xrange(0, rowNo):
+        for row in range(0, rowNo):
             catObj.setValue(value, itemName, row)
         #
 
@@ -148,7 +150,7 @@ class mmCIFUtil:
         """
         """
         catObj = self.__container.getObj(categoryID)
-        if catObj == None:
+        if catObj is None:
             return
         #
         for data in dataList:
@@ -161,25 +163,24 @@ class mmCIFUtil:
         if not outputFilePath:
             return
         #
-        ofh = open(outputFilePath, 'w')
+        ofh = open(outputFilePath, "w")
         pdbxW = PdbxWriter(ofh)
         pdbxW.write(self.__dataList)
         ofh.close()
 
     def GetCategories(self):
         return self.__container.getObjNameList()
-    
+
     def GetAttributes(self, category):
         return self.__container.getObj(category).getAttributeList()
-    
+
     def category_as_dict(self, category, block=None):
         if block is None:
             block = self.__blockID
         values, attributes = self.GetValueAndItemByBlock(block, category)
         data = [[x[y] if y in x else None for y in attributes] for x in values]
-        return {category: {'Items': attributes,
-                           'Values': data}}
-        
+        return {category: {"Items": attributes, "Values": data}}
+
     def block_as_dict(self, block=None):
         if block is None:
             block = self.__blockID
@@ -187,4 +188,3 @@ class mmCIFUtil:
         for category in self.GetCategories():
             data.update(self.category_as_dict(category, block=block))
         return data
-    

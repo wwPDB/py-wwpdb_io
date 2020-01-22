@@ -12,18 +12,18 @@ import traceback
 import unittest
 import logging
 
-logging.basicConfig(level=logging.DEBUG, format='\n[%(levelname)s]-%(module)s.%(funcName)s: %(message)s')
-logging.getLogger('wrapper')
+logging.basicConfig(level=logging.DEBUG, format="\n[%(levelname)s]-%(module)s.%(funcName)s: %(message)s")
+logging.getLogger("wrapper")
 
 
 @WrapperExample("hello", "world", 42, logname="wrapper", loglevel=logging.DEBUG)
 def sayHello3(*args, **kw):
-    print 'sayHello arguments:', args, kw
+    print "sayHello arguments:", args, kw
     time.sleep(2.2)
 
 
 class MyClass(object):
-    'Simple class.'
+    "Simple class."
 
     def __init__(self, id):
         self.id = id
@@ -32,11 +32,11 @@ class MyClass(object):
         return str(self.id)
 
     def __repr__(self):
-        return 'MyClass'
+        return "MyClass"
 
     @WrapperExample("hello", "world", 42, logname="wrapper", loglevel=logging.DEBUG)
     def mymethod(self, *args, **kwargs):
-        'Simple method using decorator with arguments.'
+        "Simple method using decorator with arguments."
         print "Method arguments ", args, kwargs
         time.sleep(3)
         return args, kwargs
@@ -44,7 +44,6 @@ class MyClass(object):
 
 
 class ExampleUnitTests(unittest.TestCase):
-
     def setUp(self):
         self.__lfh = sys.stdout
         self.__verbose = True
@@ -60,9 +59,7 @@ class ExampleUnitTests(unittest.TestCase):
 
         """
         startTime = time.time()
-        self.__lfh.write("\nStarting %s %s at %s\n" % (self.__class__.__name__,
-                                                       sys._getframe().f_code.co_name,
-                                                       time.strftime("%Y %m %d %H:%M:%S", time.localtime())))
+        self.__lfh.write("\nStarting %s %s at %s\n" % (self.__class__.__name__, sys._getframe().f_code.co_name, time.strftime("%Y %m %d %H:%M:%S", time.localtime())))
         try:
             print "INSIDE TEST EXAMPLE 1", my, me
             time.sleep(1)
@@ -71,10 +68,10 @@ class ExampleUnitTests(unittest.TestCase):
             self.fail()
 
         endTime = time.time()
-        self.__lfh.write("\nCompleted %s %s at %s (%d seconds)\n" % (self.__class__.__name__,
-                                                                     sys._getframe().f_code.co_name,
-                                                                     time.strftime("%Y %m %d %H:%M:%S", time.localtime()),
-                                                                     endTime - startTime))
+        self.__lfh.write(
+            "\nCompleted %s %s at %s (%d seconds)\n"
+            % (self.__class__.__name__, sys._getframe().f_code.co_name, time.strftime("%Y %m %d %H:%M:%S", time.localtime()), endTime - startTime)
+        )
 
     @WrapperExample("hello", "world", 42, logname="wrapper", loglevel=logging.DEBUG)
     def testExample2(self, my="aaaaa", me="bbbbb"):
@@ -82,9 +79,7 @@ class ExampleUnitTests(unittest.TestCase):
 
         """
         startTime = time.time()
-        self.__lfh.write("\nStarting %s %s at %s\n" % (self.__class__.__name__,
-                                                       sys._getframe().f_code.co_name,
-                                                       time.strftime("%Y %m %d %H:%M:%S", time.localtime())))
+        self.__lfh.write("\nStarting %s %s at %s\n" % (self.__class__.__name__, sys._getframe().f_code.co_name, time.strftime("%Y %m %d %H:%M:%S", time.localtime())))
         try:
             print "INSIDE TEST EXAMPLE 2", my, me
             time.sleep(1)
@@ -93,10 +88,10 @@ class ExampleUnitTests(unittest.TestCase):
             self.fail()
 
         endTime = time.time()
-        self.__lfh.write("\nCompleted %s %s at %s (%d seconds)\n" % (self.__class__.__name__,
-                                                                     sys._getframe().f_code.co_name,
-                                                                     time.strftime("%Y %m %d %H:%M:%S", time.localtime()),
-                                                                     endTime - startTime))
+        self.__lfh.write(
+            "\nCompleted %s %s at %s (%d seconds)\n"
+            % (self.__class__.__name__, sys._getframe().f_code.co_name, time.strftime("%Y %m %d %H:%M:%S", time.localtime()), endTime - startTime)
+        )
 
 
 def suiteExamples():

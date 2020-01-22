@@ -12,39 +12,35 @@ __docformat__ = "restructuredtext en"
 __author__ = "Ezra Peisach"
 __email__ = "peisach@rcsb.rutgers.edu"
 
-import time
 import unittest
 import os
 import platform
+import logging
 
 HERE = os.path.abspath(os.path.dirname(__file__))
 TOPDIR = os.path.dirname(os.path.dirname(os.path.dirname(HERE)))
-TESTOUTPUT = os.path.join(HERE, 'test-output', platform.python_version())
+TESTOUTPUT = os.path.join(HERE, "test-output", platform.python_version())
 if not os.path.exists(TESTOUTPUT):
-    os.makedirs(TESTOUTPUT)
-mockTopPath = os.path.join(TOPDIR, 'wwpdb', 'mock-data')
+    os.makedirs(TESTOUTPUT)  # pragma: no cover
+mockTopPath = os.path.join(TOPDIR, "wwpdb", "mock-data")
 
 # Must create config file before importing ConfigInfo
-from wwpdb.utils.testing.SiteConfigSetup import SiteConfigSetup
+from wwpdb.utils.testing.SiteConfigSetup import SiteConfigSetup  # noqa: E402
 
 SiteConfigSetup().setupEnvironment(TESTOUTPUT, mockTopPath)
 
-from wwpdb.utils.config.ConfigInfo import getSiteId
-from wwpdb.io.locator.ReleasePathInfo import ReleasePathInfo
+from wwpdb.utils.config.ConfigInfo import getSiteId  # noqa: E402
+from wwpdb.io.locator.ReleasePathInfo import ReleasePathInfo  # noqa: E402
 
-import logging
-
-FORMAT = '[%(levelname)s]-%(module)s.%(funcName)s: %(message)s'
+FORMAT = "[%(levelname)s]-%(module)s.%(funcName)s: %(message)s"
 logging.basicConfig(format=FORMAT, level=logging.DEBUG)
 logger = logging.getLogger()
 
 
 class ReleasePathInfoTests(unittest.TestCase):
-
     def setUp(self):
         #
         self.__siteId = getSiteId(defaultSiteId=None)
-
 
     def testGetReleasePaths(self):
         """ Test getting standard file names within session paths.
@@ -52,11 +48,11 @@ class ReleasePathInfoTests(unittest.TestCase):
         tests = [
             # subdir, vers
             [None, None],
-            ['modified', None],
-            ['val-reports', None],
-            [None, 'previous'],
-            [None, 'current'],
-            ['modified', 'previous'],
+            ["modified", None],
+            ["val_reports", None],
+            [None, "previous"],
+            [None, "current"],
+            ["modified", "previous"],
         ]
         for (subdir, vers) in tests:
             rpi = ReleasePathInfo(self.__siteId)
@@ -70,31 +66,52 @@ class ReleasePathInfoTests(unittest.TestCase):
                 ret = rpi.getForReleasePath()
 
             self.assertIsNotNone(ret)
-            #print(ret)
+            # print(ret)
+
+    def testGetEMReleaseSubPaths(self):
+        """ Test getting standard file names within session paths.
+        """
+        emsub = [
+            "header",
+            "map",
+            "fsc",
+            "images",
+            "masks",
+            "other",
+            "validation",
+        ]
+        for emsubdir in emsub:
+            rpi = ReleasePathInfo(self.__siteId)
+            ret = rpi.getForReleasePath(subdir="emd", accession="EMD-1000", em_sub_path=emsubdir)
+            # print(ret)
+            self.assertIsNotNone(ret)
 
     def testGetReleasePathsExceptions(self):
         """ Test expected exceptions """
         rpi = ReleasePathInfo(self.__siteId)
 
         with self.assertRaises(NameError):
-            ret = rpi.getForReleasePath(version='something')
+            rpi.getForReleasePath(version="something")
 
         with self.assertRaises(NameError):
-            ret = rpi.getForReleasePath(subdir='something')
+            rpi.getForReleasePath(subdir="something")
 
         with self.assertRaises(NameError):
-            ret = rpi.getForReleasePath(version='some',
-                                        subdir='something')
+            rpi.getForReleasePath(version="some", subdir="something")
+
+        with self.assertRaises(NameError):
+            rpi.getForReleasePath(subdir="emd", accession="EMD-1000", em_sub_path="something")
 
 
-def suiteStandardPathTests():
+def suiteStandardPathTests():  # pragma: no cover
     suiteSelect = unittest.TestSuite()
     suiteSelect.addTest(ReleasePathInfoTests("testGetReleasePaths"))
-    suiteSelect.addTest(ReleasePathInfoTests("testGetReleasePathsExceptions"))    
+    suiteSelect.addTest(ReleasePathInfoTests("testGetEMReleaseSubPaths"))
+    suiteSelect.addTest(ReleasePathInfoTests("testGetReleasePathsExceptions"))
     return suiteSelect
 
 
-if __name__ == '__main__':
-    if (True):
+if __name__ == "__main__":  # pragma: no cover
+    if True:
         mySuite = suiteStandardPathTests()
         unittest.TextTestRunner(verbosity=2).run(mySuite)

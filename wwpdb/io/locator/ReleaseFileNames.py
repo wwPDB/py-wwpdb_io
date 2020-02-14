@@ -20,7 +20,7 @@ class ReleaseFileNames:
 
         self.__mapping = {
             "model": ["{}.cif", "{}.cif", True, True],
-            "sf": ["r{}sf.ent.gz", "{}-sf.cif", False, True],
+            "sf": ["r{}sf.ent", "{}-sf.cif", True, False],
             "cs": ["{}_cs.str", "{}_cs.str", True, False],
             "emdxml": ["{}-v30.xml", "{}_v3.xml", False, False],
             "emdmap": ["{}.map", "{}.map", True, True],

@@ -133,3 +133,6 @@ class ReleaseFileNames:
 
     def get_validation_fofc(self, accession, for_release=False):
         return self.__getfname("validfo", accession, for_release)
+
+    def get_nmr_data(self, accession, for_release=False):
+        return self.__getfname("nmr_data", accession, for_release)

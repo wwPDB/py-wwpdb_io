@@ -452,6 +452,11 @@ class CvsSandBoxAdmin(CvsWrapperBase):
                 text = "Update failed with repository command processing error"
         else:
             self.__lfh.write("+ERROR - CvsSandBoxAdmin(update) top sandbox path %s project dir %s \n" % (self.__sandBoxTopPath, projectDir))
+            if not os.path.exists(self.__sandBoxTopPath):
+                try:
+                    os.makedirs(self.__sandBoxTopPath)
+                except:
+                    self.__lfh.write("+ERROR - CvsSandBoxAdmin(update) cannot make project path %s\n" % targetPath)
             if os.access(self.__sandBoxTopPath, os.W_OK):
                 # try a full checkout --
                 #

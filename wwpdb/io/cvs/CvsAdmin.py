@@ -383,8 +383,9 @@ class CvsSandBoxAdmin(CvsWrapperBase):
                     if os.access(dirPath, os.W_OK):
                         self.__sandBoxTopPath = dirPath
                         return True
-                except:
-                    pass
+                except Exception as e:
+                     self.__lfh.write("+CvsAdmin failed to make CVS top path")
+                     self.__lfh.write(e)
             return False
 
     def getSandBoxTopPath(self):

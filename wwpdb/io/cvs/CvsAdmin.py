@@ -377,6 +377,14 @@ class CvsSandBoxAdmin(CvsWrapperBase):
             self.__sandBoxTopPath = dirPath
             return True
         else:
+            if not os.path.exists(dirPath):
+                try:
+                    os.makedirs(dirPath)
+                    if os.access(dirPath, os.W_OK):
+                        self.__sandBoxTopPath = dirPath
+                        return True
+                except:
+                    pass
             return False
 
     def getSandBoxTopPath(self):

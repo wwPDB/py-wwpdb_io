@@ -108,7 +108,9 @@ class CvsWrapperBase(object):
         try:
             self._cvsRoot = ":pserver:" + self._cvsUser + ":" + self._cvsPassword + "@" + self._repositoryHost + ":" + self._repositoryPath
             return True
-        except:  # noqa: E722 pylint: disable=bare-except
+        except Exception as e:  
+            self.__lfh.write('+CvsWrapperBase(_cvsRoot) failed')
+            self.__lfh.write(e)
             return False
 
     def _getOutputFilePath(self):
@@ -181,7 +183,9 @@ class CvsWrapperBase(object):
             try:
                 shutil.rmtree(self._wrkPath)
                 return True
-            except:  # noqa: E722 pylint: disable=bare-except
+            except Exception as e: 
+                self.__lfh.write('cleanup - unable to remove self._wrkpath')
+                self.__lfh.write(e)
                 return False
         else:
             return True
@@ -464,8 +468,9 @@ class CvsSandBoxAdmin(CvsWrapperBase):
             if not os.path.exists(targetPath):
                 try:
                     os.makedirs(targetPath)
-                except:
+                except Exception as e:
                     self.__lfh.write("+ERROR - CvsSandBoxAdmin(update) cannot make project path %s\n" % targetPath)
+                    self.__lfh.write(e)
             if os.access(self.__sandBoxTopPath, os.W_OK):
                 # try a full checkout --
                 #

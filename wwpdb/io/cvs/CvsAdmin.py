@@ -108,7 +108,9 @@ class CvsWrapperBase(object):
         try:
             self._cvsRoot = ":pserver:" + self._cvsUser + ":" + self._cvsPassword + "@" + self._repositoryHost + ":" + self._repositoryPath
             return True
-        except:  # noqa: E722 pylint: disable=bare-except
+        except Exception as e:
+            self.__lfh.write('+CvsWrapperBase(_cvsRoot) failed')
+            self.__lfh.write(e)
             return False
 
     def _getOutputFilePath(self):
@@ -181,7 +183,9 @@ class CvsWrapperBase(object):
             try:
                 shutil.rmtree(self._wrkPath)
                 return True
-            except:  # noqa: E722 pylint: disable=bare-except
+            except Exception as e:
+                self.__lfh.write('cleanup - unable to remove self._wrkpath')
+                self.__lfh.write(e)
                 return False
         else:
             return True
@@ -377,6 +381,15 @@ class CvsSandBoxAdmin(CvsWrapperBase):
             self.__sandBoxTopPath = dirPath
             return True
         else:
+            if not os.path.exists(dirPath):
+                try:
+                    os.makedirs(dirPath)
+                    if os.access(dirPath, os.W_OK):
+                        self.__sandBoxTopPath = dirPath
+                        return True
+                except Exception as e:
+                    self.__lfh.write("+CvsAdmin failed to make CVS top path")
+                    self.__lfh.write(e)
             return False
 
     def getSandBoxTopPath(self):
@@ -452,6 +465,12 @@ class CvsSandBoxAdmin(CvsWrapperBase):
                 text = "Update failed with repository command processing error"
         else:
             self.__lfh.write("+ERROR - CvsSandBoxAdmin(update) top sandbox path %s project dir %s \n" % (self.__sandBoxTopPath, projectDir))
+            if not os.path.exists(targetPath):
+                try:
+                    os.makedirs(targetPath)
+                except Exception as e:
+                    self.__lfh.write("+ERROR - CvsSandBoxAdmin(update) cannot make project path %s\n" % targetPath)
+                    self.__lfh.write(e)
             if os.access(self.__sandBoxTopPath, os.W_OK):
                 # try a full checkout --
                 #

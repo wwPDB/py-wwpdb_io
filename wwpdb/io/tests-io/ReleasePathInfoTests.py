@@ -28,14 +28,14 @@ class ReleasePathInfoTests(unittest.TestCase):
 
     def test_for_release_modified(self):
         rel_path = self.RPI.get_for_release_path()
-        ret = self.RPI.get_added_path()
+        ret = self.RPI.get_modified_path()
         self.assertIsNotNone(ret)
         self.assertNotEqual(ret, rel_path)
         self.assertTrue('modified' in ret)
 
     def test_for_release_modified_previous(self):
         rel_path = self.RPI.get_for_release_path()
-        ret = self.RPI.get_previous_added_path()
+        ret = self.RPI.get_previous_modified_path()
         self.assertIsNotNone(ret)
         self.assertNotEqual(ret, rel_path)
         self.assertTrue('modified' in ret)

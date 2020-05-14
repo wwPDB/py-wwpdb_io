@@ -103,6 +103,60 @@ class ReleasePathInfoTests(unittest.TestCase):
             rpi.getForReleasePath(subdir="emd", accession="EMD-1000", em_sub_path="something")
 
 
+class ReleasePathInfoPreviousTests(unittest.TestCase):
+    def setUp(self):
+        self.RPI = ReleasePathInfo()
+
+    def test_for_release(self):
+        ret = self.RPI.get_for_release_path()
+        self.assertIsNotNone(ret)
+
+    def test_for_release_added(self):
+        rel_path = self.RPI.get_for_release_path()
+        ret = self.RPI.get_added_path()
+        self.assertIsNotNone(ret)
+        self.assertNotEqual(ret, rel_path)
+        self.assertTrue("added" in ret)
+
+    def test_for_release_added_previous(self):
+        rel_path = self.RPI.get_for_release_path()
+        ret = self.RPI.get_previous_added_path()
+        self.assertIsNotNone(ret)
+        self.assertNotEqual(ret, rel_path)
+        self.assertTrue("added" in ret)
+        self.assertTrue(self.RPI.previous_folder_name in ret)
+
+    def test_for_release_modified(self):
+        rel_path = self.RPI.get_for_release_path()
+        ret = self.RPI.get_modified_path()
+        self.assertIsNotNone(ret)
+        self.assertNotEqual(ret, rel_path)
+        self.assertTrue("modified" in ret)
+
+    def test_for_release_modified_previous(self):
+        rel_path = self.RPI.get_for_release_path()
+        ret = self.RPI.get_previous_modified_path()
+        self.assertIsNotNone(ret)
+        self.assertNotEqual(ret, rel_path)
+        self.assertTrue("modified" in ret)
+        self.assertTrue(self.RPI.previous_folder_name in ret)
+
+    def test_for_release_emd_header(self):
+        rel_path = self.RPI.get_for_release_path()
+        ret = self.RPI.get_emd_subfolder_path(accession="EMD-1223", subfolder="header")
+        self.assertIsNotNone(ret)
+        self.assertNotEqual(ret, rel_path)
+        self.assertTrue("emd" in ret)
+
+    def test_for_release_emd_header_previous(self):
+        rel_path = self.RPI.get_for_release_path()
+        ret = self.RPI.get_previous_emd_subfolder_path(accession="EMD-1234", subfolder="header")
+        self.assertIsNotNone(ret)
+        self.assertNotEqual(ret, rel_path)
+        self.assertTrue("emd" in ret)
+        self.assertTrue(self.RPI.previous_folder_name in ret)
+
+
 def suiteStandardPathTests():  # pragma: no cover
     suiteSelect = unittest.TestSuite()
     suiteSelect.addTest(ReleasePathInfoTests("testGetReleasePaths"))
@@ -111,7 +165,22 @@ def suiteStandardPathTests():  # pragma: no cover
     return suiteSelect
 
 
+def suitePreviousPathTests():  # pragma: no cover
+    suiteSelect = unittest.TestSuite()
+    suiteSelect.addTest(ReleasePathInfoPreviousTests("test_for_release"))
+    suiteSelect.addTest(ReleasePathInfoPreviousTests("test_for_release_added"))
+    suiteSelect.addTest(ReleasePathInfoPreviousTests("test_for_release_added_previous"))
+    suiteSelect.addTest(ReleasePathInfoPreviousTests("test_for_release_modified"))
+    suiteSelect.addTest(ReleasePathInfoPreviousTests("test_for_release_modified_previous"))
+    suiteSelect.addTest(ReleasePathInfoPreviousTests("test_for_release_emd_header"))
+    suiteSelect.addTest(ReleasePathInfoPreviousTests("test_for_release_emd_header_previous"))
+    return suiteSelect
+
+
 if __name__ == "__main__":  # pragma: no cover
     if True:
         mySuite = suiteStandardPathTests()
+        unittest.TextTestRunner(verbosity=2).run(mySuite)
+    if True:
+        mySuite = suitePreviousPathTests()
         unittest.TextTestRunner(verbosity=2).run(mySuite)

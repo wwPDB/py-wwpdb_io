@@ -13,13 +13,13 @@ class LocalFTPPathInfo(object):
         self.__siteId = siteId
         self.__cI = ConfigInfo(siteId=self.__siteId)
 
-        self.ftp_pdb_root = self.__cI.get('SITE_PDB_FTP_ROOT_DIR')
-        self.ftp_emdb_root = self.__cI.get('SITE_EMDB_FTP_ROOT_DIR')
+        self.ftp_pdb_root = self.__cI.get("SITE_PDB_FTP_ROOT_DIR")
+        self.ftp_emdb_root = self.__cI.get("SITE_EMDB_FTP_ROOT_DIR")
         self.__mapping = {
-            'model': 'mmCIF',
-            'structure_factors': 'structure_factors',
-            'chemical_shifts': 'nmr_chemical_shifts',
-            'nmr_data': 'nmr_data',
+            "model": "mmCIF",
+            "structure_factors": "structure_factors",
+            "chemical_shifts": "nmr_chemical_shifts",
+            "nmr_data": "nmr_data",
         }
 
     def __get_mapping(self, file_type):
@@ -27,25 +27,25 @@ class LocalFTPPathInfo(object):
 
     def get_ftp_pdb(self):
         if self.ftp_pdb_root:
-            return os.path.join(self.ftp_pdb_root, 'pdb', 'data', 'structures', 'all')
-        return ''
+            return os.path.join(self.ftp_pdb_root, "pdb", "data", "structures", "all")
+        return ""
 
     def get_ftp_emdb(self):
         if self.ftp_emdb_root:
-            return os.path.join(self.ftp_emdb_root, 'emdb', 'structures')
-        return ''
+            return os.path.join(self.ftp_emdb_root, "emdb", "structures")
+        return ""
 
     def get_model_path(self):
-        return os.path.join(self.get_ftp_pdb(), self.__get_mapping('model'))
+        return os.path.join(self.get_ftp_pdb(), self.__get_mapping("model"))
 
     def get_sf_path(self):
-        return os.path.join(self.get_ftp_pdb(), self.__get_mapping('structure_factors'))
+        return os.path.join(self.get_ftp_pdb(), self.__get_mapping("structure_factors"))
 
     def get_cs_path(self):
-        return os.path.join(self.get_ftp_pdb(), self.__get_mapping('chemical_shifts'))
+        return os.path.join(self.get_ftp_pdb(), self.__get_mapping("chemical_shifts"))
 
     def get_nmr_data_path(self):
-        return os.path.join(self.get_ftp_pdb(), self.__get_mapping('nmr_data'))
+        return os.path.join(self.get_ftp_pdb(), self.__get_mapping("nmr_data"))
 
     def get_model_fname(self, accession):
         model_file_name = ReleaseFileNames().get_model(accession=accession, for_release=False)

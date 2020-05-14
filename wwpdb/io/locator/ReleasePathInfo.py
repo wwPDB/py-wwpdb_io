@@ -27,8 +27,8 @@ class ReleasePathInfo(object):
     def __init__(self, siteId=None):
         self.__siteId = siteId
         self.__cI = ConfigInfo(siteId=self.__siteId)
-        self.current_folder_name = 'current'
-        self.previous_folder_name = 'previous'
+        self.current_folder_name = "current"
+        self.previous_folder_name = "previous"
 
     def getForReleasePath(self, subdir=None, version="current", accession=None, em_sub_path=None):
         """Returns path to for-release directory.
@@ -83,7 +83,7 @@ class ReleasePathInfo(object):
     def get_added_path(self, version=None):
         if version is None:
             version = self.current_folder_name
-        return self.getForReleasePath(subdir='added', version=version)
+        return self.getForReleasePath(subdir="added", version=version)
 
     def get_previous_added_path(self):
         return self.get_added_path(version=self.previous_folder_name)
@@ -91,7 +91,7 @@ class ReleasePathInfo(object):
     def get_modified_path(self, version=None):
         if version is None:
             version = self.current_folder_name
-        return self.getForReleasePath(subdir='modified', version=version)
+        return self.getForReleasePath(subdir="modified", version=version)
 
     def get_previous_modified_path(self):
         return self.get_modified_path(version=self.previous_folder_name)
@@ -103,5 +103,3 @@ class ReleasePathInfo(object):
 
     def get_previous_emd_subfolder_path(self, accession, subfolder):
         return self.get_emd_subfolder_path(accession=accession, subfolder=subfolder, version=self.previous_folder_name)
-
-

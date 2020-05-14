@@ -109,7 +109,7 @@ class CvsWrapperBase(object):
             self._cvsRoot = ":pserver:" + self._cvsUser + ":" + self._cvsPassword + "@" + self._repositoryHost + ":" + self._repositoryPath
             return True
         except Exception as e:
-            self.__lfh.write('+CvsWrapperBase(_cvsRoot) failed')
+            self.__lfh.write("+CvsWrapperBase(_cvsRoot) failed")
             self.__lfh.write(e)
             return False
 
@@ -184,7 +184,7 @@ class CvsWrapperBase(object):
                 shutil.rmtree(self._wrkPath)
                 return True
             except Exception as e:
-                self.__lfh.write('cleanup - unable to remove self._wrkpath')
+                self.__lfh.write("cleanup - unable to remove self._wrkpath")
                 self.__lfh.write(e)
                 return False
         else:

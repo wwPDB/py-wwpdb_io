@@ -49,7 +49,7 @@ class ReleasePathInfoTests(unittest.TestCase):
         self.assertTrue('emd' in ret)
 
     def test_for_release_emd_subfolder_unknown(self):
-        self.assertRaises(self.RPI.get_emd_subfolder_path(accession='EMD-1223', subfolder='wrong'))
+        self.assertRaises(Exception, self.RPI.get_emd_subfolder_path(accession='EMD-1223', subfolder='wrong'))
 
     def test_for_release_emd_header_previous(self):
         rel_path = self.RPI.get_for_release_path()
@@ -60,7 +60,7 @@ class ReleasePathInfoTests(unittest.TestCase):
         self.assertTrue(self.RPI.previous_folder_name in ret)
 
     def test_for_release_version_unknonw(self):
-        self.assertRaises(self.RPI.getForReleasePath(version='unknown'))
+        self.assertRaises(Exception, self.RPI.getForReleasePath(version='unknown'))
 
 
 if __name__ == '__main__':

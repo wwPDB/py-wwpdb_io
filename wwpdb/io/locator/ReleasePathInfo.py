@@ -27,6 +27,8 @@ class ReleasePathInfo(object):
     def __init__(self, siteId=None):
         self.__siteId = siteId
         self.__cI = ConfigInfo(siteId=self.__siteId)
+        self.current_folder_name = 'current'
+        self.previous_folder_name = 'previous'
 
     def getForReleasePath(self, subdir=None, version="current", accession=None, em_sub_path=None):
         """Returns path to for-release directory.
@@ -38,13 +40,13 @@ class ReleasePathInfo(object):
 
         returns path, or raises exception
         """
-        basedir = os.path.join(self.__cI.get("SITE_ARCHIVE_STORAGE_PATH"), "for_release")
+        basedir = self.get_for_release_path()
 
-        if version not in ["current", "previous"]:
+        if version not in [self.current_folder_name, self.previous_folder_name]:
             raise NameError("version %s not allowed" % version)
 
-        if version == "previous":
-            basedir = os.path.join(basedir, "previous")
+        if version == self.previous_folder_name:
+            basedir = os.path.join(basedir, self.previous_folder_name)
 
         if subdir:
             if subdir not in [
@@ -74,3 +76,32 @@ class ReleasePathInfo(object):
                 basedir = os.path.join(basedir, accession.upper(), em_sub_path)
 
         return basedir
+
+    def get_for_release_path(self):
+        return os.path.join(self.__cI.get("SITE_ARCHIVE_STORAGE_PATH"), "for_release")
+
+    def get_added_path(self, version=None):
+        if version is None:
+            version = self.current_folder_name
+        return self.getForReleasePath(subdir='added', version=version)
+
+    def get_previous_added_path(self):
+        return self.get_added_path(version=self.previous_folder_name)
+
+    def get_modified_path(self, version=None):
+        if version is None:
+            version = self.current_folder_name
+        return self.getForReleasePath(subdir='modified', version=version)
+
+    def get_previous_modified_path(self):
+        return self.get_modified_path(version=self.previous_folder_name)
+
+    def get_emd_subfolder_path(self, accession, subfolder, version=None):
+        if version is None:
+            version = self.current_folder_name
+        return self.getForReleasePath(subdir="emd", accession=accession, em_sub_path=subfolder, version=version)
+
+    def get_previous_emd_subfolder_path(self, accession, subfolder):
+        return self.get_emd_subfolder_path(accession=accession, subfolder=subfolder, version=self.previous_folder_name)
+
+

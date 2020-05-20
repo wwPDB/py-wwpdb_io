@@ -59,6 +59,9 @@ class ReleaseFileNames:
     def get_lower_emdb_hyphen_format(self, accession):
         return self.__get_emdb_hyphen_format(accession)
 
+    def get_lower_emdb_underscore_format(self, accession):
+        return self.__get_emdb_underscore_format(accession)
+
     def __process_remap(self, remap_type, accession):
         """looks up the accession remapping in __accession_remap"""
         if remap_type == "hyphen":

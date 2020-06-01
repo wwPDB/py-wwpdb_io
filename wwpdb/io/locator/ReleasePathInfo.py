@@ -78,7 +78,16 @@ class ReleasePathInfo(object):
         return basedir
 
     def get_for_release_path(self):
+        """Returns path to for_release directory"""
         return os.path.join(self.__cI.get("SITE_ARCHIVE_STORAGE_PATH"), "for_release")
+
+    def get_for_release_beta_path(self):
+        """Returns path to for_release_beta directory"""
+        return os.path.join(self.__cI.get("SITE_ARCHIVE_STORAGE_PATH"), "for_release_beta")
+
+    def get_for_release_version_path(self):
+        """Returns path to for_release_version directory"""
+        return os.path.join(self.__cI.get("SITE_ARCHIVE_STORAGE_PATH"), "for_release_version")
 
     def get_added_path(self, version=None):
         if version is None:

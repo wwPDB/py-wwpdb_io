@@ -374,22 +374,13 @@ class CvsSandBoxAdmin(CvsWrapperBase):
     def setSandBoxTopPath(self, dirPath):
         """ Assign the path that contains or will contain the working copy of the cvs project.
 
-            Must be an existing writable path.
-
         """
+        if not os.path.exists(dirPath):
+            os.makedirs(dirPath)
         if os.access(dirPath, os.W_OK):
             self.__sandBoxTopPath = dirPath
             return True
         else:
-            if not os.path.exists(dirPath):
-                try:
-                    os.makedirs(dirPath)
-                    if os.access(dirPath, os.W_OK):
-                        self.__sandBoxTopPath = dirPath
-                        return True
-                except Exception as e:
-                    self.__lfh.write("+CvsAdmin failed to make CVS top path")
-                    self.__lfh.write(e)
             return False
 
     def getSandBoxTopPath(self):

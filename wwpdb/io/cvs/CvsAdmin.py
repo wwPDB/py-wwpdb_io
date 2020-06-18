@@ -378,13 +378,13 @@ class CvsSandBoxAdmin(CvsWrapperBase):
         if not os.path.exists(dirPath):
             try:
                 os.makedirs(dirPath)
-            except:
-                self.__lfh.write("+setSandBoxTopPath - can't make sandboxpath")
+            except Exception as e:
+                self.__lfh.write("+setSandBoxTopPath - can't make sandboxpath: %s\n" % str(e))
         if os.access(dirPath, os.W_OK):
             self.__sandBoxTopPath = dirPath
             return True
         else:
-            self.__lfh.write("+setSandBoxTopPath - can't access sandboxpath")
+            self.__lfh.write("+setSandBoxTopPath - can't access sandboxpath\n")
             return False
 
     def getSandBoxTopPath(self):
@@ -465,7 +465,7 @@ class CvsSandBoxAdmin(CvsWrapperBase):
                     os.makedirs(targetPath)
                 except Exception as e:
                     self.__lfh.write("+ERROR - CvsSandBoxAdmin(update) cannot make project path %s\n" % targetPath)
-                    self.__lfh.write(e)
+                    self.__lfh.write("%s\n" % str(e))
             if os.access(self.__sandBoxTopPath, os.W_OK):
                 # try a full checkout --
                 #

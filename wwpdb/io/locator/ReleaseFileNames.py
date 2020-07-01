@@ -33,6 +33,7 @@ class ReleaseFileNames:
             "validsvg": ["{}_multipercentile_validation.svg", "{}_multipercentile_validation.svg", False, False],
             "valid2fo": ["{}_validation_2fo-fc_map_coef.cif", "{}_validation_2fo-fc_map_coef.cif", False, False],
             "validfo": ["{}_validation_fo-fc_map_coef.cif", "{}_validation_fo-fc_map_coef.cif", False, False],
+            "validimagetar": ["{}_validation_images.tar", "{}_validation_images.tar", False, False],
         }
 
         # public for_rel
@@ -139,3 +140,6 @@ class ReleaseFileNames:
 
     def get_nmr_data(self, accession, for_release=False):
         return self.__getfname("nmr_data", accession, for_release)
+
+    def get_validation_image_tar(self, accession, for_release=False):
+        return self.__getfname("validimagetar", accession, for_release)

@@ -56,6 +56,7 @@ class ReleasePathInfo(object):
                 "emd",
                 "val_reports",
                 "em_val_reports",
+                "val_images"
             ]:
                 raise NameError("subdir %s not allowed" % subdir)
 

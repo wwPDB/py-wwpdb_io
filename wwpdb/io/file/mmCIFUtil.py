@@ -146,6 +146,9 @@ class mmCIFUtil:
         #
         self.__container.append(category)
 
+    def RemoveCategory(self, categoryID):
+        return self.__container.remove(categoryID)
+
     def InsertData(self, categoryID, dataList):
         """
         """

@@ -1,8 +1,9 @@
+import logging
 import os
 import os.path
-import logging
 
 from wwpdb.utils.config.ConfigInfo import ConfigInfo
+
 from wwpdb.io.locator.ReleaseFileNames import ReleaseFileNames
 
 logger = logging.getLogger(__name__)
@@ -24,6 +25,12 @@ class LocalFTPPathInfo(object):
 
     def __get_mapping(self, file_type):
         return self.__mapping.get(file_type)
+
+    def set_ftp_pdb_root(self, ftp_pdb_root):
+        self.ftp_pdb_root = ftp_pdb_root
+
+    def set_ftp_emdb_root(self, ftp_emdb_root):
+        self.ftp_emdb_root = ftp_emdb_root
 
     def get_ftp_pdb(self):
         if self.ftp_pdb_root:

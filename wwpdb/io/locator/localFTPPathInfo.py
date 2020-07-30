@@ -27,10 +27,12 @@ class LocalFTPPathInfo(object):
         return self.__mapping.get(file_type)
 
     def set_ftp_pdb_root(self, ftp_pdb_root):
-        self.ftp_pdb_root = ftp_pdb_root
+        if ftp_pdb_root:
+            self.ftp_pdb_root = ftp_pdb_root
 
     def set_ftp_emdb_root(self, ftp_emdb_root):
-        self.ftp_emdb_root = ftp_emdb_root
+        if ftp_emdb_root:
+            self.ftp_emdb_root = ftp_emdb_root
 
     def get_ftp_pdb(self):
         if self.ftp_pdb_root:

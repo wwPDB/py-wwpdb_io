@@ -49,15 +49,7 @@ class ReleasePathInfo(object):
             basedir = os.path.join(basedir, self.previous_folder_name)
 
         if subdir:
-            if subdir not in [
-                "added",
-                "modified",
-                "obsolete",
-                "emd",
-                "val_reports",
-                "em_val_reports",
-                "val_images"
-            ]:
+            if subdir not in ["added", "modified", "obsolete", "emd", "val_reports", "em_val_reports", "val_images"]:
                 raise NameError("subdir %s not allowed" % subdir)
 
             basedir = os.path.join(basedir, subdir)

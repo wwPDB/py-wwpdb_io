@@ -22,7 +22,7 @@ class ReleaseFileNames:
             "model": ["{}.cif", "{}.cif", True, True],
             "sf": ["r{}sf.ent", "{}-sf.cif", True, False],
             "cs": ["{}_cs.str", "{}_cs.str", True, False],
-            "nmr_data": ["{}_nmr-data.str", "{}_nmr-data.str", True, False],
+            "nmr_data": ["{}_nmr-data.str", "{}_nmr-data.str", True, True],
             "emdxml": ["{}-v30.xml", "{}_v3.xml", False, False],
             "emdmap": ["{}.map", "{}.map", True, True],
             "emdfsc": ["{}_fsc.xml", "{}_fsc.xml", False, False],

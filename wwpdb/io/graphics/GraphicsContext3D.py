@@ -26,7 +26,7 @@ from mmcif_utils.persist.PdbxPersist import PdbxPersist
 
 
 class GraphicsContext3D(object):
-    """ Construct a 3D graphics context from selected rows in PDBx/mmCIF data catagories.
+    """Construct a 3D graphics context from selected rows in PDBx/mmCIF data catagories.
 
     Only app3D='JMol' is currently supported.
     """
@@ -42,7 +42,7 @@ class GraphicsContext3D(object):
         #
 
     def __setup(self):
-        """ Category dictionary containing data attribute names which define 3D context.
+        """Category dictionary containing data attribute names which define 3D context.
 
         For each category with a graphics context a list of atom/component/polymer features is
         is provided.  The feature are defined as a set of standard keys defining the
@@ -225,15 +225,14 @@ class GraphicsContext3D(object):
     #  Public methods
     #
     def getCategoriesWithContext(self):
-        """  Return the list of categories with a defined graphics context.
-        """
+        """Return the list of categories with a defined graphics context."""
         cL = []
         cL.extend(self.__d.keys())
         cL.extend(self.__searchContextCategoryList)
         return cL
 
     def setPersistStorePath(self, persistFilePath):
-        """  Set the path of persistent store.
+        """Set the path of persistent store.
 
         Required for categories in the __searchContextCategoryList.
 
@@ -241,10 +240,10 @@ class GraphicsContext3D(object):
         self.__persistFilePath = persistFilePath
 
     def getGraphicsContext(self, categoryName=None, rowDictList=None):
-        """ Create a command string to highlight the 3D graphics context for the
-            input list of rows (stored with attribute keys) in the target category.
+        """Create a command string to highlight the 3D graphics context for the
+        input list of rows (stored with attribute keys) in the target category.
 
-            Return a script command appropriate for the current 3D graphics application.
+        Return a script command appropriate for the current 3D graphics application.
         """
         #
         if categoryName in self.__searchContextCategoryList:
@@ -273,8 +272,7 @@ class GraphicsContext3D(object):
     # Internal methods for here on --
     #
     def __createContext(self, categoryName=None, rowDict=None):
-        """  Wrapper to create the feature selection ---
-        """
+        """Wrapper to create the feature selection ---"""
         contextL = []
 
         if categoryName in self.__rangeTypeCategoryList:
@@ -287,7 +285,7 @@ class GraphicsContext3D(object):
         return contextL
 
     def __getContextViaSearch(self, categoryName=None, rowDictList=None):
-        """ Establish the context for cases where the structural details may be determined from
+        """Establish the context for cases where the structural details may be determined from
         related data categories.
         """
         #
@@ -320,10 +318,10 @@ class GraphicsContext3D(object):
         return gcS
 
     def __createContextSimple(self, categoryName=None, rowDict=None):
-        """  Create a graphics context from the list of feature templates for this category.
+        """Create a graphics context from the list of feature templates for this category.
 
-             The features are treated independently and the associated contexts are returned as
-             a list of JMol "atom expressions" appropriate for a JMol "select" statement.
+        The features are treated independently and the associated contexts are returned as
+        a list of JMol "atom expressions" appropriate for a JMol "select" statement.
         """
         contextL = []
         catNameLC = categoryName.lower()
@@ -345,10 +343,10 @@ class GraphicsContext3D(object):
         return contextL
 
     def __createComponentRangeContext(self, categoryName=None, rowDict=None):
-        """  Create a "component range" graphics context from a pair of features templates for this category.
+        """Create a "component range" graphics context from a pair of features templates for this category.
 
-             The feature pair are treated as defining a contiguous range of components and a range style
-             JMol "atom expression" appropriate for a JMol "select" statement is returned.
+        The feature pair are treated as defining a contiguous range of components and a range style
+        JMol "atom expression" appropriate for a JMol "select" statement is returned.
         """
 
         contextL = []
@@ -392,8 +390,8 @@ class GraphicsContext3D(object):
         return contextL
 
     def __assignFeatureContext(self, app3D, featureInstDict=None):
-        """ The general syntax for JMol is  [<compId>]<seqId>^<insertCode>:<authAsymId>.<atomId>/<model_num>
-                                            [<compId>]<beg_seqId>-<end_seqId>^<insertCode>:<authAsymId>.<atomId>/<model_num>
+        """The general syntax for JMol is  [<compId>]<seqId>^<insertCode>:<authAsymId>.<atomId>/<model_num>
+        [<compId>]<beg_seqId>-<end_seqId>^<insertCode>:<authAsymId>.<atomId>/<model_num>
         """
         if featureInstDict is None or featureInstDict == {}:
             return ""
@@ -428,7 +426,7 @@ class GraphicsContext3D(object):
         return "".join(sL)
 
     def __getFirstObject(self, persistFilePath, objectName=None):
-        """ Open the persistent data store and fetch the input object name from the first container.
+        """Open the persistent data store and fetch the input object name from the first container.
 
         Note -- Will be used for more complex cases which require additional information from
         coordinate model file to resolve the graphics context.
@@ -461,10 +459,10 @@ class GraphicsContext3D(object):
             return None
 
     def __searchAttribute(self, keyValue=None, searchKeyName=None, searchCategoryName=None):
-        """ Search input category for rows where the attribue searchKeyName equals
-            the input keyValue.
+        """Search input category for rows where the attribue searchKeyName equals
+        the input keyValue.
 
-            Return a list of rows stored as dictionaries with attribute names mapped to  values.
+        Return a list of rows stored as dictionaries with attribute names mapped to  values.
         """
         rDL = []
         if keyValue is not None:
@@ -498,8 +496,7 @@ class GraphicsContext3D(object):
             return "label '%c:%n:%r' ; "
 
     def __extractValues(self, attribDict, rowDict):
-        """  Return a value dictionary
-        """
+        """Return a value dictionary"""
         rD = {}
         for ky, attrib in attribDict.items():
             rD[ky] = None

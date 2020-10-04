@@ -26,9 +26,7 @@ import logging
 
 
 class CvsWrapper(object):
-    """Wrapper class for opertations on cvs repositories.
-
-    """
+    """Wrapper class for opertations on cvs repositories."""
 
     def __init__(self, tmpPath="./"):
         self.__tmpPath = tmpPath
@@ -66,9 +64,9 @@ class CvsWrapper(object):
         return text
 
     def getRevisionList(self, cvsPath):
-        """ Return a list of tuples containing the revision identifiers for the input file.
+        """Return a list of tuples containing the revision identifiers for the input file.
 
-            Return data has the for [(RevId, A/M, timeStamp),...] where A=Added and M=Modified.
+        Return data has the for [(RevId, A/M, timeStamp),...] where A=Added and M=Modified.
         """
         revList = []
         cmd = self.__getHistoryCmd(cvsPath)
@@ -78,8 +76,7 @@ class CvsWrapper(object):
         return revList
 
     def cleanup(self):
-        """Cleanup temporary files and directories
-        """
+        """Cleanup temporary files and directories"""
         return shutil.rmtree(self.__wrkPath)
 
     def checkOutFile(self, cvsPath, outPath, revId=None):
@@ -204,8 +201,7 @@ class CvsWrapper(object):
             return False
 
     def __extractRevisions(self):
-        """Extract revisions details from the last history command.
-        """
+        """Extract revisions details from the last history command."""
         revList = []
         try:
             fName = os.path.join(self.__wrkPath, self.__cvsInfoFileName)

@@ -57,8 +57,8 @@ logger = logging.getLogger(__name__)
 
 class DataReferenceBase(object):
 
-    """ Base class for data references such as files, web services and
-        database services.
+    """Base class for data references such as files, web services and
+    database services.
 
     """
 
@@ -74,8 +74,7 @@ class DataReferenceBase(object):
 
 class ReferenceFileInfo(object):
 
-    """ Accessors for nomenclature conventions for reference files.
-    """
+    """Accessors for nomenclature conventions for reference files."""
 
     def __init__(self, verbose=False, log=sys.stderr):
         self.__verbose = verbose
@@ -140,8 +139,8 @@ class ReferenceFileInfo(object):
 
 class ReferenceFileComponents(object):
 
-    """ Provides methods for deconstructing  reference file names in terms of
-        of their constituent attributes.
+    """Provides methods for deconstructing  reference file names in terms of
+    of their constituent attributes.
     """
 
     def __init__(self, fileName=None, verbose=False, log=sys.stderr):
@@ -170,14 +169,13 @@ class ReferenceFileComponents(object):
         return self.__splitFileName()
 
     def get(self):
-        """ Convenience method returning the elements of the reference file name
-            in a single tuple.
+        """Convenience method returning the elements of the reference file name
+        in a single tuple.
         """
         return (self.__depositionDataSetId, self.__contentType, self.__contentFormat, self.__filePartNumber, self.__versionId)
 
     def __splitFileName(self):
-        """ Internal method to decompose reference file name into components.
-        """
+        """Internal method to decompose reference file name into components."""
         self.__reset()
 
         try:
@@ -216,45 +214,37 @@ class ReferenceFileComponents(object):
         return False
 
     def getVersionId(self):
-        """ Return version identifier (integer), current symbolic setting, or None
-        """
+        """Return version identifier (integer), current symbolic setting, or None"""
         return self.__versionId
 
     def getDepositionDataSetId(self):
-        """ Return the data set identier -  (uppoer case)
-        """
+        """Return the data set identier -  (uppoer case)"""
         return self.__depositionDataSetId
 
     def getDepositonDataSetId(self):
-        """ Return the data set identier -  (uppoer case)
-        """
+        """Return the data set identier -  (uppoer case)"""
         return self.__depositionDataSetId
 
     def getPartitionNumber(self):
-        """  Return the file partition number (integer)  or symbolic setting.
-        """
+        """Return the file partition number (integer)  or symbolic setting."""
         return self.__filePartNumber
 
     def getContentTypeAcronym(self):
-        """  Return the content type acronym
-        """
+        """Return the content type acronym"""
         return self.__contentTypeAcronym
 
     def getContentType(self):
-        """ Return the content type
-        """
+        """Return the content type"""
         return self.__contentType
 
     def getContentFormat(self):
-        """ Return the content format using content acronym and file extension.
-        """
+        """Return the content format using content acronym and file extension."""
         return self.__contentFormat
 
 
 class DataFileReference(DataReferenceBase):
 
-    """
-    """
+    """"""
 
     def __init__(self, siteId=None, verbose=False, log=sys.stderr):
         super(DataFileReference, self).__init__()
@@ -363,18 +353,18 @@ class DataFileReference(DataReferenceBase):
     def getSitePrefix(self):
         """Returns:
 
-           Current setting of the site prefix.
+        Current setting of the site prefix.
 
         """
         return self.__cI.get("SITE_PREFIX")
 
     def setSessionPath(self, dirPath=None):
         """Set the full directory path for 'session' type storage.  The 'session' feature provides
-           a means to support workflow file naming conventions for applications with transient
-           storage requirements.
+        a means to support workflow file naming conventions for applications with transient
+        storage requirements.
 
-           Returns True for any non-null argument.  No check is performed for the existence of
-           this path on input.
+        Returns True for any non-null argument.  No check is performed for the existence of
+        this path on input.
         """
         if dirPath is not None:
             self.__sessionPath = dirPath
@@ -384,16 +374,16 @@ class DataFileReference(DataReferenceBase):
 
     def setExternalFilePath(self, filePath, fileFormat="any"):
         """Set the full file path for this reference outside of the archive/workflow system.
-           Other identifying attributes of this file reference are ignored/by-passed when
-           this path is set.   This feature is provided to permit external data with alternative
-           file name conventions to be used within data file references.
+        Other identifying attributes of this file reference are ignored/by-passed when
+        this path is set.   This feature is provided to permit external data with alternative
+        file name conventions to be used within data file references.
 
-           File format may be optionall specified and must correspond to a supported
-           format or the defaule 'any'.
+        File format may be optionall specified and must correspond to a supported
+        format or the defaule 'any'.
 
-           Returns:
+        Returns:
 
-           True if the assignment was successful or False otherwise.
+        True if the assignment was successful or False otherwise.
 
         """
         if (filePath is None) or (len(filePath) < 1):
@@ -430,23 +420,23 @@ class DataFileReference(DataReferenceBase):
     def setContentTypeAndFormat(self, contentType, fileFormat):
         """Set the content type and file format for the file reference.
 
-           Examples of supported content types include:
-           - model
-           - structure-factors
-           - nmr-restraints
-           - nmr-chemical-shifts
-           - component-image
-           - component-definition
-           - validation-report
-           - em-volume
+        Examples of supported content types include:
+        - model
+        - structure-factors
+        - nmr-restraints
+        - nmr-chemical-shifts
+        - component-image
+        - component-definition
+        - validation-report
+        - em-volume
 
-           Supported formats for each content type are defined in file format
-           dictionary (`self.__contentInfoD`).
+        Supported formats for each content type are defined in file format
+        dictionary (`self.__contentInfoD`).
 
-           Returns:
+        Returns:
 
-           True for a recognized content type  or False otherwise.
-           """
+        True for a recognized content type  or False otherwise.
+        """
         tS = str(contentType).lower()
         try:
             self.__contentInfoD.keys()
@@ -480,17 +470,17 @@ class DataFileReference(DataReferenceBase):
     def setStorageType(self, storageType):
         """Set the storage type for this file reference.
 
-           Supported storage types include:
-           - archive or wf-archive
-           - wf-instance
-           - wf-shared
-           - deposit
-           - tempdep
-           - session or wf-session
+        Supported storage types include:
+        - archive or wf-archive
+        - wf-instance
+        - wf-shared
+        - deposit
+        - tempdep
+        - session or wf-session
 
-           Returns:
+        Returns:
 
-           True for a recognized storage type or False otherwise.
+        True for a recognized storage type or False otherwise.
 
         """
         tS = str(storageType).lower()
@@ -505,14 +495,14 @@ class DataFileReference(DataReferenceBase):
     def setVersionId(self, versionId):
         """Set the version identifier for this file reference.
 
-           Supported version identifiers include:
-           - latest, ...
-           - orginal
-           - an integer version number (1,2,...,)
+        Supported version identifiers include:
+        - latest, ...
+        - orginal
+        - an integer version number (1,2,...,)
 
-           Returns:
+        Returns:
 
-           True for a valid version identifier or False otherwise.
+        True for a valid version identifier or False otherwise.
 
         """
         tS = str(versionId).lower()
@@ -599,13 +589,13 @@ class DataFileReference(DataReferenceBase):
     def setWorkflowNameSpace(self, wNameSpace):
         """Set the workflow name space identifier.
 
-           This identifier must be an alpha numeric string containing only
-           characters [a-zA-Z0-9].
+        This identifier must be an alpha numeric string containing only
+        characters [a-zA-Z0-9].
 
-           Returns:
+        Returns:
 
-           True if the input identifier is a properly formed identifier
-           or False otherwise.
+        True if the input identifier is a properly formed identifier
+        or False otherwise.
 
         """
         if (wNameSpace is None) or (len(str(wNameSpace)) < 1):
@@ -618,16 +608,16 @@ class DataFileReference(DataReferenceBase):
 
     def setPartitionNumber(self, iPartitionNumber=1):
         """Set the integer file partition number.  This is used to identify the physical
-           pieces of a single logical data file.
+        pieces of a single logical data file.
 
-           Supported values for partition include:
-           - latest, ...
-           - orginal
-           - an integer version number (1,2,...,)
+        Supported values for partition include:
+        - latest, ...
+        - orginal
+        - an integer version number (1,2,...,)
 
-           Returns:
+        Returns:
 
-           True if the input partition is properly formed or False otherwise.
+        True if the input partition is properly formed or False otherwise.
 
         """
         ok = False
@@ -650,28 +640,28 @@ class DataFileReference(DataReferenceBase):
     def getPartitionNumber(self):
         """Returns:
 
-           The current partition number  or *1* if this is not set.
+        The current partition number  or *1* if this is not set.
         """
         return self.__filePartNumber
 
     def getContentType(self):
         """Returns:
 
-           The current content type or *None* if this is not set.
+        The current content type or *None* if this is not set.
         """
         return self.__contentType
 
     def getFileFormat(self):
         """Returns:
 
-           The current file format or *None* if this is not set.
+        The current file format or *None* if this is not set.
         """
         return self.__fileFormat
 
     def getStorageType(self):
         """Returns:
 
-           The current storage type or *None* if this is not set.
+        The current storage type or *None* if this is not set.
         """
 
         return self.__storageType
@@ -679,28 +669,28 @@ class DataFileReference(DataReferenceBase):
     def getVersionId(self):
         """Returns:
 
-           The current version identifier or *None* if this is not set.
+        The current version identifier or *None* if this is not set.
         """
         return self.__versionId
 
     def getDepositionDataSetId(self):
         """Returns:
 
-           The current deposition data set identifier  or *None* if this is not set.
+        The current deposition data set identifier  or *None* if this is not set.
         """
         return self.__depositionDataSetId
 
     def getWorkflowInstanceId(self):
         """Returns:
 
-           The current workflow instance identifier  or *None* if this is not set.
+        The current workflow instance identifier  or *None* if this is not set.
         """
         return self.__workflowInstanceId
 
     def getWorkflowNameSpace(self):
         """Returns:
 
-           The current workflow name space identifier  or *None* if this is not set.
+        The current workflow name space identifier  or *None* if this is not set.
         """
         return self.__workflowNameSpace
 
@@ -713,18 +703,18 @@ class DataFileReference(DataReferenceBase):
     def isReferenceValid(self):
         """Test if the reference information is complete and the data reference is valid.
 
-           Valid references are:
+        Valid references are:
 
-           - A path external to the archive/worflow system
-           - A fully defined internal reference consisting or identifiers,
-             content type, storage type, format, and version.
+        - A path external to the archive/worflow system
+        - A fully defined internal reference consisting or identifiers,
+          content type, storage type, format, and version.
 
-           Note that this is NOT an existence test.  References may be defined and validated
-           before the file objects which they reference are created.
+        Note that this is NOT an existence test.  References may be defined and validated
+        before the file objects which they reference are created.
 
-           Returns:
+        Returns:
 
-           True for either a valid external or internal reference or False otherwise.
+        True for either a valid external or internal reference or False otherwise.
 
         """
         if self.__externalFilePath is not None:
@@ -733,12 +723,12 @@ class DataFileReference(DataReferenceBase):
             return self.__isInternalReferenceValid()
 
     def getDirPathReference(self):
-        """ Get the path to the directory containing the data file reference.
+        """Get the path to the directory containing the data file reference.
 
-            Returns:
+        Returns:
 
-            The file system path to the directory containing the file reference or *None*
-            if this cannot be determined.
+        The file system path to the directory containing the file reference or *None*
+        if this cannot be determined.
 
         """
         if self.__externalFilePath is not None:
@@ -750,11 +740,11 @@ class DataFileReference(DataReferenceBase):
 
     def getFilePathReference(self):
         """Get the versioned file path for an internal data file reference or the path
-           to an external data file reference.
+        to an external data file reference.
 
-           Returns:
+        Returns:
 
-           The file system path to the file reference or *None* if this cannot be determined.
+        The file system path to the file reference or *None* if this cannot be determined.
 
         """
         if self.__externalFilePath is not None:
@@ -777,11 +767,11 @@ class DataFileReference(DataReferenceBase):
     def getFileVersionNumber(self):
         """Get the version number corresponding to the current data file reference.
 
-           Returns:
+        Returns:
 
-           The version number 1-N of the current data reference or 0 otherwise.
-           External references are treated as having no version and 0 is returned for
-           these cases.
+        The version number 1-N of the current data reference or 0 otherwise.
+        External references are treated as having no version and 0 is returned for
+        these cases.
 
         """
 
@@ -799,16 +789,16 @@ class DataFileReference(DataReferenceBase):
 
     def __isInternalReferenceValid(self):
         """Test if the current reference information is complete for an internal reference.
-           A reference is considered internal which points within the archive, workflow
-           instance, deposit or session file systems.  Otherwise the reference is considered external
-           and not subject to internal naming or path conventions.
+        A reference is considered internal which points within the archive, workflow
+        instance, deposit or session file systems.  Otherwise the reference is considered external
+        and not subject to internal naming or path conventions.
 
-           Note that this is NOT an existence test.  References may be defined and validated
-           before the file objects which they reference are created.
+        Note that this is NOT an existence test.  References may be defined and validated
+        before the file objects which they reference are created.
 
-           Returns:
+        Returns:
 
-           True if the internal reference is complete or False otherwise.
+        True if the internal reference is complete or False otherwise.
         """
         referenceType = self.getReferenceType()
 
@@ -860,9 +850,9 @@ class DataFileReference(DataReferenceBase):
     def __getExternalPath(self):
         """Get the path of the current external file reference.
 
-           Returns:
+        Returns:
 
-           The external file path.  *None* is returned on failure.
+        The external file path.  *None* is returned on failure.
         """
         try:
             (pth, _fn) = os.path.split(self.__externalFilePath)
@@ -873,9 +863,9 @@ class DataFileReference(DataReferenceBase):
     def __getExternalFileNameBase(self):
         """Get the base file name for the current external file reference.
 
-           Returns:
+        Returns:
 
-           The external base file name.  *None* is returned on failure.
+        The external base file name.  *None* is returned on failure.
         """
         try:
             (_pth, fn) = os.path.split(self.__externalFilePath)
@@ -1005,10 +995,10 @@ class DataFileReference(DataReferenceBase):
             return None
 
     def getVersionIdSearchTarget(self):
-        """  Create a search target for the files containing any version identifier consistent with the
-             current file settings.
+        """Create a search target for the files containing any version identifier consistent with the
+        current file settings.
 
-             Returns a the search target appropriate for glob() or None
+        Returns a the search target appropriate for glob() or None
         """
         try:
             if self.getReferenceType() != "file":
@@ -1117,13 +1107,13 @@ class DataFileReference(DataReferenceBase):
         return 0
 
     def __latestVersion(self, dirPath, baseName):
-        """ Get the latest version of file *baseName* in path *dirPath*.
+        """Get the latest version of file *baseName* in path *dirPath*.
 
-            The convention for version numbering is <baseName>.V#
+        The convention for version numbering is <baseName>.V#
 
-            Returns:
+        Returns:
 
-            The latest integer version number  or 0 if no versions exist.
+        The latest integer version number  or 0 if no versions exist.
 
         """
         try:
@@ -1154,12 +1144,12 @@ class DataFileReference(DataReferenceBase):
     ##
     ##
     def __latestPartitionNumber(self, dirPath, searchTarget):
-        """ Get the latest partition number of file in path *dirPath*
-            consistent with current file settings.
+        """Get the latest partition number of file in path *dirPath*
+        consistent with current file settings.
 
-            Returns:
+        Returns:
 
-            The latest integer partition number  or 0 if no files exist.
+        The latest integer partition number  or 0 if no files exist.
 
         """
         try:

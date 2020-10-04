@@ -57,8 +57,7 @@ class CvsAdminTests(unittest.TestCase):
         pass
 
     def testCvsHistory(self):
-        """
-        """
+        """"""
         self.__lfh.write("Starting %s %s\n" % (self.__class__.__name__, sys._getframe().f_code.co_name))
         try:
             text = ""
@@ -77,8 +76,7 @@ class CvsAdminTests(unittest.TestCase):
             self.fail()
 
     def testCvsCheckOutFile(self):
-        """
-        """
+        """"""
         self.__lfh.write("Starting %s %s\n" % (self.__class__.__name__, sys._getframe().f_code.co_name))
         try:
             text = ""
@@ -95,8 +93,7 @@ class CvsAdminTests(unittest.TestCase):
             self.fail()
 
     def testCvsCheckOutRevisions(self):
-        """
-        """
+        """"""
         self.__lfh.write("Starting %s %s\n" % (self.__class__.__name__, sys._getframe().f_code.co_name))
         try:
             text = ""
@@ -123,8 +120,7 @@ class CvsAdminTests(unittest.TestCase):
             self.fail()
 
     def testCvsCheckOutProject(self):
-        """
-        """
+        """"""
         self.__lfh.write("Starting %s %s\n" % (self.__class__.__name__, sys._getframe().f_code.co_name))
         try:
             text = ""
@@ -143,8 +139,7 @@ class CvsAdminTests(unittest.TestCase):
             self.fail()
 
     def testCvsUpdateProject(self):
-        """
-        """
+        """"""
         self.__lfh.write("Starting %s %s\n" % (self.__class__.__name__, sys._getframe().f_code.co_name))
         try:
             text = ""
@@ -163,8 +158,7 @@ class CvsAdminTests(unittest.TestCase):
             self.fail()
 
     def testCvsAddCommit(self):
-        """
-        """
+        """"""
         self.__lfh.write("Starting %s %s\n" % (self.__class__.__name__, sys._getframe().f_code.co_name))
         try:
             text = ""

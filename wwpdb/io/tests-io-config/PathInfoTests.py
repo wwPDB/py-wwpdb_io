@@ -60,8 +60,7 @@ class PathInfoTests(unittest.TestCase):
         logger.debug("Completed %s at %s (%.4f seconds)\n" % (self.id(), time.strftime("%Y %m %d %H:%M:%S", time.localtime()), endTime - self.__startTime))
 
     def testGetStandardPaths(self):
-        """ Test getting standard file names within session paths.
-        """
+        """Test getting standard file names within session paths."""
         ok = True
         # fileSource, id, partionId, versionId
         tests = [
@@ -150,7 +149,9 @@ class PathInfoTests(unittest.TestCase):
             logger.debug("getWfInstancePath (PDBx):   %s" % fp)
             self.assertIsNotNone(fp, "Failed to find wf instance path")
 
-            fp = pI.getInstanceTopPath(dataSetId,)
+            fp = pI.getInstanceTopPath(
+                dataSetId,
+            )
             logger.debug("getWfInstanceTopPath (PDBx):   %s" % fp)
             self.assertIsNotNone(fp, "Failed to find wf Top instance path")
 

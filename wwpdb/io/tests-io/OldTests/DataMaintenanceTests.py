@@ -103,9 +103,9 @@ class DataMaintenanceTests(unittest.TestCase):
         return fL
 
     def __getRecoveryInfo(self, purgeType="exp"):
-        """ Return the list of tuple describing content type and milestones to be recovered.
+        """Return the list of tuple describing content type and milestones to be recovered.
 
-            return [{fileSource,contentType,formatType,mileStone,purgeType},]
+        return [{fileSource,contentType,formatType,mileStone,purgeType},]
         """
         rL = []
         if purgeType in ["exp"]:
@@ -133,8 +133,7 @@ class DataMaintenanceTests(unittest.TestCase):
         return rL
 
     def testRecoverProductionList(self):
-        """   Test case for selected recovery of selected content types and milestone files from snapshot directory
-        """
+        """Test case for selected recovery of selected content types and milestone files from snapshot directory"""
         self.__lfh.write("\nStarting %s %s\n" % (self.__class__.__name__, sys._getframe().f_code.co_name))
         try:
             idList = self.__getIdList(self.__idListPath)
@@ -170,9 +169,9 @@ class DataMaintenanceTests(unittest.TestCase):
             self.fail()
 
     def __getPurgeInfo(self, purgeType="exp"):
-        """ Return a list of tuples describing content types and milestone data files to be purged -
+        """Return a list of tuples describing content types and milestone data files to be purged -
 
-            return [{fileSource,contentType,formatType,mileStone,purgeType},]
+        return [{fileSource,contentType,formatType,mileStone,purgeType},]
         """
         rL = []
         if purgeType in ["exp"]:
@@ -217,8 +216,7 @@ class DataMaintenanceTests(unittest.TestCase):
                 pass
 
     def testCreatePurgeProductionList(self):
-        """   Test case for generating canditate files for purge -
-        """
+        """Test case for generating canditate files for purge -"""
         self.__lfh.write("\nStarting %s %s\n" % (self.__class__.__name__, sys._getframe().f_code.co_name))
         try:
             idList = self.__getIdList(self.__idListPath)
@@ -259,8 +257,7 @@ class DataMaintenanceTests(unittest.TestCase):
             self.fail()
 
     def testPurgeProductionList(self):
-        """  Preliminary version of purge operations post release -
-        """
+        """Preliminary version of purge operations post release -"""
         self.__lfh.write("\nStarting %s %s\n" % (self.__class__.__name__, sys._getframe().f_code.co_name))
         try:
 
@@ -303,8 +300,7 @@ class DataMaintenanceTests(unittest.TestCase):
             self.fail()
 
     def testPurgeCandidatesList(self):
-        """
-        """
+        """"""
         self.__lfh.write("\nStarting %s %s\n" % (self.__class__.__name__, sys._getframe().f_code.co_name))
         try:
             idList = self.__getIdList(self.__idListPath)
@@ -323,8 +319,7 @@ class DataMaintenanceTests(unittest.TestCase):
             self.fail()
 
     def testVersionList(self):
-        """
-        """
+        """"""
         self.__lfh.write("\nStarting %s %s\n" % (self.__class__.__name__, sys._getframe().f_code.co_name))
         try:
             idList = self.__getIdList(self.__idListPath)
@@ -339,8 +334,7 @@ class DataMaintenanceTests(unittest.TestCase):
             self.fail()
 
     def __makeEntryPathList(self, archivePath):
-        """ Return the list of entries in the archive directory names and paths -
-        """
+        """Return the list of entries in the archive directory names and paths -"""
         pathList = []
         dataList = []
         for root, dirs, files in scandir.walk(archivePath, topdown=False):
@@ -387,8 +381,7 @@ class DataMaintenanceTests(unittest.TestCase):
         return id, contentType, fileFormat, partNo, versionNo
 
     def testGetFileInventory(self):
-        """
-        """
+        """"""
         self.__lfh.write("\nStarting %s %s\n" % (self.__class__.__name__, sys._getframe().f_code.co_name))
         archivePath = self.__cI.get("SITE_ARCHIVE_STORAGE_PATH")
         try:

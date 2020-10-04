@@ -37,10 +37,10 @@ from wwpdb.io.locator.PathInfo import PathInfo
 class DataExchange(object):
 
     """
-     Implements common data exchange operations
-     including: moving annotation data files between session
-     and workflow storage, accessing files in workflow directories,
-     and routine file maintenance operations.
+    Implements common data exchange operations
+    including: moving annotation data files between session
+    and workflow storage, accessing files in workflow directories,
+    and routine file maintenance operations.
 
     """
 
@@ -79,13 +79,11 @@ class DataExchange(object):
             self.__pI.setDebugFlag(flag=self.__debug)
 
     def setFileSource(self, fileSource):
-        """  Override fileSource="archive"
-        """
+        """Override fileSource="archive" """
         self.__fileSource = fileSource
 
     def setInputSessionPath(self, inputSessionPath=None):
-        """  Override the path to files with fileSource="session"
-        """
+        """Override the path to files with fileSource="session" """
         self.__inputSessionPath = inputSessionPath
 
     def purgeLogs(self):
@@ -155,9 +153,7 @@ class DataExchange(object):
             return False
 
     def createArchiveDir(self, purgeFlag=True):
-        """ Create new the archive directory if this is needed.
-
-        """
+        """Create new the archive directory if this is needed."""
 
         if self.__verbose:
             self.__lfh.write("+DataExchange.export() creating archive directory for data set %s\n" % self.__depDataSetId)
@@ -188,9 +184,9 @@ class DataExchange(object):
             return False
 
     def fetch(self, contentType, formatType, version="latest", partitionNumber=1):
-        """ Copy the input content object into the current session directory (session naming semantics follow source file object)
+        """Copy the input content object into the current session directory (session naming semantics follow source file object)
 
-            Return the full path of the copied file or None
+        Return the full path of the copied file or None
 
         """
         inpFilePath = self.__getFilePath(fileSource=self.__fileSource, contentType=contentType, formatType=formatType, version=version, partitionNumber=partitionNumber)
@@ -221,9 +217,9 @@ class DataExchange(object):
             return None
 
     def export(self, inpFilePath, contentType, formatType, version="latest", partitionNumber=1):
-        """ Copy input file to workflow instance or archival storage.
+        """Copy input file to workflow instance or archival storage.
 
-            Return True on success or False otherwise.
+        Return True on success or False otherwise.
 
         """
         outFilePath = self.__getFilePath(fileSource=self.__fileSource, contentType=contentType, formatType=formatType, version=version, partitionNumber=partitionNumber)
@@ -249,8 +245,7 @@ class DataExchange(object):
             return False
 
     def __copyGzip(self, inpFilePath, outFilePath):
-        """
-        """
+        """"""
         try:
             cmd = " gzip -cd  %s > %s " % (inpFilePath, outFilePath)
             os.system(cmd)
@@ -261,8 +256,7 @@ class DataExchange(object):
             return False
 
     def copyDirToSession(self, dirName):
-        """  Replicate the input diretory in the session directory -
-        """
+        """Replicate the input diretory in the session directory -"""
         try:
             if self.__fileSource in ["archive", "wf-archive"]:
                 pth = self.__pI.getArchivePath(self.__depDataSetId)
@@ -300,9 +294,9 @@ class DataExchange(object):
         return True
 
     def copyToSession(self, contentType, formatType, version="latest", partitionNumber=1):
-        """ Copy the input content object into the session directory using archive naming conventions less version details.
+        """Copy the input content object into the session directory using archive naming conventions less version details.
 
-            Return the full path of the session file or None
+        Return the full path of the session file or None
 
         """
         inpFilePath = self.__getFilePath(fileSource=self.__fileSource, contentType=contentType, formatType=formatType, version=version, partitionNumber=partitionNumber)
@@ -330,10 +324,10 @@ class DataExchange(object):
             return None
 
     def updateArchiveFromSession(self, contentType, formatType, version="next", partitionNumber=1):
-        """ Copy the input content object from the session directory stored using  archive naming conventions less version details
-            to archive storage.
+        """Copy the input content object from the session directory stored using  archive naming conventions less version details
+        to archive storage.
 
-            Return the full path of the archive file or None
+        Return the full path of the archive file or None
 
         """
         fn = self.__getArchiveFileName(contentType, formatType, version="none", partitionNumber=partitionNumber)
@@ -529,9 +523,9 @@ class DataExchange(object):
         return fp
 
     def __targetFilePath(self, fileSource="archive", contentType="model", formatType="pdbx", version="latest", partitionNumber="1", mileStone=None):
-        """ Return the file path, directory path, and filename  for the input content object if this object is valid.
+        """Return the file path, directory path, and filename  for the input content object if this object is valid.
 
-            If the file path cannot be verified return None for all values
+        If the file path cannot be verified return None for all values
         """
         try:
             if fileSource == "session" and self.__inputSessionPath is not None:

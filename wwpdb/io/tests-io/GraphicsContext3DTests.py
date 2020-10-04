@@ -53,7 +53,7 @@ class GraphicsContext3DTests(unittest.TestCase):
         pass
 
     def getFirstObject(self, persistFilePath, objectName=None):
-        """ Open the persistent data store and fetch the input object name from the first container.
+        """Open the persistent data store and fetch the input object name from the first container.
 
         Note -- Will be used for more complex cases which require additional information from
         coordinate model file to resolve the graphics context.
@@ -75,8 +75,7 @@ class GraphicsContext3DTests(unittest.TestCase):
             return None
 
     def testSimpleContexts(self):
-        """Test case -  create simple graphics contexts.
-        """
+        """Test case -  create simple graphics contexts."""
         self.__lfh.write("\nStarting %s %s at %s\n" % (self.__class__.__name__, sys._getframe().f_code.co_name, time.strftime("%Y %m %d %H:%M:%S", time.localtime())))
 
         try:
@@ -125,8 +124,7 @@ class GraphicsContext3DTests(unittest.TestCase):
             self.fail()
 
     def testSiteContexts(self):
-        """Test case -  create graphics contexts for a full site
-        """
+        """Test case -  create graphics contexts for a full site"""
         self.__lfh.write("\nStarting %s %s at %s\n" % (self.__class__.__name__, sys._getframe().f_code.co_name, time.strftime("%Y %m %d %H:%M:%S", time.localtime())))
         try:
             #
@@ -161,8 +159,7 @@ class GraphicsContext3DTests(unittest.TestCase):
             self.fail()
 
     def testSiteContextsOld(self):
-        """Test case -  create graphics contexts for a full site
-        """
+        """Test case -  create graphics contexts for a full site"""
         self.__lfh.write("\nStarting %s %s at %s\n" % (self.__class__.__name__, sys._getframe().f_code.co_name, time.strftime("%Y %m %d %H:%M:%S", time.localtime())))
         try:
             #

@@ -51,8 +51,7 @@ class CvsUtilityTests(unittest.TestCase):
         pass
 
     def testCvsHistory(self):
-        """
-        """
+        """"""
         self.__logger.info("Starting %s %s", self.__class__.__name__, sys._getframe().f_code.co_name)
         try:
             text = ""
@@ -70,8 +69,7 @@ class CvsUtilityTests(unittest.TestCase):
             self.fail()
 
     def testCvsCheckOutFile(self):
-        """
-        """
+        """"""
         self.__logger.info("Starting %s %s", self.__class__.__name__, sys._getframe().f_code.co_name)
         try:
             text = ""
@@ -87,8 +85,7 @@ class CvsUtilityTests(unittest.TestCase):
             self.fail()
 
     def testCvsCheckOutRevisions(self):
-        """
-        """
+        """"""
         self.__logger.info("Starting %s %s", self.__class__.__name__, sys._getframe().f_code.co_name)
         try:
             text = ""

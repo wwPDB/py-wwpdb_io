@@ -28,9 +28,7 @@ logger = logging.getLogger(__name__)
 
 
 class ArchiveIoBase(object):
-    """ A base class for for archive data transfer operation utilities.
-
-    """
+    """A base class for for archive data transfer operation utilities."""
 
     def __init__(self, *args, **kwargs):  # pylint: disable=unused-argument
         self._raiseExceptions = kwargs.get("raiseExceptions", False)

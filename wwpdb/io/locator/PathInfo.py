@@ -47,18 +47,17 @@ logger = logging.getLogger(__name__)
 
 class PathInfo(object):
 
-    """ Common methods for finding path information for sequence resources and data files.
+    """Common methods for finding path information for sequence resources and data files.
 
-        In these methods the parameter contentType refers to a base content type.
+    In these methods the parameter contentType refers to a base content type.
 
-        The mileStone parameter is used to select the milestone variant in any convenience methods
-        (e.g. model-deposit, model-upload, ... )
+    The mileStone parameter is used to select the milestone variant in any convenience methods
+    (e.g. model-deposit, model-upload, ... )
 
     """
 
     def __init__(self, siteId=None, sessionPath=".", verbose=False, log=None):
-        """
-        """
+        """"""
         self.__verbose = verbose
         self.__lfh = log
         #
@@ -82,8 +81,7 @@ class PathInfo(object):
             return None, None, None, None, None
 
     def isValidFileName(self, fileName, requireVersion=True):
-        """ Is the input file name project compliant ?
-        """
+        """Is the input file name project compliant ?"""
         rfc = ReferenceFileComponents(verbose=self.__verbose, log=self.__lfh)
         if rfc.set(fileName=fileName):
             (dId, cT, cF, pN, vN) = rfc.get()
@@ -121,8 +119,7 @@ class PathInfo(object):
     #
 
     def setSessionPath(self, sessionPath):
-        """  Set the top path that will be searched for files with fileSource='session'
-        """
+        """Set the top path that will be searched for files with fileSource='session'"""
         self.__sessionPath = sessionPath
         self.__sessionDownloadPath = os.path.join(self.__sessionPath, "downloads")
 
@@ -495,9 +492,9 @@ class PathInfo(object):
         return fP
 
     def __getPathWorker(self, dataSetId, wfInstanceId=None, contentTypeBase=None, formatType=None, fileSource="archive", versionId="latest", partNumber="1", mileStone=None):
-        """   Return the path and templates corresponding to the input file typing arguments.
+        """Return the path and templates corresponding to the input file typing arguments.
 
-              Return:  <full file path>,<file path as a version template>,<file path as a partition template>
+        Return:  <full file path>,<file path as a version template>,<file path as a partition template>
         """
         #
         try:

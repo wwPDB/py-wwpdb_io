@@ -27,8 +27,7 @@ import traceback
 
 
 class ValidateXml(object):
-    """ Class responsible for parsing validation XML report
-    """
+    """Class responsible for parsing validation XML report"""
 
     def __init__(self, FileName=None, verbose=False, log=sys.stderr):
         self.__verbose = verbose
@@ -54,59 +53,49 @@ class ValidateXml(object):
         self.__parse()
 
     def getOutlier(self, Type):
-        """
-        """
+        """"""
         if Type in self.__outlierResult:
             return self.__outlierResult[Type]
         #
         return []
 
     def getClashOutliers(self):
-        """
-        """
+        """"""
         return self.clashOutliers
 
     def getCalculatedCompleteness(self):
-        """
-        """
+        """"""
         return self.__calculated_completeness
 
     def getCsMappingErrorNumber(self):
-        """
-        """
+        """"""
         return self.__number_of_errors_while_mapping
 
     def getCsMappingWarningNumber(self):
-        """
-        """
+        """"""
         return self.__number_of_warnings_while_mapping
 
     def getNotFoundInStructureCsList(self):
-        """
-        """
+        """"""
         return self.__not_found_in_structure_cs_list
 
     def getNotFoundResidueInStructureCsList(self):
-        """
-        """
+        """"""
         return self.__not_found_residue_in_structure_cs_list
 
     def getCsOutliers(self):
-        """
-        """
+        """"""
         return self.__cs_outlier_list
 
     def getCsReferencingOffsetFlag(self):
-        """
-        """
+        """"""
         return self.__has_cs_referencing_offset_flag
 
     def getSummary(self):
         return self.summaryValues
 
     def __getOutlierDefinition(self):
-        """
-        """
+        """"""
         self.__outlierMap["torsion-outlier"] = ["phi", "psi"]
         self.__outlierMap["mog-ring-outlier"] = ["atoms", "mean", "mindiff", "stdev", "numobs"]
         self.__outlierMap["mog-angle-outlier"] = ["atoms", "mean", "mindiff", "stdev", "numobs", "Zscore", "obsval"]
@@ -119,8 +108,7 @@ class ValidateXml(object):
         self.__outlierMap["clash"] = ["atom", "cid", "clashmag", "dist"]
 
     def __parse(self):
-        """
-        """
+        """"""
         self.__processGlobalValues()
         #
         self.__processChemcalShiftList()
@@ -288,8 +276,7 @@ class ValidateXml(object):
                     pass
 
     def __processGlobalValues(self):
-        """
-        """
+        """"""
         self.__getSummaryValues()
         global_values = {}
         Entry = self.__doc.getElementsByTagName("Entry")[0]
@@ -402,8 +389,7 @@ class ValidateXml(object):
         #
 
     def __getMapInfo(self, node, items):
-        """
-        """
+        """"""
         mapping = {}
         for item in items:
             val = ""

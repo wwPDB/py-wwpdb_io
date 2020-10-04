@@ -46,8 +46,7 @@ class DataFileTests(unittest.TestCase):
         pass
 
     def testPrintInfo(self):
-        """
-        """
+        """"""
         self.lfh.write("\nStarting %s %s\n" % (self.__class__.__name__, sys._getframe().f_code.co_name))
         try:
             fPath = os.path.join(self.__testFilePath, self.__testFile)

@@ -20,8 +20,7 @@ SPACE = " " * MAX_INDENT
 
 
 class FormatOut(object):
-    """
-    """
+    """"""
 
     def __init__(self):
         self.__buffer = []
@@ -47,8 +46,7 @@ class FormatOut(object):
             self.__buffer.append(strIn)
 
     def autoFormat(self, name, thing, indent=0, indentIncr=3):
-        """ Print utility for dictionaries of factory data.
-        """
+        """Print utility for dictionaries of factory data."""
         inOt = str(type(thing)).lower()
         ind = indent + 0
         indInc = indentIncr

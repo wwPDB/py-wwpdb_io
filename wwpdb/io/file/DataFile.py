@@ -43,8 +43,7 @@ from email.mime.text import MIMEText
 
 class DataFile:
 
-    """ Class of utilities for managing data files.
-    """
+    """Class of utilities for managing data files."""
 
     def __init__(self, fPath=None, tMode=None, verbose=False):
         self.test = " "
@@ -160,8 +159,8 @@ class DataFile:
 
     def __symLinkRelative(self):
         """Internal method that makes a relative symbolic link to srcPath from dstPath.
-           Intervening path components are created for the destination so this method
-           is only appropriate for linking files.
+        Intervening path components are created for the destination so this method
+        is only appropriate for linking files.
         """
         if not self.srcFileExists() or not os.path.isabs(self.srcPath):
             return
@@ -184,8 +183,8 @@ class DataFile:
 
     def __symLink(self):
         """Internal method that creates a symbolic link to srcPath named dstPath.
-           Intervening path components are created for the destination so this method
-           is only appropriate for linking files.
+        Intervening path components are created for the destination so this method
+        is only appropriate for linking files.
         """
         if not self.srcFileExists() or not os.path.isabs(self.srcPath):
             return
@@ -199,7 +198,7 @@ class DataFile:
 
     def __copy(self, op="copy"):
         """Internal method that copies srcPath to dstPath converting compression mode
-           according to file type.
+        according to file type.
         """
         if not self.srcFileExists():
             return
@@ -292,8 +291,7 @@ class DataFile:
         return isSame
 
     def __remove(self):
-        """Internal method that removes srcPath if it exists.
-        """
+        """Internal method that removes srcPath if it exists."""
         if not self.srcFileExists():
             return True
         if os.path.islink(self.srcPath):
@@ -304,8 +302,7 @@ class DataFile:
             return shutil.rmtree(self.srcPath, True)
 
     def __move(self):
-        """Internal method that moves srcPath to dstPath.
-        """
+        """Internal method that moves srcPath to dstPath."""
         if not self.srcFileExists():
             return
         if not self.dstDirExists():
@@ -315,7 +312,7 @@ class DataFile:
 
     def __timeStampCopy(self):
         """Reset the atime/mtimes of the destination using those of the
-           source file.
+        source file.
         """
         if self.srcStat is None:
             self.srcStat = self.__stat(self.srcPath)
@@ -324,8 +321,7 @@ class DataFile:
             os.utime(self.dstPath, times)
 
     def __setTimeStamp(self, fPath, tObj):
-        """Reset the atime/mtimes of the input file using the input timestamp.
-        """
+        """Reset the atime/mtimes of the input file using the input timestamp."""
         if tObj is None or not self.__exists(fPath):
             return
         mtime = int(time.mktime(tObj.timetuple()))
@@ -333,8 +329,7 @@ class DataFile:
         os.utime(fPath, times)
 
     def __setFileMode(self, fPath, mode):
-        """Reset the file mode of the input file using the input integer mode (e.g. 0644)
-        """
+        """Reset the file mode of the input file using the input integer mode (e.g. 0644)"""
         try:
             os.chmod(fPath, mode)
             return True
@@ -371,23 +366,19 @@ class DataFile:
     #
 
     def src(self, fPath):
-        """Set or reset the source file path
-        """
+        """Set or reset the source file path"""
         self.__updateSrc(fPath)
 
     def dst(self, fPath):
-        """Set or reset the destination file path
-        """
+        """Set or reset the destination file path"""
         self.__updateDst(fPath)
 
     def timeMode(self, tMode):
-        """Sets the behavior of the timestamping of destination files: one of None, preserve, today, ...
-        """
+        """Sets the behavior of the timestamping of destination files: one of None, preserve, today, ..."""
         self.tMode = tMode
 
     def pr(self, fh=sys.stdout):
-        """Output the information about source and destination files
-        """
+        """Output the information about source and destination files"""
         if self.srcPath is not None:
             fh.write("Source path (input):        %s\n" % self.srcPathInp)
             fh.write("Source path:                %s\n" % self.srcPath)
@@ -449,8 +440,7 @@ class DataFile:
         return self.__compare()
 
     def remove(self):
-        """Removes srcPath.
-        """
+        """Removes srcPath."""
         self.__remove()
 
     def srcFileSize(self):
@@ -470,41 +460,35 @@ class DataFile:
             return 0
 
     def move(self, dstPath=None):
-        """Moves (renames) srcPath to dstPath.
-        """
+        """Moves (renames) srcPath to dstPath."""
         self.dst(dstPath)
         self.__move()
         self.__setDstTimeStamp()
 
     def symLinkRelative(self, dstPath=None):
-        """Creates a relative symbolic link to srcPath at dstPath.
-        """
+        """Creates a relative symbolic link to srcPath at dstPath."""
         self.dst(dstPath)
         self.__symLinkRelative()
 
     #        self.__setDstTimeStamp()
 
     def symLink(self, dstPath=None):
-        """Create a symbolic link to srcPath at dstPath.
-        """
+        """Create a symbolic link to srcPath at dstPath."""
         self.dst(dstPath)
         self.__symLink()
 
     #        self.__setDstTimeStamp()
 
     def srcFileExists(self):
-        """Return True if source file exists or False otherwise.
-        """
+        """Return True if source file exists or False otherwise."""
         return self.__exists(self.srcPath)
 
     def dstFileExists(self):
-        """Return True if destination file exists or False otherwise.
-        """
+        """Return True if destination file exists or False otherwise."""
         return self.__exists(self.dstPath)
 
     def dstDirExists(self):
-        """Return True if destination file exists or False otherwise.
-        """
+        """Return True if destination file exists or False otherwise."""
         return self.__exists(self.dstDirName)
 
     def srcModTime(self):
@@ -531,7 +515,7 @@ class DataFile:
 
     def newerThan(self, fPath):
         """Return True if srcPath has been modified more recently than fPath.
-           If the comparison cannot be made 'None' is returned.
+        If the comparison cannot be made 'None' is returned.
         """
         if fPath is None:
             return None
@@ -552,8 +536,7 @@ class DataFile:
             return None
 
     def eMail(self, toAddr, fromAddr, subject):  # pragma: no cover
-        """ Internal method to mail srcPath file as text.
-        """
+        """Internal method to mail srcPath file as text."""
         if not self.srcFileExists():
             return
 
@@ -584,9 +567,7 @@ class DataFile:
             os.remove(f1)
 
     def setDstMTimeYYYYMMDD(self, dateYYYYMMDD):
-        """Set access and modification times to the input date stamp.
-        """
+        """Set access and modification times to the input date stamp."""
 
     def setDstMTime(self, refPath):
-        """Set access and modification times to the input date stamp.
-        """
+        """Set access and modification times to the input date stamp."""

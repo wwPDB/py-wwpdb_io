@@ -31,11 +31,11 @@ from wwpdb.io.locator.PathInfo import PathInfo
 
 class DataMaintenance(object):
 
-    """ Collection of data maintenance utilities supporting
-        purge and recovery of data files post release.
+    """Collection of data maintenance utilities supporting
+    purge and recovery of data files post release.
 
-        This class duplicates some methods from class DataExchange for
-        anticipated future use.
+    This class duplicates some methods from class DataExchange for
+    anticipated future use.
 
     """
 
@@ -58,8 +58,7 @@ class DataMaintenance(object):
         self.__pI = PathInfo(siteId=self.__siteId, sessionPath=self.__sessionPath, verbose=self.__verbose, log=self.__lfh)
 
     def setSessionPath(self, inputSessionPath=None):
-        """  Override the path to files with fileSource="session"
-        """
+        """Override the path to files with fileSource="session" """
         self.__sessionPath = inputSessionPath
 
     def purgeLogs(self, dataSetId):
@@ -150,10 +149,10 @@ class DataMaintenance(object):
         return pthList
 
     def getPurgeCandidates(self, dataSetId, wfInstanceId=None, fileSource="archive", contentType="model", formatType="pdbx", partitionNumber="1", mileStone=None, purgeType="exp"):
-        """  Return the latest version, and candidates for removal and compression.
+        """Return the latest version, and candidates for removal and compression.
 
-             purgeType = 'exp'    use strategy for experimental and model fileSource V<last>, V2, V1
-                         'other'  use strategy for other file types -- V<last> & V1
+        purgeType = 'exp'    use strategy for experimental and model fileSource V<last>, V2, V1
+                    'other'  use strategy for other file types -- V<last> & V1
 
         """
         latestV = None
@@ -441,9 +440,9 @@ class DataMaintenance(object):
         return fp
 
     def __targetFilePath(self, dataSetId, wfInstanceId=None, fileSource="archive", contentType="model", formatType="pdbx", version="latest", partitionNumber="1", mileStone=None):
-        """ Return the file path, directory path, and filen ame  for the input content object if this object is valid.
+        """Return the file path, directory path, and filen ame  for the input content object if this object is valid.
 
-            If the file path cannot be verified return None for all values
+        If the file path cannot be verified return None for all values
         """
         try:
             if fileSource == "session" and self.__sessionPath is not None:
@@ -470,8 +469,7 @@ class DataMaintenance(object):
             return (None, None, None)
 
     def __copyGzip(self, inpFilePath, outFilePath):
-        """
-        """
+        """"""
         try:
             cmd = " gzip -cd  %s > %s " % (inpFilePath, outFilePath)
             os.system(cmd)

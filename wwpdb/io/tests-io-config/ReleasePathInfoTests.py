@@ -43,8 +43,7 @@ class ReleasePathInfoTests(unittest.TestCase):
         self.__siteId = getSiteId(defaultSiteId=None)
 
     def testGetReleasePaths(self):
-        """ Test getting standard file names within session paths.
-        """
+        """Test getting standard file names within session paths."""
         tests = [
             # subdir, vers
             [None, None],
@@ -69,8 +68,7 @@ class ReleasePathInfoTests(unittest.TestCase):
             # print(ret)
 
     def testGetEMReleaseSubPaths(self):
-        """ Test getting standard file names within session paths.
-        """
+        """Test getting standard file names within session paths."""
         emsub = [
             "header",
             "map",

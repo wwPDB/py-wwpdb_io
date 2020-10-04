@@ -56,7 +56,6 @@ class ExampleUnitTests(unittest.TestCase):
     @WrapperExample("hello", "world", 42, logname="wrapper", loglevel=logging.DEBUG)
     def testExample1(self, my="aaa", me="bbbb"):
         """Test case -  create search index from persistent store
-
         """
         startTime = time.time()
         self.__lfh.write("\nStarting %s %s at %s\n" % (self.__class__.__name__, sys._getframe().f_code.co_name, time.strftime("%Y %m %d %H:%M:%S", time.localtime())))
@@ -76,7 +75,6 @@ class ExampleUnitTests(unittest.TestCase):
     @WrapperExample("hello", "world", 42, logname="wrapper", loglevel=logging.DEBUG)
     def testExample2(self, my="aaaaa", me="bbbbb"):
         """Test case -  create search index from persistent store
-
         """
         startTime = time.time()
         self.__lfh.write("\nStarting %s %s at %s\n" % (self.__class__.__name__, sys._getframe().f_code.co_name, time.strftime("%Y %m %d %H:%M:%S", time.localtime())))

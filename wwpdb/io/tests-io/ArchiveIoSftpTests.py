@@ -63,8 +63,7 @@ class ArchiveIoSftpTests(unittest.TestCase):
         logger.debug("Completed %s at %s (%.4f seconds)\n", self.id(), time.strftime("%Y %m %d %H:%M:%S", time.localtime()), endTime - self.__startTime)
 
     def testSftpConnect(self):
-        """Test case - for connection-
-        """
+        """Test case - for connection-"""
 
         try:
             aio = ArchiveIoSftp()
@@ -78,8 +77,7 @@ class ArchiveIoSftpTests(unittest.TestCase):
     #
 
     def testSftpStatOps(self):
-        """Test case -  get directory list and stat details-
-        """
+        """Test case -  get directory list and stat details-"""
         try:
             aio = ArchiveIoSftp(serverId=self.__serverId)
             ok = aio.connectToServer()
@@ -94,8 +92,7 @@ class ArchiveIoSftpTests(unittest.TestCase):
             self.fail()
 
     def testSftpDirOps(self):
-        """Test case -  create and remove directory -
-        """
+        """Test case -  create and remove directory -"""
         try:
             aio = ArchiveIoSftp(serverId=self.__serverId)
             ok = aio.connectToServer()
@@ -122,8 +119,7 @@ class ArchiveIoSftpTests(unittest.TestCase):
             self.fail()
 
     def testSftpTransferOps(self):
-        """Test case -  transfer and remove files and directories -
-        """
+        """Test case -  transfer and remove files and directories -"""
         try:
             aio = ArchiveIoSftp(serverId=self.__serverId)
             ok = aio.connectToServer()

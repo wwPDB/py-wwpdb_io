@@ -36,9 +36,7 @@ import shutil
 
 
 class CvsWrapperBase(object):
-    """Core wrapper class for opertations on cvs administrative operations on repositories.
-
-    """
+    """Core wrapper class for opertations on cvs administrative operations on repositories."""
 
     def __init__(self, tmpPath="./", verbose=True, log=sys.stderr):
         self.__tmpPath = tmpPath
@@ -177,8 +175,7 @@ class CvsWrapperBase(object):
             self.__lfh.write("+CvsWrapperBase(_makeTempWorkingDir) Working directory path set to  %r\n" % self._wrkPath)
 
     def cleanup(self):
-        """Cleanup any temporary files and directories created by this class.
-        """
+        """Cleanup any temporary files and directories created by this class."""
         if self._wrkPath is not None and len(self._wrkPath) > 0:
             try:
                 shutil.rmtree(self._wrkPath)
@@ -192,8 +189,7 @@ class CvsWrapperBase(object):
 
 
 class CvsAdmin(CvsWrapperBase):
-    """Wrapper class for opertations on cvs administrative operations on repositories.
-    """
+    """Wrapper class for opertations on cvs administrative operations on repositories."""
 
     def __init__(self, tmpPath="./", verbose=True, log=sys.stderr):
         super(CvsAdmin, self).__init__(tmpPath=tmpPath, verbose=verbose, log=log)
@@ -204,8 +200,8 @@ class CvsAdmin(CvsWrapperBase):
         self.__debug = False
 
     def getHistory(self, cvsPath):
-        """ Return the history text for project files identified by cvsPath in the
-            current repository.
+        """Return the history text for project files identified by cvsPath in the
+        current repository.
         """
         text = ""
         ok = False
@@ -219,9 +215,9 @@ class CvsAdmin(CvsWrapperBase):
         return (ok, text)
 
     def getRevisionList(self, cvsPath):
-        """ Return a list of tuples containing the revision identifiers for the input file.
+        """Return a list of tuples containing the revision identifiers for the input file.
 
-            Return data has the for [(RevId, A/M, timeStamp),...] where A=Added and M=Modified.
+        Return data has the for [(RevId, A/M, timeStamp),...] where A=Added and M=Modified.
         """
         revList = []
         ok = False
@@ -235,12 +231,12 @@ class CvsAdmin(CvsWrapperBase):
         return (ok, revList)
 
     def checkOutFile(self, cvsPath, outPath, revId=None):
-        """ Perform CVS checkout operation for the project files identified by the input cvsPath
-            subject to the input revision identifier.
+        """Perform CVS checkout operation for the project files identified by the input cvsPath
+        subject to the input revision identifier.
 
-            Files that are checked out are then subsequently copied to outPath.
+        Files that are checked out are then subsequently copied to outPath.
 
-            Note that outPath will not be a CVS working copy (sandbox) after this operation.
+        Note that outPath will not be a CVS working copy (sandbox) after this operation.
         """
         text = ""
         ok = False
@@ -332,8 +328,7 @@ class CvsAdmin(CvsWrapperBase):
         return cmd
 
     def __extractRevisions(self):
-        """Extract revisions details from the last history command.
-        """
+        """Extract revisions details from the last history command."""
         revList = []
         try:
             fName = self._getOutputFilePath()
@@ -357,9 +352,7 @@ class CvsAdmin(CvsWrapperBase):
 
 
 class CvsSandBoxAdmin(CvsWrapperBase):
-    """Wrapper class for opertations on cvs working directories (aka cvs sandboxes).
-
-    """
+    """Wrapper class for opertations on cvs working directories (aka cvs sandboxes)."""
 
     def __init__(self, tmpPath="./", verbose=True, log=sys.stderr):
         super(CvsSandBoxAdmin, self).__init__(tmpPath=tmpPath, verbose=verbose, log=log)
@@ -372,9 +365,7 @@ class CvsSandBoxAdmin(CvsWrapperBase):
         self.__sandBoxTopPath = None
 
     def setSandBoxTopPath(self, dirPath):
-        """ Assign the path that contains or will contain the working copy of the cvs project.
-
-        """
+        """Assign the path that contains or will contain the working copy of the cvs project."""
         if not os.path.exists(dirPath):
             try:
                 os.makedirs(dirPath)
@@ -391,9 +382,7 @@ class CvsSandBoxAdmin(CvsWrapperBase):
         return os.path.abspath(self.__sandBoxTopPath)
 
     def checkOut(self, projectPath=None, revId=None):
-        """ Create CVS sandbox working copy of the input project path within the current repository.
-
-        """
+        """Create CVS sandbox working copy of the input project path within the current repository."""
         if self.__verbose:
             self.__lfh.write("\n+CvsSandBoxAdmin(checkOut) Checking out CVS repository working path %s project file path %s\n" % (self.__sandBoxTopPath, projectPath))
         text = ""
@@ -414,11 +403,11 @@ class CvsSandBoxAdmin(CvsWrapperBase):
         return (ok, text)
 
     def updateList(self, dataList, procName, optionsD, workingDir):  # pylint: disable=unused-argument
-        """  Implements an interface for multiprocessing module --
+        """Implements an interface for multiprocessing module --
 
-             input is [(CvsProjectDir, relativePath, pruneFlag),...]
+        input is [(CvsProjectDir, relativePath, pruneFlag),...]
 
-             returns -  successList,resultList=successList,diagList
+        returns -  successList,resultList=successList,diagList
         """
         retList = []
         diagTextList = []
@@ -435,8 +424,8 @@ class CvsSandBoxAdmin(CvsWrapperBase):
         return retList, retList, diagTextList
 
     def update(self, projectDir, relProjectPath=".", prune=False, fetchErrorLog=True, appendErrors=False):
-        """ Update CVS sandbox working copy of the input project path.   The project path must
-            correspond to an existing working copy of the repository.
+        """Update CVS sandbox working copy of the input project path.   The project path must
+        correspond to an existing working copy of the repository.
 
         """
         if self.__verbose:
@@ -477,8 +466,8 @@ class CvsSandBoxAdmin(CvsWrapperBase):
         return (ok, text)
 
     def add(self, projectDir, relProjectPath):
-        """ Add an new definition in CVS working direcotry in the input project path.   The project path must
-            correspond to an existing file path in the local working copy.
+        """Add an new definition in CVS working direcotry in the input project path.   The project path must
+        correspond to an existing file path in the local working copy.
 
         """
         if self.__verbose:
@@ -500,8 +489,8 @@ class CvsSandBoxAdmin(CvsWrapperBase):
         return (ok, text)
 
     def commit(self, projectDir, relProjectPath):
-        """ Commit changes in the input project/file path to the CVS repository. The project path must
-            correspond to an existing path in the local working copy.
+        """Commit changes in the input project/file path to the CVS repository. The project path must
+        correspond to an existing path in the local working copy.
 
         """
         if self.__verbose:
@@ -525,11 +514,11 @@ class CvsSandBoxAdmin(CvsWrapperBase):
         return (ok, text)
 
     def remove(self, projectDir, relProjectPath, saveCopy=True):
-        """ Remove from the CVS sandbox working copy the input project path.   The project path must
-            correspond to an existing path in the local working copy.
+        """Remove from the CVS sandbox working copy the input project path.   The project path must
+        correspond to an existing path in the local working copy.
 
-            if saveCopy=True then preserve a copy of the remove target in the reserved REMOVED path
-            of the repository.
+        if saveCopy=True then preserve a copy of the remove target in the reserved REMOVED path
+        of the repository.
         """
         if self.__verbose:
             self.__lfh.write("\n+CvsSandBoxAdmin(remove) Remove %s from project %s in CVS repository working path %s\n" % (relProjectPath, projectDir, self.__sandBoxTopPath))
@@ -568,9 +557,7 @@ class CvsSandBoxAdmin(CvsWrapperBase):
         return (ok, text)
 
     def removeDir(self, projectDir, relProjectPath):
-        """ Remove from the CVS sandbox working directory the input empty directory.
-
-        """
+        """Remove from the CVS sandbox working directory the input empty directory."""
         if self.__verbose:
             self.__lfh.write("\n+CvsSandBoxAdmin(removeDir) Remove %s from project %s in CVS repository working path %s\n" % (relProjectPath, projectDir, self.__sandBoxTopPath))
 
@@ -596,8 +583,7 @@ class CvsSandBoxAdmin(CvsWrapperBase):
         return (ok, text)
 
     def __getCheckOutProjectCmd(self, relProjectPath, revId=None):
-        """ Return CVS command for checkout of a complete project from the current repository.
-        """
+        """Return CVS command for checkout of a complete project from the current repository."""
         if self._wrkPath is None:
             self._makeTempWorkingDir()
         errPath = self._getErrorFilePath()
@@ -613,8 +599,7 @@ class CvsSandBoxAdmin(CvsWrapperBase):
         return cmd
 
     def __getUpdateProjectCmd(self, projectDir, prune=False, appendErrors=False):
-        """ Return CVS command for updating a complete project working directory from current repository.
-        """
+        """Return CVS command for updating a complete project working directory from current repository."""
         if self._wrkPath is None:
             self._makeTempWorkingDir()
         errPath = self._getErrorFilePath()
@@ -631,8 +616,8 @@ class CvsSandBoxAdmin(CvsWrapperBase):
         return cmd
 
     def __getUpdateCmd(self, projectDir, relProjectPath, prune=False, appendErrors=False):
-        """ Return CVS command for updating the input relative path within project working
-            directory from current repository.
+        """Return CVS command for updating the input relative path within project working
+        directory from current repository.
         """
         if self._wrkPath is None:
             self._makeTempWorkingDir()

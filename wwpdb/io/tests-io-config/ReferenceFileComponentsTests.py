@@ -46,8 +46,7 @@ class ReferenceFileComponentsTests(unittest.TestCase):
         pass
 
     def testAccessors(self):
-        """Test file component accessors
-        """
+        """Test file component accessors"""
         self.__lfh.write("\n------------------------ ")
         self.__lfh.write("Starting test function  %s" % sys._getframe().f_code.co_name)
         self.__lfh.write(" -------------------------\n")

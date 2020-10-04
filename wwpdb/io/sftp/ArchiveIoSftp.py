@@ -29,8 +29,8 @@ logger = logging.getLogger()
 
 
 class ArchiveIoSftp(ArchiveIoBase):
-    """ Python implementation of ArchiveIoBase class providing essential
-        data transfer operations for SFTP protocol
+    """Python implementation of ArchiveIoBase class providing essential
+    data transfer operations for SFTP protocol
     """
 
     def __init__(self, *args, **kwargs):
@@ -124,8 +124,7 @@ class ArchiveIoSftp(ArchiveIoBase):
                 return False
 
     def stat(self, path):
-        """ sftp  stat attributes  = [ size=17 uid=0 gid=0 mode=040755 atime=1507723473 mtime=1506956503 ]
-        """
+        """sftp  stat attributes  = [ size=17 uid=0 gid=0 mode=040755 atime=1507723473 mtime=1506956503 ]"""
         try:
             s = self.__sftpClient.stat(path)
             d = {"mtime": s.st_mtime, "size": s.st_size, "mode": s.st_mode, "uid": s.st_uid, "gid": s.st_gid, "atime": s.st_atime}

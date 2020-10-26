@@ -151,40 +151,9 @@ class mmCIFUtil:
             catObj.append(data)
         #
 
-    def RemoveCategory(self, categoryID):
-        """ Remove Category
-        """
-        containerNameList = []
-        for container in self.__dataList:
-            catObj = container.getObj(categoryID)
-            if not catObj:
-                continue
-            #
-            containerNameList.append(container.getName())
-            container.remove(categoryID)
-        #
-        if not containerNameList:
-            return
-        #
-        for containerName in containerNameList:
-            try:
-                if containerName in self.__dataMap:
-                    idx = self.__dataMap[containerName]
-                    categoryNameList = self.__dataList[idx].getObjNameList()
-                    if len(categoryNameList) == 0:
-                        del self.__dataMap[containerName]
-                        del self.__dataList[idx]
-                    #
-                #
-            except:
-                pass
-            #
-        #
-
     def WriteCif(self, outputFilePath=None):
-        """Write out cif file
-        """
-        if (not outputFilePath) or (not self.__dataList):
+        """Write out cif file"""
+        if not outputFilePath:
             return
         #
         ofh = open(outputFilePath, "w")

@@ -234,7 +234,7 @@ class ValidateXml(object):
 
             if node.hasAttribute('average_residue_inclusion'):
                 try:
-                    if float(node.getAttribute("average_residue_inclusion").strip()) < 0.4:
+                    if float(node.getAttribute("average_residue_inclusion").strip()) < 0.1:
                         if "chain_average_residue_inclusion" not in self.__outlierResult:
                             self.__outlierResult["chain_average_residue_inclusion"] = []
                         self.__outlierResult["chain_average_residue_inclusion"].append(

@@ -228,6 +228,25 @@ class ValidateXml(object):
             #
         #
 
+        for node in self.__doc.getElementsByTagName("ModelledEntityInstance"):
+            if node.nodeType != node.ELEMENT_NODE:
+                continue
+
+            if node.hasAttribute('average_residue_inclusion'):
+                try:
+                    if float(node.getAttribute("average_residue_inclusion").strip()) < 0.1:
+                        if "chain_average_residue_inclusion" not in self.__outlierResult:
+                            self.__outlierResult["chain_average_residue_inclusion"] = []
+                        self.__outlierResult["chain_average_residue_inclusion"].append(
+                            {
+                                "chain": node.getAttribute("chain").strip(),
+                                "model": node.getAttribute("model").strip(),
+                                "average_residue_inclusion": float(node.getAttribute("average_residue_inclusion").strip()) * 100
+                            }
+                        )
+                except ValueError:
+                    pass
+
         if self.clashMap:
             for o in self.clashMap:
                 # check that there are two clashes

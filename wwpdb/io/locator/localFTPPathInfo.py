@@ -31,7 +31,7 @@ class LocalFTPPathInfo(object):
             self.ftp_pdb_root = ftp_pdb_root
 
     def set_ftp_emdb_root(self, ftp_emdb_root):
-        if ftp_emdb_root:
+        if ftp_emdb_root is not None:
             self.ftp_emdb_root = ftp_emdb_root
 
     def get_ftp_pdb(self):

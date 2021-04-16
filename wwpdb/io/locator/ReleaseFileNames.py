@@ -29,6 +29,7 @@ class ReleaseFileNames:
             "validpdf": ["{}_validation.pdf", "{}_validation.pdf", False, False],
             "validpdffull": ["{}_full_validation.pdf", "{}_full_validation.pdf", False, False],
             "validxml": ["{}_validation.xml", "{}_validation.xml", False, False],
+            "validcif": ["{}_validation.cif", "{}_validation.cif", False, False],
             "validpng": ["{}_multipercentile_validation.png", "{}_multipercentile_validation.png", False, False],
             "validsvg": ["{}_multipercentile_validation.svg", "{}_multipercentile_validation.svg", False, False],
             "valid2fo": ["{}_validation_2fo-fc_map_coef.cif", "{}_validation_2fo-fc_map_coef.cif", False, False],
@@ -125,6 +126,9 @@ class ReleaseFileNames:
 
     def get_validation_xml(self, accession, for_release=False):
         return self.__getfname("validxml", accession, for_release)
+
+    def get_validation_cif(self, accession, for_release=False):
+        return self.__getfname("validcif", accession, for_release)
 
     def get_validation_png(self, accession, for_release=False):
         return self.__getfname("validpng", accession, for_release)

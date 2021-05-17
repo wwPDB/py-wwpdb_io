@@ -19,6 +19,7 @@ import os.path
 import logging
 
 from wwpdb.utils.config.ConfigInfo import ConfigInfo
+from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCommon
 
 logger = logging.getLogger(__name__)
 
@@ -27,6 +28,7 @@ class ReleasePathInfo(object):
     def __init__(self, siteId=None):
         self.__siteId = siteId
         self.__cI = ConfigInfo(siteId=self.__siteId)
+        self.__cICommon = ConfigInfoAppCommon(self.__siteId)
         self.current_folder_name = "current"
         self.previous_folder_name = "previous"
 
@@ -72,15 +74,15 @@ class ReleasePathInfo(object):
 
     def get_for_release_path(self):
         """Returns path to for_release directory"""
-        return os.path.join(self.__cI.get("SITE_ARCHIVE_STORAGE_PATH"), "for_release")
+        return self.__cICommon.get_for_release_path()
 
     def get_for_release_beta_path(self):
         """Returns path to for_release_beta directory"""
-        return os.path.join(self.__cI.get("SITE_ARCHIVE_STORAGE_PATH"), "for_release_beta")
+        return self.__cICommon.get_for_release_beta_path()
 
     def get_for_release_version_path(self):
         """Returns path to for_release_version directory"""
-        return os.path.join(self.__cI.get("SITE_ARCHIVE_STORAGE_PATH"), "for_release_version")
+        return self.__cICommon.get_for_release_version_path()
 
     def get_added_path(self, version=None):
         if version is None:

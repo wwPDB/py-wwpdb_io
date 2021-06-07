@@ -16,17 +16,20 @@ __email__ = "jwest@rcsb.rutgers.edu"
 __license__ = "Creative Commons Attribution 3.0 Unported"
 __version__ = "V0.07"
 
-import sys
-import os
 import os.path
+
+import os
+import sys
 
 
 class ChemRefPathInfo(object):
     """ Common methods for finding path information for chemical reference data files.
     """
-#
 
-    def __init__(self, reqObj=None, configObj=None, configCommonObj=None, testMode=False, verbose=False, log=sys.stderr):
+    #
+
+    def __init__(self, reqObj=None, configObj=None, configCommonObj=None, testMode=False, verbose=False,
+                 log=sys.stderr):
         """ Input request object and configuration (ConfigInfo()) object are used to
             supply information required to compute path details for chemical reference
             data files.
@@ -40,49 +43,49 @@ class ChemRefPathInfo(object):
         #
 
     def getIdType(self, idCode):
-        idU = idCode.upper()
+        id_u = idCode.upper()
         #
-        if ((idCode is None) or (len(idCode) < 1)):
+        if (idCode is None) or (len(idCode) < 1):
             return None
-        if len(idU) <= 3:
-            idType = "CC"
-        elif idU[:6] == "PRDCC_":
-            idType = "PRDCC"
-        elif idU[:4] == "PRD_":
-            idType = "PRD"
-        elif idU[:4] == "FAM_":
-            idType = "PRD_FAMILY"
+        if len(id_u) <= 3:
+            id_type = "CC"
+        elif id_u[:6] == "PRDCC_":
+            id_type = "PRDCC"
+        elif id_u[:4] == "PRD_":
+            id_type = "PRD"
+        elif id_u[:4] == "FAM_":
+            id_type = "PRD_FAMILY"
         else:
-            idType = None
+            id_type = None
 
-        return idType
+        return id_type
 
     def getFilePath(self, idCode):
         """ Return the repository file path corresponding to the input reference data id code
            (CC,PRD,FAMILY or PRDCC).
         """
         #
-        idType = self.getIdType(idCode)
-        if idType is None:
+        id_type = self.getIdType(idCode)
+        if id_type is None:
             return None
         #
-        idU = idCode.upper()
-        hashKey = idU[-1]
-        fileName = idU + ".cif"
+        id_u = idCode.upper()
+        hash_key = id_u[-1]
+        file_name = id_u + ".cif"
         #
-        if idType == "CC":
-            hashKey = idU[0]
-            filePath = os.path.join(self.__cIcommon.get_site_cc_cvs_path(), hashKey, idU, fileName)
-        elif idType == "PRDCC":
-            filePath = os.path.join(self.__cIcommon.get_site_prdcc_cvs_path(), hashKey, fileName)
-        elif idType == "PRD":
-            filePath = os.path.join(self.__cIcommon.get_site_prd_cvs_path(), hashKey, fileName)
-        elif idType == "PRD_FAMILY":
-            filePath = os.path.join(self.__cIcommon.get_site_family_cvs_path(), hashKey, fileName)
+        if id_type == "CC":
+            hash_key = id_u[0]
+            file_path = os.path.join(self.__cIcommon.get_site_cc_cvs_path(), hash_key, id_u, file_name)
+        elif id_type == "PRDCC":
+            file_path = os.path.join(self.__cIcommon.get_site_prdcc_cvs_path(), hash_key, file_name)
+        elif id_type == "PRD":
+            file_path = os.path.join(self.__cIcommon.get_site_prd_cvs_path(), hash_key, file_name)
+        elif id_type == "PRD_FAMILY":
+            file_path = os.path.join(self.__cIcommon.get_site_family_cvs_path(), hash_key, file_name)
         else:
-            filePath = None
+            file_path = None
 
-        return filePath
+        return file_path
 
     def getProjectPath(self, idCode):
         """
@@ -90,17 +93,17 @@ class ChemRefPathInfo(object):
         (CC,PRD,FAMILY or PRDCC).
         """
         #
-        idType = self.getIdType(idCode)
-        if idType is None:
+        id_type = self.getIdType(idCode)
+        if id_type is None:
             return None
         #
-        if idType == "CC":
+        if id_type == "CC":
             return self.__cIcommon.get_site_cc_cvs_path()
-        elif idType == "PRDCC":
+        elif id_type == "PRDCC":
             return self.__cIcommon.get_site_prdcc_cvs_path()
-        elif idType == "PRD":
+        elif id_type == "PRD":
             return self.__cIcommon.get_site_prd_cvs_path()
-        elif idType == "PRD_FAMILY":
+        elif id_type == "PRD_FAMILY":
             return self.__cIcommon.get_site_family_cvs_path()
         else:
             return None
@@ -112,35 +115,35 @@ class ChemRefPathInfo(object):
              repository within the sandbox directory.  Relative path identifies gives
              the target path for the target file within the repository.
         """
-        relPath = None
-        projectName = None
+        rel_path = None
+        project_name = None
 
-        idType = self.getIdType(idCode)
-        if idType is None:
-            return (projectName, relPath)
+        id_type = self.getIdType(idCode)
+        if id_type is None:
+            return project_name, rel_path
         #
-        projectName = self.assignCvsProjectName(idType)
-        if (idType == "CC"):
-            relPath = os.path.join(idCode[0], idCode, idCode + '.cif')
-        elif (idType == "PRDCC"):
-            relPath = os.path.join(idCode[-1], idCode + '.cif')
-        elif (idType == "PRD"):
-            relPath = os.path.join(idCode[-1], idCode + '.cif')
-        elif (idType == "PRD_FAMILY"):
-            relPath = os.path.join(idCode[-1], idCode + '.cif')
+        project_name = self.assignCvsProjectName(id_type)
+        if id_type == "CC":
+            rel_path = os.path.join(idCode[0], idCode, idCode + '.cif')
+        elif id_type == "PRDCC":
+            rel_path = os.path.join(idCode[-1], idCode + '.cif')
+        elif id_type == "PRD":
+            rel_path = os.path.join(idCode[-1], idCode + '.cif')
+        elif id_type == "PRD_FAMILY":
+            rel_path = os.path.join(idCode[-1], idCode + '.cif')
         else:
             pass
 
-        return (projectName, relPath)
+        return project_name, rel_path
 
     def assignIdCodeFromFileName(self, filePath):
-        if (self.__verbose):
+        if self.__verbose:
             self.__lfh.write("+PathInfo.assignIdCodeFromFileName() input file path: %s\n" % filePath)
 
-        if ((filePath is not None) and (len(filePath) > 7)):
-            (pth, fileName) = os.path.split(filePath)
-            (id, ext) = os.path.splitext(fileName)
-            return id.upper()
+        if (filePath is not None) and (len(filePath) > 7):
+            pth, file_name = os.path.split(filePath)
+            definition_id, ext = os.path.splitext(file_name)
+            return definition_id.upper()
 
         return None
 
@@ -150,32 +153,32 @@ class ChemRefPathInfo(object):
              This wrapper provides for a testing mode which assign an existing  surogate
              repository project with the same organization as the requested repository type.
         """
-        projectName = None
+        project_name = None
 
         if repType is None:
-            return projectName
+            return project_name
         #
         if self.__testMode:
-            if (repType == "CC"):
-                projectName = 'test-ligand-v1'
-            elif (repType == "PRDCC"):
-                projectName = 'test-project-v1'
-            elif (repType == "PRD"):
-                projectName = 'test-project-v1'
-            elif (repType == "PRD_FAMILY"):
-                projectName = 'test-project-v1'
+            if repType == "CC":
+                project_name = 'test-ligand-v1'
+            elif repType == "PRDCC":
+                project_name = 'test-project-v1'
+            elif repType == "PRD":
+                project_name = 'test-project-v1'
+            elif repType == "PRD_FAMILY":
+                project_name = 'test-project-v1'
             else:
                 pass
         else:
-            if (repType == "CC"):
-                projectName = self.__cI.get('SITE_REFDATA_PROJ_NAME_CC')
-            elif (repType == "PRDCC"):
-                projectName = self.__cI.get('SITE_REFDATA_PROJ_NAME_PRDCC')
-            elif (repType == "PRD"):
-                projectName = self.__cI.get('SITE_REFDATA_PROJ_NAME_PRD')
-            elif (repType == "PRD_FAMILY"):
-                projectName = self.__cI.get('SITE_REFDATA_PROJ_NAME_PRD_FAMILY')
+            if repType == "CC":
+                project_name = self.__cI.get('SITE_REFDATA_PROJ_NAME_CC')
+            elif repType == "PRDCC":
+                project_name = self.__cI.get('SITE_REFDATA_PROJ_NAME_PRDCC')
+            elif repType == "PRD":
+                project_name = self.__cI.get('SITE_REFDATA_PROJ_NAME_PRD')
+            elif repType == "PRD_FAMILY":
+                project_name = self.__cI.get('SITE_REFDATA_PROJ_NAME_PRD_FAMILY')
             else:
                 pass
 
-        return projectName
+        return project_name

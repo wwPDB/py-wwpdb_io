@@ -171,13 +171,13 @@ class ChemRefPathInfo(object):
                 pass
         else:
             if repType == "CC":
-                project_name = self.__cI.get('SITE_REFDATA_PROJ_NAME_CC')
+                project_name = self.__cIcommon.get_site_cc_cvs_path()
             elif repType == "PRDCC":
-                project_name = self.__cI.get('SITE_REFDATA_PROJ_NAME_PRDCC')
+                project_name = self.__cIcommon.get_site_prdcc_cvs_path()
             elif repType == "PRD":
-                project_name = self.__cI.get('SITE_REFDATA_PROJ_NAME_PRD')
+                project_name = self.__cIcommon.get_site_prd_cvs_path()
             elif repType == "PRD_FAMILY":
-                project_name = self.__cI.get('SITE_REFDATA_PROJ_NAME_PRD_FAMILY')
+                project_name = self.__cIcommon.get_site_family_cvs_path()
             else:
                 pass
 

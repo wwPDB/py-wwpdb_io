@@ -141,8 +141,8 @@ class ChemRefPathInfo(object):
             self.__lfh.write("+PathInfo.assignIdCodeFromFileName() input file path: %s\n" % filePath)
 
         if (filePath is not None) and (len(filePath) > 7):
-            pth, file_name = os.path.split(filePath)
-            definition_id, ext = os.path.splitext(file_name)
+            file_name = os.path.basename(filePath)
+            definition_id, _ = os.path.splitext(file_name)
             return definition_id.upper()
 
         return None

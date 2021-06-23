@@ -907,7 +907,7 @@ class DataFileReference(DataReferenceBase):
             elif self.__storageType in ["session", "wf-session"]:
                 tpth = self.__sessionPath
             elif self.__storageType == "uploads":
-                tpth = os.path.join(self.__cI.get("SITE_DEPOSIT_STORAGE_PATH"), "temp_files", "deposition_uploads", self.__depositionDataSetId)
+                tpth = os.path.join(self.__cI.get("SITE_DEPOSIT_STORAGE_PATH"), "deposit", "temp_files", "deposition_uploads", self.__depositionDataSetId)
             else:
                 tpth = None
             pth = os.path.abspath(tpth)

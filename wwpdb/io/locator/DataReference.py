@@ -315,7 +315,7 @@ class DataFileReference(DataReferenceBase):
         self.__formatExtensionD = self.__cI.get("FILE_FORMAT_EXTENSION_DICTIONARY")
         """Dictionary of recognized file formats and file name extensions"""
         #
-        self.__storageTypeList = ["archive", "autogroup", "wf-archive", "wf-instance", "wf-shared", "session", "wf-session", "deposit", "inline", "tempdep", "upload"]
+        self.__storageTypeList = ["archive", "autogroup", "wf-archive", "wf-instance", "wf-shared", "session", "wf-session", "deposit", "inline", "tempdep", "uploads"]
         """List of supported storage types/locations"""
         #
         self.__depositionDataSetIdPrefix = "D_"
@@ -906,7 +906,7 @@ class DataFileReference(DataReferenceBase):
                 tpth = os.path.join(self.__cI.get("SITE_WORKFLOW_STORAGE_PATH"), "workflow", self.__depositionDataSetId, "instance", self.__workflowInstanceId)
             elif self.__storageType in ["session", "wf-session"]:
                 tpth = self.__sessionPath
-            elif self.__storageType == "upload":
+            elif self.__storageType == "uploads":
                 tpth = os.path.join(self.__cI.get("SITE_DEPOSIT_STORAGE_PATH"), "temp_files", "deposition_uploads", self.__depositionDataSetId)
             else:
                 tpth = None

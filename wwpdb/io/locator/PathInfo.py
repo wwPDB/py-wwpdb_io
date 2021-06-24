@@ -162,24 +162,6 @@ class PathInfo(object):
         except Exception as _e:  # noqa: F841
             return None
 
-    def getUploadsPath(self, dataSetId):
-        try:
-            return self.getDirPath(dataSetId=dataSetId, fileSource="uploads")
-        except Exception as _e:
-            return None
-
-    def getFileUploadsPath(self, dataSetId, filename):
-        """
-        Retrieves a depositor uploaded file from deposition_uploads.
-        :param dataSetId:
-        :param filename:
-        :return:
-        """
-        try:
-            return os.path.join(self.getUploadsPath(dataSetId), filename)
-        except Exception as _e:
-            return None
-
     def getModelPdbxFilePath(self, dataSetId, wfInstanceId=None, fileSource="archive", versionId="latest", mileStone=None):
         return self.__getStandardPath(
             dataSetId=dataSetId, wfInstanceId=wfInstanceId, fileSource=fileSource, versionId=versionId, contentTypeBase="model", formatType="pdbx", mileStone=mileStone

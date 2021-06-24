@@ -895,15 +895,15 @@ class DataFileReference(DataReferenceBase):
             if self.__storageType == "archive" or self.__storageType == "wf-archive":
                 tpth = os.path.join(self.__cI.get("SITE_ARCHIVE_STORAGE_PATH"), "archive", self.__depositionDataSetId)
             elif self.__storageType == "autogroup":
-                tpth = os.path.join(self.__cI.get("SITE_DEPOSIT_STORAGE_PATH"), "autogroup", self.__depositionDataSetId)
+                tpth = os.path.join(self.__cI.get("SITE_ARCHIVE_STORAGE_PATH"), "autogroup", self.__depositionDataSetId)
             elif self.__storageType == "deposit":
-                tpth = os.path.join(self.__cI.get("SITE_DEPOSIT_STORAGE_PATH"), "deposit", self.__depositionDataSetId)
+                tpth = os.path.join(self.__cI.get("SITE_ARCHIVE_STORAGE_PATH"), "deposit", self.__depositionDataSetId)
             elif self.__storageType == "tempdep":
                 tpth = os.path.join(self.__cI.get("SITE_ARCHIVE_STORAGE_PATH"), "tempdep", self.__depositionDataSetId)
             elif self.__storageType == "wf-shared":
-                tpth = os.path.join(self.__cI.get("SITE_WORKFLOW_STORAGE_PATH"), "workflow", self.__depositionDataSetId, "shared", self.__workflowNameSpace)
+                tpth = os.path.join(self.__cI.get("SITE_ARCHIVE_STORAGE_PATH"), "workflow", self.__depositionDataSetId, "shared", self.__workflowNameSpace)
             elif self.__storageType == "wf-instance":
-                tpth = os.path.join(self.__cI.get("SITE_WORKFLOW_STORAGE_PATH"), "workflow", self.__depositionDataSetId, "instance", self.__workflowInstanceId)
+                tpth = os.path.join(self.__cI.get("SITE_ARCHIVE_STORAGE_PATH"), "workflow", self.__depositionDataSetId, "instance", self.__workflowInstanceId)
             elif self.__storageType in ["session", "wf-session"]:
                 tpth = self.__sessionPath
             elif self.__storageType == "uploads":

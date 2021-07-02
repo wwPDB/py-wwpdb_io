@@ -142,7 +142,7 @@ class DataExchange(object):
 
     def removeWorkflowDir(self):
         if (self.__depDataSetId is not None) and self.__depDataSetId.startswith("D_") and (len(self.__depDataSetId) > 7):
-            workflowPath = self.__cI.get("SITE_WORKFLOW_STORAGE_PATH")
+            workflowPath = self.__cI.get("SITE_ARCHIVE_STORAGE_PATH")
             dirPath = os.path.join(workflowPath, "workflow", self.__depDataSetId)
             if os.access(dirPath, os.W_OK):
                 shutil.rmtree(dirPath)

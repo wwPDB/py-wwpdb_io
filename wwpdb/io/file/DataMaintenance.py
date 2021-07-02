@@ -123,7 +123,7 @@ class DataMaintenance(object):
 
     def removeWorkflowDir(self, dataSetId):
         if (dataSetId is not None) and dataSetId.startswith("D_") and (len(dataSetId) > 10):
-            workflowPath = self.__cI.get("SITE_WORKFLOW_STORAGE_PATH")
+            workflowPath = self.__cI.get("SITE_ARCHIVE_STORAGE_PATH")
             dirPath = os.path.join(workflowPath, "workflow", dataSetId)
             if os.access(dirPath, os.W_OK):
                 if self.__testMode:

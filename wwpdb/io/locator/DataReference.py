@@ -878,10 +878,10 @@ class DataFileReference(DataReferenceBase):
 
         The file path convention is:
         - archive files     = <SITE_ARCHIVE_STORAGE_PATH>/archive/<deposition data set id>/
-        - deposit files     = <SITE_DEPOSIT_STORAGE_PATH>/archive/<deposition data set id>/
+        - deposit files     = <SITE_ARCHIVE_STORAGE_PATH>/archive/<deposition data set id>/
         - temp deposit files     = <SITE_ARCHIVE_STORAGE_PATH>/tempdep/<deposition data set id>/
-        - workflow shared   = <SITE_WORKFLOW_STORAGE_PATH>/workflow/<deposition data set id>/shared/<self.__workflowNameSpace>
-        - workflow instance = <SITE_WORKFLOW_STORAGE_PATH>/workflow/<deposition data set id>/instance/<self.__workflowInstanceId>
+        - workflow shared   = <SITE_ARCHIVE_STORAGE_PATH>/workflow/<deposition data set id>/shared/<self.__workflowNameSpace>
+        - workflow instance = <SITE_ARCHIVE_STORAGE_PATH>/workflow/<deposition data set id>/instance/<self.__workflowInstanceId>
         - session files     = session path/
 
         Top-level site-specific path details are obtained from the SiteInfo() class.

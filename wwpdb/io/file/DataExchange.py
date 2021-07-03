@@ -510,11 +510,11 @@ class DataExchange(object):
         )
         return f
 
-    def __getInstanceFileName(self, contentType="model", formatType="pdbx", version="latest", partitionNumber="1", mileStone=None):
-        (_fp, _d, f) = self.__targetFilePath(
-            fileSource="wf-instance", contentType=contentType, formatType=formatType, version=version, partitionNumber=partitionNumber, mileStone=mileStone
-        )
-        return f
+    # def __getInstanceFileName(self, contentType="model", formatType="pdbx", version="latest", partitionNumber="1", mileStone=None):
+    #     (_fp, _d, f) = self.__targetFilePath(
+    #         fileSource="wf-instance", contentType=contentType, formatType=formatType, version=version, partitionNumber=partitionNumber, mileStone=mileStone
+    #     )
+    #     return f
 
     def __getFilePath(self, fileSource="archive", contentType="model", formatType="pdbx", version="latest", partitionNumber="1", mileStone=None):
         (fp, _d, _f) = self.__targetFilePath(

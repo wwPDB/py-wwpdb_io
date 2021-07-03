@@ -168,7 +168,7 @@ class ArchiveIoSftp(ArchiveIoBase):
                 logger.error("listdir failing for path %s with %s", path, str(e))
                 return False
 
-    def rmdir(self, dirPath):  # pylint: disable=arguments-differ
+    def rmdir(self, dirPath):  # pylint: disable=arguments-differ,arguments-renamed
         try:
             self.__sftpClient.rmdir(dirPath)
             return True
@@ -179,7 +179,7 @@ class ArchiveIoSftp(ArchiveIoBase):
                 logger.error("rmdir failing for path %s with %s", dirPath, str(e))
                 return False
 
-    def remove(self, filePath):  # pylint: disable=arguments-differ
+    def remove(self, filePath):  # pylint: disable=arguments-differ,arguments-renamed
         try:
             self.__sftpClient.remove(filePath)
             return True

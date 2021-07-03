@@ -47,7 +47,7 @@ class ArchiveIoSftpTests(unittest.TestCase):
         self.__hostName = cD.get("HOST_NAME")
         self.__userName = cD.get("HOST_USERNAME")
         self.__hostPort = int(cD.get("HOST_PORT"))
-        self.__protocol = cD.get("HOST_PROTOCOL")
+        # self.__protocol = cD.get("HOST_PROTOCOL")
         self.__rootPath = cD.get("HOST_ROOT_PATH")
         self.__keyFilePath = cD.get("HOST_KEY_FILE_PATH")
         self.__keyFileType = cD.get("HOST_KEY_FILE_TYPE")

@@ -413,31 +413,31 @@ class DataMaintenance(object):
         )
         return f
 
-    def __getInstanceFileName(self, dataSetId, wfInstanceId=None, contentType="model", formatType="pdbx", version="latest", partitionNumber="1", mileStone=None):
-        (_fp, _d, f) = self.__targetFilePath(
-            dataSetId=dataSetId,
-            wfInstanceId=wfInstanceId,
-            fileSource="wf-instance",
-            contentType=contentType,
-            formatType=formatType,
-            version=version,
-            partitionNumber=partitionNumber,
-            mileStone=mileStone,
-        )
-        return f
+    # def __getInstanceFileName(self, dataSetId, wfInstanceId=None, contentType="model", formatType="pdbx", version="latest", partitionNumber="1", mileStone=None):
+    #     (_fp, _d, f) = self.__targetFilePath(
+    #         dataSetId=dataSetId,
+    #         wfInstanceId=wfInstanceId,
+    #         fileSource="wf-instance",
+    #         contentType=contentType,
+    #         formatType=formatType,
+    #         version=version,
+    #         partitionNumber=partitionNumber,
+    #         mileStone=mileStone,
+    #     )
+    #     return f
 
-    def __getFilePath(self, dataSetId, wfInstanceId=None, fileSource="archive", contentType="model", formatType="pdbx", version="latest", partitionNumber="1", mileStone=None):
-        (fp, _d, _f) = self.__targetFilePath(
-            dataSetId=dataSetId,
-            wfInstanceId=wfInstanceId,
-            fileSource=fileSource,
-            contentType=contentType,
-            formatType=formatType,
-            version=version,
-            partitionNumber=partitionNumber,
-            mileStone=mileStone,
-        )
-        return fp
+    # def __getFilePath(self, dataSetId, wfInstanceId=None, fileSource="archive", contentType="model", formatType="pdbx", version="latest", partitionNumber="1", mileStone=None):
+    #     (fp, _d, _f) = self.__targetFilePath(
+    #         dataSetId=dataSetId,
+    #         wfInstanceId=wfInstanceId,
+    #         fileSource=fileSource,
+    #         contentType=contentType,
+    #         formatType=formatType,
+    #         version=version,
+    #         partitionNumber=partitionNumber,
+    #         mileStone=mileStone,
+    #     )
+    #     return fp
 
     def __targetFilePath(self, dataSetId, wfInstanceId=None, fileSource="archive", contentType="model", formatType="pdbx", version="latest", partitionNumber="1", mileStone=None):
         """Return the file path, directory path, and filen ame  for the input content object if this object is valid.
@@ -468,13 +468,13 @@ class DataMaintenance(object):
 
             return (None, None, None)
 
-    def __copyGzip(self, inpFilePath, outFilePath):
-        """"""
-        try:
-            cmd = " gzip -cd  %s > %s " % (inpFilePath, outFilePath)
-            os.system(cmd)
-            return True
-        except:  # noqa: E722 pylint: disable=bare-except
-            if self.__verbose:
-                traceback.print_exc(file=self.__lfh)
-            return False
+    # def __copyGzip(self, inpFilePath, outFilePath):
+    #     """"""
+    #     try:
+    #         cmd = " gzip -cd  %s > %s " % (inpFilePath, outFilePath)
+    #         os.system(cmd)
+    #         return True
+    #     except:  # noqa: E722 pylint: disable=bare-except
+    #         if self.__verbose:
+    #             traceback.print_exc(file=self.__lfh)
+    #         return False

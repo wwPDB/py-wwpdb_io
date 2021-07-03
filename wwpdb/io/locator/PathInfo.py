@@ -61,7 +61,7 @@ class PathInfo(object):
         self.__verbose = verbose
         self.__lfh = log
         #
-        self.__debug = False
+        self.__debug = False  # pylint: disable=unused-private-member
         self.__siteId = siteId if siteId is not None else getSiteId(defaultSiteId=siteId)
         self.__sessionPath = sessionPath
         self.__sessionDownloadPath = None
@@ -71,7 +71,7 @@ class PathInfo(object):
         self.__cI = ConfigInfo(siteId=self.__siteId, verbose=self.__verbose, log=self.__lfh)
 
     def setDebugFlag(self, flag):
-        self.__debug = flag
+        self.__debug = flag  # pylint: disable=unused-private-member
 
     def parseFileName(self, fileName):
         rfc = ReferenceFileComponents(verbose=self.__verbose, log=self.__lfh)

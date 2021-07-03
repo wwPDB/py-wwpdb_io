@@ -18,7 +18,6 @@ import os
 import os.path
 import logging
 
-from wwpdb.utils.config.ConfigInfo import ConfigInfo
 from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCommon
 
 logger = logging.getLogger(__name__)
@@ -27,7 +26,6 @@ logger = logging.getLogger(__name__)
 class ReleasePathInfo(object):
     def __init__(self, siteId=None):
         self.__siteId = siteId
-        self.__cI = ConfigInfo(siteId=self.__siteId)
         self.__cICommon = ConfigInfoAppCommon(self.__siteId)
         self.current_folder_name = "current"
         self.previous_folder_name = "previous"

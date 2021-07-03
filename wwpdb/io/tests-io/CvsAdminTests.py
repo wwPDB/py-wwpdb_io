@@ -41,12 +41,10 @@ class CvsAdminTests(unittest.TestCase):
         self.__lfh = sys.stdout
         #
         self.__testFilePath = "ligand-dict-v3/A/ATP/ATP.cif"
-        self.__testDirPath = "ligand-dict-v3/A/ATP/"
         #
         self.__cvsRepositoryPath = "/cvs-ligands"
         self.__cvsRepositoryHost = os.getenv("CVS_TEST_SERVER")
 
-        self.__realProjectName = "prd-v3"
         self.__testProjectName = "test-project-v1"
         self.__testFilePath2 = os.path.abspath("./data/TEST-FILE.DAT")
 

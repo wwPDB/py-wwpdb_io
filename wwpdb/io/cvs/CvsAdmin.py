@@ -193,11 +193,9 @@ class CvsAdmin(CvsWrapperBase):
 
     def __init__(self, tmpPath="./", verbose=True, log=sys.stderr):
         super(CvsAdmin, self).__init__(tmpPath=tmpPath, verbose=verbose, log=log)
-        self.__tmpPath = tmpPath
         #
         self.__verbose = verbose
         self.__lfh = log
-        self.__debug = False
 
     def getHistory(self, cvsPath):
         """Return the history text for project files identified by cvsPath in the
@@ -356,7 +354,6 @@ class CvsSandBoxAdmin(CvsWrapperBase):
 
     def __init__(self, tmpPath="./", verbose=True, log=sys.stderr):
         super(CvsSandBoxAdmin, self).__init__(tmpPath=tmpPath, verbose=verbose, log=log)
-        self.__tmpPath = tmpPath
         #
         self.__verbose = verbose
         self.__lfh = log
@@ -598,22 +595,22 @@ class CvsSandBoxAdmin(CvsWrapperBase):
             cmd = None
         return cmd
 
-    def __getUpdateProjectCmd(self, projectDir, prune=False, appendErrors=False):
-        """Return CVS command for updating a complete project working directory from current repository."""
-        if self._wrkPath is None:
-            self._makeTempWorkingDir()
-        errPath = self._getErrorFilePath()
-        if self._setCvsRoot():
-            if prune:
-                pF = " -P "
-            else:
-                pF = " "
-            targetPath = os.path.join(self.__sandBoxTopPath, projectDir)
-            cmd = " cd " + targetPath + "; "
-            cmd += "cvs -d " + self._cvsRoot + " update -C -d " + pF + self._getRedirect(fileNameOut=errPath, fileNameErr=errPath, append=appendErrors) + " ; "
-        else:
-            cmd = None
-        return cmd
+    # def __getUpdateProjectCmd(self, projectDir, prune=False, appendErrors=False):
+    #     """Return CVS command for updating a complete project working directory from current repository."""
+    #     if self._wrkPath is None:
+    #         self._makeTempWorkingDir()
+    #     errPath = self._getErrorFilePath()
+    #     if self._setCvsRoot():
+    #         if prune:
+    #             pF = " -P "
+    #         else:
+    #             pF = " "
+    #         targetPath = os.path.join(self.__sandBoxTopPath, projectDir)
+    #         cmd = " cd " + targetPath + "; "
+    #         cmd += "cvs -d " + self._cvsRoot + " update -C -d " + pF + self._getRedirect(fileNameOut=errPath, fileNameErr=errPath, append=appendErrors) + " ; "
+    #     else:
+    #         cmd = None
+    #     return cmd
 
     def __getUpdateCmd(self, projectDir, relProjectPath, prune=False, appendErrors=False):
         """Return CVS command for updating the input relative path within project working

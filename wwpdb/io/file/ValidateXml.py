@@ -29,9 +29,7 @@ import traceback
 class ValidateXml(object):
     """Class responsible for parsing validation XML report"""
 
-    def __init__(self, FileName=None, verbose=False, log=sys.stderr):
-        self.__verbose = verbose
-        self.__lfh = log
+    def __init__(self, FileName=None, verbose=False, log=sys.stderr):  # pylint: disable=unused-argument
         self.__xmlFile = FileName
         self.__doc = minidom.parse(self.__xmlFile)
         #

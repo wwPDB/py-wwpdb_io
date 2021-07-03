@@ -35,11 +35,8 @@ from wwpdb.utils.testing.Features import Features
 class CvsUtilityTests(unittest.TestCase):
     def setUp(self):
         self.__logger = logging.getLogger("wwpdb.utils.rcsb")
-        self.__siteId = "DEV"
-        self.__lfh = sys.stdout
         #
         self.__testFilePath = "ligand-dict-v3/A/ATP/ATP.cif"
-        self.__testDirPath = "ligand-dict-v3/A/ATP/"
         #
         self.__cvsRepositoryPath = "/cvs-ligands"
         self.__cvsRepositoryHost = os.getenv("CVS_TEST_SERVER")

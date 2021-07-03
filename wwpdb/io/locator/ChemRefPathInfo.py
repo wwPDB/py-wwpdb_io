@@ -28,7 +28,8 @@ class ChemRefPathInfo(object):
 
     #
 
-    def __init__(self, reqObj=None, configObj=None, configCommonObj=None, testMode=False, verbose=False,
+    def __init__(self, reqObj=None, configObj=None, configCommonObj=None,  # pylint: disable=unused-argument
+                 testMode=False, verbose=False,
                  log=sys.stderr):
         """ Input request object and configuration (ConfigInfo()) object are used to
             supply information required to compute path details for chemical reference
@@ -38,7 +39,6 @@ class ChemRefPathInfo(object):
         self.__lfh = log
         self.__cI = configObj
         self.__cIcommon = configCommonObj
-        self.__reqObj = reqObj
         self.__testMode = testMode
         #
 

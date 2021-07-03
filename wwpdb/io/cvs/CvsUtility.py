@@ -30,12 +30,10 @@ class CvsWrapper(object):
 
     def __init__(self, tmpPath="./"):
         self.__tmpPath = tmpPath
-        self.__verbose = None
-        self.__lfh = None
         self.__logger = logging.getLogger("wwpdb.utils.rcsb.CvsWrapper")
         self.__logger.debug("Created instance of CvsWrapper")
         #
-        self.__debug = True
+        # self.__debug = True
         self.__repositoryHost = None
         self.__repositoryPath = None
         self.__cvsUser = None

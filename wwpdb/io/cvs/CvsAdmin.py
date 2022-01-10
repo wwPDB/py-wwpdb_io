@@ -534,7 +534,10 @@ class CvsSandBoxAdmin(CvsWrapperBase):
             #
             if saveCopy:
                 (_pth, fn) = os.path.split(relProjectPath)
-                savePath = os.path.join(self.__sandBoxTopPath, projectDir, "REMOVED", fn)
+                folder_removed = os.path.join(self.__sandBoxTopPath, projectDir, "REMOVED")
+                if not os.path.isdir(folder_removed):
+                    os.mkdir(folder_removed)
+                savePath = os.path.join(folder_removed, fn)
 
                 # relSavePath = os.path.join("REMOVED", fn)
                 shutil.copyfile(targetPath, savePath)

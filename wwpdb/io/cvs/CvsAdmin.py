@@ -203,7 +203,7 @@ class CvsAdmin(CvsWrapperBase):
         """
         text = ""
         ok = False
-        cmd = self.__getHistoryCmd(cvsPath)
+        cmd = self.__getHistoryCmd(cvsPath, True)
         if cmd is not None:
             ok = self._runCvsCommand(myCommand=cmd)
             text = self._getOutputText()
@@ -254,13 +254,19 @@ class CvsAdmin(CvsWrapperBase):
 
         return (ok, text)
 
-    def __getHistoryCmd(self, cvsPath):
+    def __getHistoryCmd(self, cvsPath, incldel=False):
+        """ Generate command to retrieve history.  If incldel is set, include removed revisions """
         if self._wrkPath is None:
             self._makeTempWorkingDir()
         outPath = self._getOutputFilePath()
         errPath = self._getErrorFilePath()
+
+        if incldel:
+            opts = "AMR "
+        else:
+            opts = "AM "
         if self._setCvsRoot():
-            cmd = "cvs -d " + self._cvsRoot + " history -a -x AM " + cvsPath + self._getRedirect(fileNameOut=outPath, fileNameErr=errPath)
+            cmd = "cvs -d " + self._cvsRoot + " history -a -x " + opts + cvsPath + self._getRedirect(fileNameOut=outPath, fileNameErr=errPath)
         else:
             cmd = None
         return cmd

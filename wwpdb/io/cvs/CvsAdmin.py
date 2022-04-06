@@ -179,6 +179,7 @@ class CvsWrapperBase(object):
         if self._wrkPath is not None and len(self._wrkPath) > 0:
             try:
                 shutil.rmtree(self._wrkPath)
+                self._wrkPath = None
                 return True
             except Exception as e:
                 self.__lfh.write("cleanup - unable to remove self._wrkpath")

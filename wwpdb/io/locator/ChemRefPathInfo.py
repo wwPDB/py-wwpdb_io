@@ -47,7 +47,7 @@ class ChemRefPathInfo(object):
         #
         if (idCode is None) or (len(idCode) < 1):
             return None
-        if len(id_u) <= 3:
+        if len(id_u) <= 5:
             id_type = "CC"
         elif id_u[:6] == "PRDCC_":
             id_type = "PRDCC"

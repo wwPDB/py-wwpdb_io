@@ -60,6 +60,12 @@ class ChemRefPathInfo(object):
 
         return id_type
 
+    def getCcdHash(self, idCode):
+        """Returns the hash code for a CCD id.  Currently first letter"""
+        hash_key = idCode.upper()[0]
+
+        return hash_key
+        
     def getFilePath(self, idCode):
         """ Return the repository file path corresponding to the input reference data id code
            (CC,PRD,FAMILY or PRDCC).
@@ -74,7 +80,7 @@ class ChemRefPathInfo(object):
         file_name = id_u + ".cif"
         #
         if id_type == "CC":
-            hash_key = id_u[0]
+            hash_key = self.getCcdHash(id_u)
             file_path = os.path.join(self.__cIcommon.get_site_cc_cvs_path(), hash_key, id_u, file_name)
         elif id_type == "PRDCC":
             file_path = os.path.join(self.__cIcommon.get_site_prdcc_cvs_path(), hash_key, file_name)

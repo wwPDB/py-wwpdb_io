@@ -14,7 +14,7 @@ __email__ = "peisach@rcsb.rutgers.edu"
 
 import unittest
 import os
-from wwpdb.io.locator.ChemRefPathInfo  import ChemRefPathInfo  # noqa: E402
+from wwpdb.io.locator.ChemRefPathInfo import ChemRefPathInfo  # noqa: E402
 import platform
 
 HERE = os.path.abspath(os.path.dirname(__file__))
@@ -28,7 +28,7 @@ mockTopPath = os.path.join(TOPDIR, "wwpdb", "mock-data")
 class ChemRefPathInfoTests(unittest.TestCase):
     def setUp(self):
         self.crpi = ChemRefPathInfo()
-        
+
     def testCCDHash(self):
         """Test return of CCD hash"""
         self.assertEqual(self.crpi.getCcdHash("ABC"), "A")
@@ -36,7 +36,7 @@ class ChemRefPathInfoTests(unittest.TestCase):
         # For now
         self.assertEqual(self.crpi.getCcdHash("AAPTR"), "A")
         self.assertEqual(self.crpi.getCcdHash("DT"), "D")
-        
+
     def testGetIdType(self):
         """Test identifier based on idCode"""
         self.assertEqual(self.crpi.getIdType("A"), "CC")
@@ -51,8 +51,9 @@ class ChemRefPathInfoTests(unittest.TestCase):
 def chemRefStandardTests():  # pragma: no cover
     suiteSelect = unittest.TestSuite()
     suiteSelect.addTest(ChemRefPathInfoTests("testCCDHash"))
-    suiteSelect.addTest(ChemRefPathInfoTests("testGetIdType"))    
+    suiteSelect.addTest(ChemRefPathInfoTests("testGetIdType"))
     return suiteSelect
+
 
 if __name__ == "__main__":  # pragma: no cover
     mySuite = chemRefStandardTests()

@@ -65,7 +65,7 @@ class ChemRefPathInfo(object):
         hash_key = idCode.upper()[0]
 
         return hash_key
-        
+
     def getFilePath(self, idCode):
         """ Return the repository file path corresponding to the input reference data id code
            (CC,PRD,FAMILY or PRDCC).

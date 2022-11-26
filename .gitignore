@@ -110,3 +110,6 @@ venv.bak/
 # Test output
 wwpdb/io/tests-io/test-output
 wwpdb/io/tests-io-config/test-output
+
+# Emacs
+*~

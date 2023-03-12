@@ -5,7 +5,7 @@
 # Updated:
 # 4-Feb-2013 jdw methods to support testing with surrogate repositories.
 # 5-Jul-2013 jdw renamed to ChemRefPathInfo() to avoid name conflict
-# s
+# 12-Mar-2022 ep Changed API from reqObj to siteId
 """
 Common methods for finding path information for chemical reference data files.
 
@@ -22,23 +22,32 @@ import os
 import sys
 
 
+from wwpdb.utils.config.ConfigInfo import ConfigInfo
+from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCc
+
+
 class ChemRefPathInfo(object):
     """ Common methods for finding path information for chemical reference data files.
     """
 
     #
 
-    def __init__(self, reqObj=None, configObj=None, configCommonObj=None,  # pylint: disable=unused-argument
-                 testMode=False, verbose=False,
-                 log=sys.stderr):
+    def __init__(self, siteId=None, verbose=False, log=sys.stderr, testMode=False,
+                 # Old API - to be deprecated
+                 reqObj=None, configObj=None, configCommonObj=None):  # pylint: disable=unused-argument
         """ Input request object and configuration (ConfigInfo()) object are used to
             supply information required to compute path details for chemical reference
             data files.
         """
         self.__verbose = verbose
         self.__lfh = log
-        self.__cI = configObj
-        self.__cIcommon = configCommonObj
+        if configObj and configCommonObj:
+            self.__cI = configObj
+            self.__cIcommonAppCc = configCommonObj
+        else:
+            self.__siteId = siteId
+            self.__cI = ConfigInfo(siteId=self.__siteId, verbose=self.__verbose, log=self.__lfh)
+            self.__cIcommonAppCc = ConfigInfoAppCc(siteId=self.__siteId, verbose=self.__verbose, log=self.__lfh)
         self.__testMode = testMode
         #
 
@@ -81,13 +90,13 @@ class ChemRefPathInfo(object):
         #
         if id_type == "CC":
             hash_key = self.getCcdHash(id_u)
-            file_path = os.path.join(self.__cIcommon.get_site_cc_cvs_path(), hash_key, id_u, file_name)
+            file_path = os.path.join(self.__cIcommonAppCc.get_site_cc_cvs_path(), hash_key, id_u, file_name)
         elif id_type == "PRDCC":
-            file_path = os.path.join(self.__cIcommon.get_site_prdcc_cvs_path(), hash_key, file_name)
+            file_path = os.path.join(self.__cIcommonAppCc.get_site_prdcc_cvs_path(), hash_key, file_name)
         elif id_type == "PRD":
-            file_path = os.path.join(self.__cIcommon.get_site_prd_cvs_path(), hash_key, file_name)
+            file_path = os.path.join(self.__cIcommonAppCc.get_site_prd_cvs_path(), hash_key, file_name)
         elif id_type == "PRD_FAMILY":
-            file_path = os.path.join(self.__cIcommon.get_site_family_cvs_path(), hash_key, file_name)
+            file_path = os.path.join(self.__cIcommonAppCc.get_site_family_cvs_path(), hash_key, file_name)
         else:
             file_path = None
 
@@ -104,13 +113,13 @@ class ChemRefPathInfo(object):
             return None
         #
         if id_type == "CC":
-            return self.__cIcommon.get_site_cc_cvs_path()
+            return self.__cIcommonAppCc.get_site_cc_cvs_path()
         elif id_type == "PRDCC":
-            return self.__cIcommon.get_site_prdcc_cvs_path()
+            return self.__cIcommonAppCc.get_site_prdcc_cvs_path()
         elif id_type == "PRD":
-            return self.__cIcommon.get_site_prd_cvs_path()
+            return self.__cIcommonAppCc.get_site_prd_cvs_path()
         elif id_type == "PRD_FAMILY":
-            return self.__cIcommon.get_site_family_cvs_path()
+            return self.__cIcommonAppCc.get_site_family_cvs_path()
         else:
             return None
 

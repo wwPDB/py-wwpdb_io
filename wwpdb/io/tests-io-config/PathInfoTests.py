@@ -71,7 +71,7 @@ class PathInfoTests(unittest.TestCase):
             ("deposit", "D_1000000000", None, 1, "latest"),
         ]
         eId = "1"
-        for (fs, dataSetId, wfInst, pId, vId) in tests:
+        for fs, dataSetId, wfInst, pId, vId in tests:
             logger.debug("File source %s dataSetId %s  partno  %s wfInst %s version %s" % (fs, dataSetId, pId, wfInst, vId))
 
             pI = PathInfo(siteId=self.__siteId)
@@ -173,7 +173,7 @@ class PathInfoTests(unittest.TestCase):
 
     def testSessionPath(self):
         tests = [("archive", "D_1000000000", "session_test/12345")]
-        for (fs, dataSetId, session_dir) in tests:
+        for fs, dataSetId, session_dir in tests:
             logger.debug("File source %s dataSetId %s  session dir %s" % (fs, dataSetId, session_dir))
 
             fileSource = ("session", "wf-session", "session-download")

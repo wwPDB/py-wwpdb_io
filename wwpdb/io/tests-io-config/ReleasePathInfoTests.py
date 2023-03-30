@@ -53,7 +53,7 @@ class ReleasePathInfoTests(unittest.TestCase):
             [None, "current"],
             ["modified", "previous"],
         ]
-        for (subdir, vers) in tests:
+        for subdir, vers in tests:
             rpi = ReleasePathInfo(self.__siteId)
             if vers and subdir:
                 ret = rpi.getForReleasePath(subdir=subdir, version=vers)
@@ -85,7 +85,7 @@ class ReleasePathInfoTests(unittest.TestCase):
             self.assertIsNotNone(ret)
 
     def testGetReleasePathsExceptions(self):
-        """ Test expected exceptions """
+        """Test expected exceptions"""
         rpi = ReleasePathInfo(self.__siteId)
 
         with self.assertRaises(NameError):

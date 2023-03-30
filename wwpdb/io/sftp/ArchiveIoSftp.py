@@ -59,7 +59,6 @@ class ArchiveIoSftp(ArchiveIoBase):
                 return False
 
     def connect(self, hostName, userName, port=22, pw=None, keyFilePath=None, keyFileType="RSA"):  # pylint: disable=arguments-differ
-
         try:
             self.__sftpClient = self.__makeSftpClient(hostName=hostName, port=port, userName=userName, pw=pw, keyFilePath=keyFilePath, keyFileType=keyFileType)
             return True
@@ -112,7 +111,6 @@ class ArchiveIoSftp(ArchiveIoBase):
                 raise e
 
     def mkdir(self, path, mode=511):  # pylint: disable=arguments-differ
-
         try:
             self.__sftpClient.mkdir(path, mode)
             return True

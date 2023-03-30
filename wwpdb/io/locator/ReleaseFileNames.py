@@ -46,12 +46,12 @@ class ReleaseFileNames:
 
     @staticmethod
     def __get_emdb_number(accession):
-        """gets the EMDB number from the accession """
+        """gets the EMDB number from the accession"""
         return accession[4:]
         # return accession.split("-")[-1]
 
     def __get_emdb_underscore_format(self, accession):
-        """returns lower case emdb accession with underscore """
+        """returns lower case emdb accession with underscore"""
         return "emd_{}".format(self.__get_emdb_number(accession))
 
     def __get_emdb_hyphen_format(self, accession):

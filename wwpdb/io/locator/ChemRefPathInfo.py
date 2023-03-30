@@ -27,17 +27,24 @@ from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCc
 
 
 class ChemRefPathInfo(object):
-    """ Common methods for finding path information for chemical reference data files.
-    """
+    """Common methods for finding path information for chemical reference data files."""
 
     #
 
-    def __init__(self, siteId=None, verbose=False, log=sys.stderr, testMode=False,
-                 # Old API - to be deprecated
-                 reqObj=None, configObj=None, configCommonObj=None):  # pylint: disable=unused-argument
-        """ Input request object and configuration (ConfigInfo()) object are used to
-            supply information required to compute path details for chemical reference
-            data files.
+    def __init__(
+        self,
+        siteId=None,
+        verbose=False,
+        log=sys.stderr,
+        testMode=False,
+        # Old API - to be deprecated
+        reqObj=None,
+        configObj=None,
+        configCommonObj=None,
+    ):  # pylint: disable=unused-argument
+        """Input request object and configuration (ConfigInfo()) object are used to
+        supply information required to compute path details for chemical reference
+        data files.
         """
         self.__verbose = verbose
         self.__lfh = log
@@ -82,8 +89,8 @@ class ChemRefPathInfo(object):
         return hash_key
 
     def getFilePath(self, idCode):
-        """ Return the repository file path corresponding to the input reference data id code
-           (CC,PRD,FAMILY or PRDCC).
+        """Return the repository file path corresponding to the input reference data id code
+        (CC,PRD,FAMILY or PRDCC).
         """
         #
         id_type = self.getIdType(idCode)
@@ -130,11 +137,11 @@ class ChemRefPathInfo(object):
             return None
 
     def getCvsProjectInfo(self, idCode):
-        """  Assign the CVS project name and relative path based on the input ID code.
+        """Assign the CVS project name and relative path based on the input ID code.
 
-             The project name represents the directory containing the checked out
-             repository within the sandbox directory.  Relative path identifies gives
-             the target path for the target file within the repository.
+        The project name represents the directory containing the checked out
+        repository within the sandbox directory.  Relative path identifies gives
+        the target path for the target file within the repository.
         """
         rel_path = None
         project_name = None
@@ -145,13 +152,13 @@ class ChemRefPathInfo(object):
         #
         project_name = self.assignCvsProjectName(id_type)
         if id_type == "CC":
-            rel_path = os.path.join(idCode[0], idCode, idCode + '.cif')
+            rel_path = os.path.join(idCode[0], idCode, idCode + ".cif")
         elif id_type == "PRDCC":
-            rel_path = os.path.join(idCode[-1], idCode + '.cif')
+            rel_path = os.path.join(idCode[-1], idCode + ".cif")
         elif id_type == "PRD":
-            rel_path = os.path.join(idCode[-1], idCode + '.cif')
+            rel_path = os.path.join(idCode[-1], idCode + ".cif")
         elif id_type == "PRD_FAMILY":
-            rel_path = os.path.join(idCode[-1], idCode + '.cif')
+            rel_path = os.path.join(idCode[-1], idCode + ".cif")
         else:
             pass
 
@@ -169,10 +176,10 @@ class ChemRefPathInfo(object):
         return None
 
     def assignCvsProjectName(self, repType):
-        """  Assign the CVS project name from the input repository type.
+        """Assign the CVS project name from the input repository type.
 
-             This wrapper provides for a testing mode which assign an existing  surogate
-             repository project with the same organization as the requested repository type.
+        This wrapper provides for a testing mode which assign an existing  surogate
+        repository project with the same organization as the requested repository type.
         """
         project_name = None
 
@@ -181,24 +188,24 @@ class ChemRefPathInfo(object):
         #
         if self.__testMode:
             if repType == "CC":
-                project_name = 'test-ligand-v1'
+                project_name = "test-ligand-v1"
             elif repType == "PRDCC":
-                project_name = 'test-project-v1'
+                project_name = "test-project-v1"
             elif repType == "PRD":
-                project_name = 'test-project-v1'
+                project_name = "test-project-v1"
             elif repType == "PRD_FAMILY":
-                project_name = 'test-project-v1'
+                project_name = "test-project-v1"
             else:
                 pass
         else:
             if repType == "CC":
-                project_name = self.__cI.get('SITE_REFDATA_PROJ_NAME_CC')
+                project_name = self.__cI.get("SITE_REFDATA_PROJ_NAME_CC")
             elif repType == "PRDCC":
-                project_name = self.__cI.get('SITE_REFDATA_PROJ_NAME_PRDCC')
+                project_name = self.__cI.get("SITE_REFDATA_PROJ_NAME_PRDCC")
             elif repType == "PRD":
-                project_name = self.__cI.get('SITE_REFDATA_PROJ_NAME_PRD')
+                project_name = self.__cI.get("SITE_REFDATA_PROJ_NAME_PRD")
             elif repType == "PRD_FAMILY":
-                project_name = self.__cI.get('SITE_REFDATA_PROJ_NAME_PRD_FAMILY')
+                project_name = self.__cI.get("SITE_REFDATA_PROJ_NAME_PRD_FAMILY")
             else:
                 pass
 

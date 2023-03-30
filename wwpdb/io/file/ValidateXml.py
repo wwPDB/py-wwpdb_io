@@ -230,7 +230,7 @@ class ValidateXml(object):
             if node.nodeType != node.ELEMENT_NODE:
                 continue
 
-            if node.hasAttribute('average_residue_inclusion'):
+            if node.hasAttribute("average_residue_inclusion"):
                 try:
                     if float(node.getAttribute("average_residue_inclusion").strip()) < 0.1:
                         if "chain_average_residue_inclusion" not in self.__outlierResult:
@@ -239,7 +239,7 @@ class ValidateXml(object):
                             {
                                 "chain": node.getAttribute("chain").strip(),
                                 "model": node.getAttribute("model").strip(),
-                                "average_residue_inclusion": float(node.getAttribute("average_residue_inclusion").strip()) * 100
+                                "average_residue_inclusion": float(node.getAttribute("average_residue_inclusion").strip()) * 100,
                             }
                         )
                 except ValueError:

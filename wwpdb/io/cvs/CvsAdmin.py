@@ -256,7 +256,7 @@ class CvsAdmin(CvsWrapperBase):
         return (ok, text)
 
     def __getHistoryCmd(self, cvsPath, incldel=False):
-        """ Generate command to retrieve history.  If incldel is set, include removed revisions """
+        """Generate command to retrieve history.  If incldel is set, include removed revisions"""
         if self._wrkPath is None:
             self._makeTempWorkingDir()
         outPath = self._getOutputFilePath()

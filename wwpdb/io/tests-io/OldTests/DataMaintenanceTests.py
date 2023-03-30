@@ -260,7 +260,6 @@ class DataMaintenanceTests(unittest.TestCase):
         """Preliminary version of purge operations post release -"""
         self.__lfh.write("\nStarting %s %s\n" % (self.__class__.__name__, sys._getframe().f_code.co_name))
         try:
-
             idList = self.__getIdList(self.__idListPath)
             dm = DataMaintenance(siteId=self.__siteId, testMode=self.__testMode, verbose=self.__verbose, log=self.__lfh)
             for id in idList:

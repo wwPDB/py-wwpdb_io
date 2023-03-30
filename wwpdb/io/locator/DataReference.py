@@ -194,7 +194,6 @@ class ReferenceFileComponents(object):
                 self.__contentTypeAcronym = str(nFields[2])
                 self.__contentType = str(nFields[2])
             else:
-
                 self.__contentTypeAcronym = str(nFields[2])
                 self.__contentType = self.__rfI.getContentType(self.__contentTypeAcronym)
             #
@@ -515,7 +514,7 @@ class DataFileReference(DataReferenceBase):
             return False
 
     def __isInteger(self, str_in):
-        """ Is the given string an integer?	"""
+        """Is the given string an integer?"""
         ok = True
         try:
             num = int(str_in)  # noqa: F841 pylint: disable=unused-variable

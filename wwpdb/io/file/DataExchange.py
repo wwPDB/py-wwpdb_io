@@ -45,7 +45,6 @@ class DataExchange(object):
     """
 
     def __init__(self, reqObj=None, depDataSetId=None, wfInstanceId=None, fileSource="archive", siteId=None, verbose=False, log=sys.stderr):
-
         self.__reqObj = reqObj
         self.__depDataSetId = depDataSetId
         self.__wfInstanceId = wfInstanceId

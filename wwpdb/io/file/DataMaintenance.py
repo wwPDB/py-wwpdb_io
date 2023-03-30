@@ -40,7 +40,6 @@ class DataMaintenance(object):
     """
 
     def __init__(self, siteId=None, testMode=False, verbose=False, log=sys.stderr):
-
         self.__verbose = verbose
         self.__lfh = log
         self.__siteId = siteId

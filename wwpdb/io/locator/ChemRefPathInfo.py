@@ -71,7 +71,13 @@ class ChemRefPathInfo(object):
 
     def getCcdHash(self, idCode):
         """Returns the hash code for a CCD id.  Currently first letter"""
-        hash_key = idCode.upper()[0]
+        if not idCode:
+            return None
+
+        if len(idCode) > 3:
+            hash_key = idCode.upper()[-2:]
+        else:
+            hash_key = idCode.upper()[0]
 
         return hash_key
 

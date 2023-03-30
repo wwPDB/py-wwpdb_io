@@ -34,8 +34,10 @@ class ChemRefPathInfoTests(unittest.TestCase):
         self.assertEqual(self.crpi.getCcdHash("ABC"), "A")
         self.assertEqual(self.crpi.getCcdHash("abc"), "A")
         # For now
-        self.assertEqual(self.crpi.getCcdHash("AAPTR"), "A")
+        self.assertEqual(self.crpi.getCcdHash("AAPTR"), "TR")
         self.assertEqual(self.crpi.getCcdHash("DT"), "D")
+        self.assertEqual(self.crpi.getCcdHash(None), None)
+        self.assertEqual(self.crpi.getCcdHash("aapt"), "PT")
 
     def testGetIdType(self):
         """Test identifier based on idCode"""

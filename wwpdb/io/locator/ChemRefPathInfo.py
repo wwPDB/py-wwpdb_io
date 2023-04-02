@@ -88,12 +88,15 @@ class ChemRefPathInfo(object):
 
         return hash_key
 
-    def getFilePath(self, idCode):
+    def getFilePath(self, idCode, id_type=None):
         """Return the repository file path corresponding to the input reference data id code
         (CC,PRD,FAMILY or PRDCC).
+
+        If id_type is not specified, infer it from length, etc.
         """
         #
-        id_type = self.getIdType(idCode)
+        if id_type is None:
+            id_type = self.getIdType(idCode)
         if id_type is None:
             return None
         #
@@ -115,13 +118,26 @@ class ChemRefPathInfo(object):
 
         return file_path
 
-    def getProjectPath(self, idCode):
+    def getFileDir(self, idCode, id_type=None):
+        """Return the repository file directory corresponding to the input reference data id code
+        (CC,PRD,FAMILY or PRDCC).
+
+        If id_type is not specified, infer it from length, etc.
+        """
+        #
+        filePath = self.getFilePath(idCode, id_type)
+        if filePath:
+            return os.path.dirname(filePath)
+        return None
+
+    def getProjectPath(self, idCode=None, id_type=None):
         """
         Return the project path for an input reference data id code
         (CC,PRD,FAMILY or PRDCC).
         """
         #
-        id_type = self.getIdType(idCode)
+        if id_type is None:
+            id_type = self.getIdType(idCode)
         if id_type is None:
             return None
         #
@@ -136,7 +152,7 @@ class ChemRefPathInfo(object):
         else:
             return None
 
-    def getCvsProjectInfo(self, idCode):
+    def getCvsProjectInfo(self, idCode, id_type=None):
         """Assign the CVS project name and relative path based on the input ID code.
 
         The project name represents the directory containing the checked out
@@ -146,13 +162,15 @@ class ChemRefPathInfo(object):
         rel_path = None
         project_name = None
 
-        id_type = self.getIdType(idCode)
+        if id_type is None:
+            id_type = self.getIdType(idCode)
         if id_type is None:
             return project_name, rel_path
         #
         project_name = self.assignCvsProjectName(id_type)
         if id_type == "CC":
-            rel_path = os.path.join(idCode[0], idCode, idCode + ".cif")
+            hash_key = self.getCcdHash(idCode)
+            rel_path = os.path.join(hash_key, idCode, idCode + ".cif")
         elif id_type == "PRDCC":
             rel_path = os.path.join(idCode[-1], idCode + ".cif")
         elif id_type == "PRD":

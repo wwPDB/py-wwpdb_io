@@ -360,6 +360,11 @@ class PathInfo(object):
             mileStone=mileStone,
         )
 
+    def getAssemblyModelFilePath(self, dataSetId, wfInstanceId=None, fileSource="deposit", versionId="latest", mileStone=None):
+        return self.__getStandardPath(
+            dataSetId=dataSetId, wfInstanceId=wfInstanceId, fileSource=fileSource, versionId=versionId, contentTypeBase="assembly-model", formatType="pdbx", mileStone=mileStone
+        )
+
     def getStatusHistoryFilePath(self, dataSetId, fileSource="archive", versionId="latest"):
         return self.__getStandardPath(
             dataSetId=dataSetId, wfInstanceId=None, fileSource=fileSource, versionId=versionId, partNumber="1", contentTypeBase="status-history", formatType="pdbx", mileStone=None

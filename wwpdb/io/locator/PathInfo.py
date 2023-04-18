@@ -364,6 +364,11 @@ class PathInfo(object):
         return self.__getStandardPath(
             dataSetId=dataSetId, wfInstanceId=wfInstanceId, fileSource=fileSource, versionId=versionId, contentTypeBase="assembly-model", formatType="pdbx", mileStone=mileStone
         )
+    
+    def getAssemblySuggestedFilePath(self, dataSetId, wfInstanceId=None, fileSource="deposit", versionId="latest", mileStone=None):
+        return self.__getStandardPath(
+            dataSetId=dataSetId, wfInstanceId=wfInstanceId, fileSource=fileSource, versionId=versionId, contentTypeBase="assembly-suggested", formatType="json", mileStone=mileStone
+        )
 
     def getStatusHistoryFilePath(self, dataSetId, fileSource="archive", versionId="latest"):
         return self.__getStandardPath(

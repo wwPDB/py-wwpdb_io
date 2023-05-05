@@ -359,6 +359,18 @@ class PathInfo(object):
             formatType=formatType,
             mileStone=mileStone,
         )
+ 
+     def getRestraintsFilePath(self, dataSetId, formatType="pdbx", wfInstanceId=None, fileSource="archive", versionId="latest", mileStone=None):
+        return self.__getStandardPath(
+            dataSetId=dataSetId,
+            wfInstanceId=wfInstanceId,
+            fileSource=fileSource,
+            versionId=versionId,
+            partNumber="1",
+            contentTypeBase="nmr-restraints",
+            formatType=formatType,
+            mileStone=mileStone,
+        )
 
     def getAssemblyModelFilePath(self, dataSetId, wfInstanceId=None, fileSource="deposit", versionId="latest", mileStone=None):
         return self.__getStandardPath(

@@ -24,6 +24,7 @@
 # 23-Oct-2017   jdw   config for logging - add parseFileName wrapper method
 # 24-Mar-2018   ep    add mileStone argument to getFilePathContentTypeTemplate()
 # 06-Jun-2023   dh    add getNMRCombinedFilePath
+# 15-Jun-2023   dh    add getMolecularRestraintsFilePath
 ##
 """
 Common methods for finding path information for resource and data files in the wwPDB data processing
@@ -357,6 +358,18 @@ class PathInfo(object):
             versionId=versionId,
             partNumber="1",
             contentTypeBase="nmr-chemical-shifts",
+            formatType=formatType,
+            mileStone=mileStone,
+        )
+
+    def getMolecularRestraintsFilePath(self, dataSetId, formatType="nmr-star", wfInstanceId=None, fileSource="archive", versionId="latest", mileStone=None):
+        return self.__getStandardPath(
+            dataSetId=dataSetId,
+            wfInstanceId=wfInstanceId,
+            fileSource=fileSource,
+            versionId=versionId,
+            partNumber="1",
+            contentTypeBase="nmr-restraints",
             formatType=formatType,
             mileStone=mileStone,
         )

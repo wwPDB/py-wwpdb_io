@@ -216,11 +216,7 @@ class ReferenceFileComponents(object):
         return self.__versionId
 
     def getDepositionDataSetId(self):
-        """Return the data set identier -  (uppoer case)"""
-        return self.__depositionDataSetId
-
-    def getDepositonDataSetId(self):
-        """Return the data set identier -  (uppoer case)"""
+        """Return the data set identier -  (upper case)"""
         return self.__depositionDataSetId
 
     def getPartitionNumber(self):

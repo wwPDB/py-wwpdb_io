@@ -18,6 +18,8 @@ spec = importlib.util.spec_from_file_location("ConfigInfoFileCache", cache_path)
 module = importlib.util.module_from_spec(spec)
 sys.modules["ConfigInfoFileCache"] = module
 spec.loader.exec_module(module)
+
+from ConfigInfoFileCache import ConfigInfoFileCache
 # ---
 
 
@@ -28,20 +30,18 @@ def compile_site_config():
 
 
 @pytest.fixture
-def config():
+def config(monkeypatch):
     from wwpdb.utils.config.ConfigInfo import ConfigInfo
+    monkeypatch.setattr("wwpdb.utils.config.ConfigInfoData.ConfigInfoFileCache", ConfigInfoFileCache)
     return ConfigInfo(siteId="TEST")
 
 
 @pytest.fixture
-def archive_dir(config):
-    from ConfigInfoFileCache import ConfigInfoFileCache
-    print(ConfigInfoFileCache.__file__)
-    # monkeypatch.setattr("wwpdb.utils.config.ConfigInfoData.ConfigInfoFileCache", ConfigInfoFileCache)
+def archive_dir(monkeypatch, config):
     onedep_base = config.get("TOP_DATA_DIR")
 
-    if not onedep_base.startswith("/tmp"):
-        raise
+    if onedep_base is None or not onedep_base.startswith("/tmp"):
+        raise Exception("Error getting test archive dir")
 
     archive_dir = os.path.join(onedep_base, "data", "archive")
     os.makedirs(archive_dir, exist_ok=True)
@@ -52,15 +52,9 @@ def archive_dir(config):
 
 
 def test_compression(archive_dir):
-    # feels odd not having to mock ConfigInfoFileCache on ConfigInfoData
-    # leaving this here commented out in case it's needed
-    # ---
-    # from ConfigInfoFileCache import ConfigInfoFileCache
-    # from wwpdb.utils.config.ConfigInfo import ConfigInfo
-    # monkeypatch.setattr("wwpdb.utils.config.ConfigInfoData.ConfigInfoFileCache", ConfigInfoFileCache)
     dep_dir = os.path.join(archive_dir, "D_800001")
     os.makedirs(dep_dir, exist_ok=True)
-    open(os.path.join(dep_dir, "foo")).close()
+    open(os.path.join(dep_dir, "foo"), "w").close()
 
     # compression
     compress(dep_id="D_800001")

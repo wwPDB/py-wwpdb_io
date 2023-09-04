@@ -5,6 +5,9 @@ import tarfile
 
 from wwpdb.utils.config.ConfigInfo import ConfigInfo
 
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 config = ConfigInfo()
 
 ARCHIVE_DIR = os.path.join(config.get("SITE_ARCHIVE_STORAGE_PATH"), "archive")
@@ -12,26 +15,39 @@ COLD_ARCHIVE_DIR = os.path.join(config.get("SITE_ARCHIVE_STORAGE_PATH"), "cold_a
 
 
 def compress(dep_id: str, overwrite: bool = False):
-    depid_archive = os.path.join(ARCHIVE_DIR, dep_id)
-    depid_tarball = os.path.join(COLD_ARCHIVE_DIR, f"{dep_id}.tar.gz")
+    if not dep_id.startswith("D_"):
+        raise Exception("Invalid deposition id")
 
-    os.chdir(ARCHIVE_DIR)
+    dep_archive = os.path.join(ARCHIVE_DIR, dep_id)
+    dep_tarball = os.path.join(COLD_ARCHIVE_DIR, f"{dep_id}.tar.gz")
 
-    print("Compressing %s" % depid_archive)
-    if not os.path.exists(depid_archive):
+    # os.chdir(ARCHIVE_DIR)
+
+    if not os.path.exists(dep_archive):
         raise Exception(f"Deposition {dep_id} does not exist")
 
-    if os.path.exists(depid_tarball) and not overwrite:
+    if os.path.exists(dep_tarball) and not overwrite:
         raise Exception(f"{dep_id} is already compressed. Set `overwrite` to True to overwrite it.")
 
-    with tarfile.open(depid_tarball, "w:gz", debug=1) as tf:
-        tf.add(dep_id)
+    logging.info("Compressing %s to %s", dep_archive, dep_tarball)
 
-        if dep_id.startswith("D_"): # better safe than sorry
-            shutil.rmtree(depid_archive)
+    with tarfile.open(dep_tarball, "w:gz", debug=1) as tf:
+        tf.add(dep_archive, arcname=dep_id)
+        shutil.rmtree(dep_archive)
 
-    return depid_tarball
+    return dep_tarball
 
 
 def decompress(dep_id: str, overwrite: bool = False):
-    pass
+    dep_archive = os.path.join(ARCHIVE_DIR, dep_id)
+    dep_tarball = os.path.join(COLD_ARCHIVE_DIR, f"{dep_id}.tar.gz")
+
+    if not os.path.exists(dep_tarball):
+        raise Exception(f"{dep_id} is not compressed")
+
+    if os.path.exists(dep_archive) and not overwrite:
+        raise Exception(f"{dep_id} is already decompressed. Set `overwrite` to True to overwrite it.")
+
+    with tarfile.open(dep_tarball, "r:gz") as tf:
+        tf.extractall(ARCHIVE_DIR)
+        logging.info(f"{dep_id} extracted successfully")

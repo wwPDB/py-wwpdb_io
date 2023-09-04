@@ -72,3 +72,10 @@ def decompress(dep_id: str, overwrite: bool = False):
     with tarfile.open(dep_tarball, "r:gz") as tf:
         tf.extractall(ARCHIVE_DIR)
         logging.info(f"{dep_id} extracted successfully")
+
+
+def get_compressed_count():
+    for root, dirs, files in os.walk(COLD_ARCHIVE_DIR):
+        tar_files = [tf for tf in files if fnmatch(tf, "*.tar.gz")]
+
+    return len(tar_files)

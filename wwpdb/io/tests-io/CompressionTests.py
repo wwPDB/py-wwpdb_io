@@ -86,7 +86,7 @@ def test_overwrite_compression(archive_dir):
         Compression.decompress(dep_id="D_800001")
 
 
-def test_corrupted_file(archive_dir, monkeypatch):
+def test_corrupted_file(archive_dir):
     dep_dir = os.path.join(archive_dir, "D_800001")
     cold_archive = os.path.join(archive_dir, "..", "cold_archive")
     os.makedirs(dep_dir, exist_ok=True)
@@ -97,3 +97,15 @@ def test_corrupted_file(archive_dir, monkeypatch):
         Compression.check_tarball(dep_id="D_800001")
 
     assert os.path.exists(os.path.join(cold_archive, "D_800001.tar.gz"))
+
+
+def test_count(archive_dir):
+    cold_archive = os.path.join(archive_dir, "..", "cold_archive")
+    
+    for i in range(5):
+        open(os.path.join(cold_archive, f"{i}.tar.gz"), "w").close()
+    
+    for i in range(3):
+        open(os.path.join(cold_archive, f"{i}.txt"), "w").close()
+
+    assert Compression.get_compressed_count() == 5

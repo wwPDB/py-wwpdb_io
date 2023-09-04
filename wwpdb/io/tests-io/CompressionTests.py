@@ -1,5 +1,4 @@
 import os
-import sys
 import json
 import pytest
 import shutil
@@ -44,7 +43,7 @@ def archive_dir(mock_config, config):
 
     yield archive_dir
 
-    # shutil.rmtree(onedep_base)
+    shutil.rmtree(onedep_base)
 
 
 def test_compression(archive_dir):
@@ -85,3 +84,16 @@ def test_overwrite_compression(archive_dir):
 
     with pytest.raises(Exception):
         Compression.decompress(dep_id="D_800001")
+
+
+def test_corrupted_file(archive_dir, monkeypatch):
+    dep_dir = os.path.join(archive_dir, "D_800001")
+    cold_archive = os.path.join(archive_dir, "..", "cold_archive")
+    os.makedirs(dep_dir, exist_ok=True)
+    shutil.copy("./wwpdb/io/tests-io/fixtures/corrupt.tar.gz", os.path.join(cold_archive, "D_800001.tar.gz"))
+
+    with pytest.raises(Exception):
+        # early end of file
+        Compression.check_tarball(dep_id="D_800001")
+
+    assert os.path.exists(os.path.join(cold_archive, "D_800001.tar.gz"))

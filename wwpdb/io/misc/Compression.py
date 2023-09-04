@@ -2,6 +2,7 @@ import os
 import shutil
 import logging
 import tarfile
+from fnmatch import fnmatch
 
 from wwpdb.utils.config.ConfigInfo import ConfigInfo
 
@@ -14,6 +15,25 @@ ARCHIVE_DIR = os.path.join(config.get("SITE_ARCHIVE_STORAGE_PATH"), "archive")
 COLD_ARCHIVE_DIR = os.path.join(config.get("SITE_ARCHIVE_STORAGE_PATH"), "cold_archive")
 
 
+def is_compressed(dep_id: str):
+    dep_tarball = os.path.join(COLD_ARCHIVE_DIR, f"{dep_id}.tar.gz")
+
+    if os.path.exists(dep_tarball):
+        return True
+
+    return False
+
+
+def check_tarball(dep_id: str):
+    dep_tarball = os.path.join(COLD_ARCHIVE_DIR, f"{dep_id}.tar.gz")
+
+    if not is_compressed(dep_id=dep_id):
+        raise Exception(f"{dep_id} is not compressed")
+
+    with tarfile.open(dep_tarball, "r:gz") as fp:
+        fp.getmembers()
+
+
 def compress(dep_id: str, overwrite: bool = False):
     if not dep_id.startswith("D_"):
         raise Exception("Invalid deposition id")
@@ -21,19 +41,20 @@ def compress(dep_id: str, overwrite: bool = False):
     dep_archive = os.path.join(ARCHIVE_DIR, dep_id)
     dep_tarball = os.path.join(COLD_ARCHIVE_DIR, f"{dep_id}.tar.gz")
 
-    # os.chdir(ARCHIVE_DIR)
-
     if not os.path.exists(dep_archive):
         raise Exception(f"Deposition {dep_id} does not exist")
 
-    if os.path.exists(dep_tarball) and not overwrite:
+    if is_compressed(dep_id=dep_id) and not overwrite:
         raise Exception(f"{dep_id} is already compressed. Set `overwrite` to True to overwrite it.")
 
     logging.info("Compressing %s to %s", dep_archive, dep_tarball)
 
     with tarfile.open(dep_tarball, "w:gz", debug=1) as tf:
         tf.add(dep_archive, arcname=dep_id)
-        shutil.rmtree(dep_archive)
+
+    # this will throw if the file is corrupt
+    check_tarball(dep_id=dep_id)
+    shutil.rmtree(dep_archive)
 
     return dep_tarball
 
@@ -42,7 +63,7 @@ def decompress(dep_id: str, overwrite: bool = False):
     dep_archive = os.path.join(ARCHIVE_DIR, dep_id)
     dep_tarball = os.path.join(COLD_ARCHIVE_DIR, f"{dep_id}.tar.gz")
 
-    if not os.path.exists(dep_tarball):
+    if not is_compressed(dep_id=dep_id):
         raise Exception(f"{dep_id} is not compressed")
 
     if os.path.exists(dep_archive) and not overwrite:

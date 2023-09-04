@@ -12,10 +12,19 @@ logger.setLevel(logging.INFO)
 config = ConfigInfo()
 
 ARCHIVE_DIR = os.path.join(config.get("SITE_ARCHIVE_STORAGE_PATH"), "archive")
+# maybe this should be read from a separate variable to allow this location to be separate from archive
 COLD_ARCHIVE_DIR = os.path.join(config.get("SITE_ARCHIVE_STORAGE_PATH"), "cold_archive")
 
 
+# this should go in the constructor of a class
+def check_cold_location():
+    if not os.path.exists(COLD_ARCHIVE_DIR):
+        raise Exception(f"{COLD_ARCHIVE_DIR} does not exist")
+
+
 def is_compressed(dep_id: str):
+    check_cold_location()
+
     dep_tarball = os.path.join(COLD_ARCHIVE_DIR, f"{dep_id}.tar.gz")
 
     if os.path.exists(dep_tarball):
@@ -25,6 +34,8 @@ def is_compressed(dep_id: str):
 
 
 def check_tarball(dep_id: str):
+    check_cold_location()
+
     dep_tarball = os.path.join(COLD_ARCHIVE_DIR, f"{dep_id}.tar.gz")
 
     if not is_compressed(dep_id=dep_id):
@@ -35,6 +46,8 @@ def check_tarball(dep_id: str):
 
 
 def compress(dep_id: str, overwrite: bool = False):
+    check_cold_location()
+
     if not dep_id.startswith("D_"):
         raise Exception("Invalid deposition id")
 
@@ -60,6 +73,8 @@ def compress(dep_id: str, overwrite: bool = False):
 
 
 def decompress(dep_id: str, overwrite: bool = False):
+    check_cold_location()
+
     dep_archive = os.path.join(ARCHIVE_DIR, dep_id)
     dep_tarball = os.path.join(COLD_ARCHIVE_DIR, f"{dep_id}.tar.gz")
 
@@ -75,6 +90,8 @@ def decompress(dep_id: str, overwrite: bool = False):
 
 
 def get_compressed_count():
+    check_cold_location()
+
     for root, dirs, files in os.walk(COLD_ARCHIVE_DIR):
         tar_files = [tf for tf in files if fnmatch(tf, "*.tar.gz")]
 

@@ -5,7 +5,8 @@ import shutil
 import importlib
 from unittest import mock
 
-from wwpdb.io.misc import Compression
+from wwpdb.io.misc.Compression import Compression
+from wwpdb.utils.config.ConfigInfo import ConfigInfo
 from wwpdb.utils.config.ConfigInfoData import ConfigInfoData
 
 
@@ -20,7 +21,8 @@ def mock_config(monkeypatch):
     with open("./wwpdb/io/tests-io/fixtures/site-config/test/test/ConfigInfoFileCache.json") as fp:
         test_config = json.load(fp)
     monkeypatch.setattr(ConfigInfoData, "getConfigDictionary", lambda s: test_config["TEST"])
-    importlib.reload(Compression)
+    module = importlib.import_module("wwpdb.io.misc.Compression")
+    importlib.reload(module)
 
 
 @pytest.fixture
@@ -50,19 +52,20 @@ def test_compression(archive_dir):
     dep_dir = os.path.join(archive_dir, "D_800001")
     os.makedirs(dep_dir, exist_ok=True)
     open(os.path.join(dep_dir, "foo"), "w").close()
+    compression = Compression(ConfigInfo())
 
     # compression
-    Compression.compress(dep_id="D_800001")
+    compression.compress(dep_id="D_800001")
 
     assert os.path.exists(os.path.join(archive_dir, "..", "cold_archive", "D_800001.tar.gz"))
     assert not os.path.exists(dep_dir)
 
     # non-existing deposition
     with pytest.raises(Exception):
-        Compression.compress(dep_id="maracatu")
+        compression.compress(dep_id="maracatu")
 
     # decompression
-    Compression.decompress(dep_id="D_800001")
+    compression.decompress(dep_id="D_800001")
 
     assert os.path.exists(dep_dir)
     assert os.path.exists(os.path.join(dep_dir, "foo"))
@@ -71,19 +74,20 @@ def test_compression(archive_dir):
 def test_overwrite_compression(archive_dir):
     dep_dir = os.path.join(archive_dir, "D_800001")
     os.makedirs(dep_dir, exist_ok=True)
-    Compression.compress(dep_id="D_800001")
+    compression = Compression(ConfigInfo())
+    compression.compress(dep_id="D_800001")
 
     with pytest.raises(Exception):
-        Compression.compress(dep_id="D_800001")
+        compression.compress(dep_id="D_800001")
 
     os.makedirs(dep_dir, exist_ok=True)
     open(os.path.join(dep_dir, "foo"), "w").close()
-    Compression.compress(dep_id="D_800001", overwrite=True)
+    compression.compress(dep_id="D_800001", overwrite=True)
 
-    Compression.decompress(dep_id="D_800001")
+    compression.decompress(dep_id="D_800001")
 
     with pytest.raises(Exception):
-        Compression.decompress(dep_id="D_800001")
+        compression.decompress(dep_id="D_800001")
 
 
 def test_corrupted_file(archive_dir):
@@ -91,21 +95,23 @@ def test_corrupted_file(archive_dir):
     cold_archive = os.path.join(archive_dir, "..", "cold_archive")
     os.makedirs(dep_dir, exist_ok=True)
     shutil.copy("./wwpdb/io/tests-io/fixtures/corrupt.tar.gz", os.path.join(cold_archive, "D_800001.tar.gz"))
+    compression = Compression(ConfigInfo())
 
     with pytest.raises(Exception):
         # early end of file
-        Compression.check_tarball(dep_id="D_800001")
+        compression.check_tarball(dep_id="D_800001")
 
     assert os.path.exists(os.path.join(cold_archive, "D_800001.tar.gz"))
 
 
 def test_count(archive_dir):
     cold_archive = os.path.join(archive_dir, "..", "cold_archive")
-    
+    compression = Compression(ConfigInfo())
+
     for i in range(5):
         open(os.path.join(cold_archive, f"{i}.tar.gz"), "w").close()
     
     for i in range(3):
         open(os.path.join(cold_archive, f"{i}.txt"), "w").close()
 
-    assert Compression.get_compressed_count() == 5
+    assert compression.get_compressed_count() == 5

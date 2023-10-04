@@ -3,11 +3,14 @@ import json
 import pytest
 import shutil
 import importlib
-from unittest import mock
+from unittest.mock import Mock
 
 from wwpdb.io.misc.Compression import Compression
 from wwpdb.utils.config.ConfigInfo import ConfigInfo
 from wwpdb.utils.config.ConfigInfoData import ConfigInfoData
+
+import logging
+logging.basicConfig(level=logging.INFO)
 
 
 def compile_site_config():
@@ -52,7 +55,7 @@ def test_compression(archive_dir):
     dep_dir = os.path.join(archive_dir, "D_800001")
     os.makedirs(dep_dir, exist_ok=True)
     open(os.path.join(dep_dir, "foo"), "w").close()
-    compression = Compression(ConfigInfo())
+    compression = Compression(ConfigInfo(), Mock())
 
     # compression
     compression.compress(dep_id="D_800001")
@@ -74,7 +77,7 @@ def test_compression(archive_dir):
 def test_overwrite_compression(archive_dir):
     dep_dir = os.path.join(archive_dir, "D_800001")
     os.makedirs(dep_dir, exist_ok=True)
-    compression = Compression(ConfigInfo())
+    compression = Compression(ConfigInfo(), Mock())
     compression.compress(dep_id="D_800001")
 
     with pytest.raises(Exception):
@@ -95,7 +98,7 @@ def test_corrupted_file(archive_dir):
     cold_archive = os.path.join(archive_dir, "..", "cold_archive")
     os.makedirs(dep_dir, exist_ok=True)
     shutil.copy("./wwpdb/io/tests-io/fixtures/corrupt.tar.gz", os.path.join(cold_archive, "D_800001.tar.gz"))
-    compression = Compression(ConfigInfo())
+    compression = Compression(ConfigInfo(), Mock())
 
     with pytest.raises(Exception):
         # early end of file
@@ -106,7 +109,7 @@ def test_corrupted_file(archive_dir):
 
 def test_count(archive_dir):
     cold_archive = os.path.join(archive_dir, "..", "cold_archive")
-    compression = Compression(ConfigInfo())
+    compression = Compression(ConfigInfo(), Mock())
 
     for i in range(5):
         open(os.path.join(cold_archive, f"{i}.tar.gz"), "w").close()
@@ -115,3 +118,36 @@ def test_count(archive_dir):
         open(os.path.join(cold_archive, f"{i}.txt"), "w").close()
 
     assert compression.get_compressed_count() == 5
+
+
+def test_compression_precheck(archive_dir, monkeypatch):
+    dep_dir = os.path.join(archive_dir, "D_800001")
+    os.makedirs(dep_dir, exist_ok=True)
+
+    mock_db = Mock()
+    mock_db.return_value.runSelectNQ.return_value = [["*", ""]]
+    monkeypatch.setattr("wwpdb.io.misc.Compression.dbAPI", mock_db)
+
+    compression = Compression(ConfigInfo(), Mock())
+
+    with pytest.raises(Exception):
+        compression.compress(dep_id="D_800001")
+
+    mock_db.return_value.runSelectNQ.return_value = [["foo", "WFM"]]
+
+    with pytest.raises(Exception) as e:
+        compression.compress(dep_id="D_800001", overwrite=True)
+
+    assert str(e.value) == "Deposition D_800001 cannot be compressed"
+
+    def mock_select_comm(table, select, where):
+        if table == "communication":
+            return [["working"]]
+        return [["", ""]]
+
+    mock_db.return_value.runSelectNQ = mock_select_comm
+
+    with pytest.raises(Exception) as e:
+        compression.compress(dep_id="D_800001", overwrite=True)
+
+    assert str(e.value) == "Deposition D_800001 cannot be compressed"

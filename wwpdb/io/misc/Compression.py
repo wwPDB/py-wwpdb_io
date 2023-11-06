@@ -5,7 +5,6 @@ import logging
 import tarfile
 from fnmatch import fnmatch
 
-from wwpdb.utils.wf.dbapi.WfDbApi import WfDbApi
 from wwpdb.apps.wf_engine.engine.dbAPI import dbAPI
 from wwpdb.utils.config.ConfigInfo import ConfigInfo
 

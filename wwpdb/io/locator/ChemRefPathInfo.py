@@ -77,14 +77,17 @@ class ChemRefPathInfo(object):
         return id_type
 
     def getCcdHash(self, idCode):
-        """Returns the hash code for a CCD id.  Currently first letter"""
+        """Returns the hash code for a CCD id.  Currently first letter or last two (if extended CCD)"""
         if not idCode:
             return None
 
         if len(idCode) > 3:
             hash_key = idCode.upper()[-2:]
         else:
-            hash_key = idCode.upper()[0]
+            if len(idCode) > 0:
+                hash_key = idCode.upper()[0]
+            else:
+                hash_key = ""
 
         return hash_key
 
@@ -101,7 +104,10 @@ class ChemRefPathInfo(object):
             return None
         #
         id_u = idCode.upper()
-        hash_key = id_u[-1]
+        if len(id_u) > 0:
+            hash_key = id_u[-1]
+        else:
+            hash_key = ""
         file_name = id_u + ".cif"
         #
         if id_type == "CC":

@@ -1,20 +1,16 @@
 import os
-import click
 import shutil
 import logging
 import tarfile
 from fnmatch import fnmatch
-
-from wwpdb.apps.wf_engine.engine.dbAPI import dbAPI
-from wwpdb.utils.config.ConfigInfo import ConfigInfo
 
 
 logger = logging.getLogger()
 
 
 class Compression:
-    def __init__(self, config, wfdbapi) -> None:
-        # injecting the wfdbapi so the connection can be opened only once
+    def __init__(self, config, dbapi) -> None:
+        # injecting dbapi so the connection can be opened only once
         # by the calling code, in case of multiple entries
         self._archive_dir = os.path.join(config.get("SITE_ARCHIVE_STORAGE_PATH"), "archive")
         # maybe this should be read from a separate variable to allow this location to be separate from archive
@@ -23,11 +19,10 @@ class Compression:
         if not os.path.exists(self._cold_archive_dir):
             raise Exception(f"{self._cold_archive_dir} does not exist")
 
-        self._wfdbapi = wfdbapi
+        self._dbapi = dbapi
 
     def _can_be_compressed(self, dep_id: str):
-        dbapi = dbAPI(dep_id, connection=self._wfdbapi)
-        rows = dbapi.runSelectNQ(table="deposition", select=["notify", "locking"], where={"dep_set_id": dep_id})
+        rows = self._dbapi.runSelectNQ(table="deposition", select=["notify", "locking"], where={"dep_set_id": dep_id})
 
         if len(rows) == 0:
             raise Exception(f"Couldn't find entry in table `status.deposition` for deposition `{dep_id}`")
@@ -40,7 +35,7 @@ class Compression:
             logger.warning(f"Deposition `{dep_id}` cannot be compressed as it's unlocked (locking = {rows[0][1]})")
             return False
         
-        rows = dbapi.runSelectNQ(table="communication", select=["status"], where={"dep_set_id": dep_id})
+        rows = self._dbapi.runSelectNQ(table="communication", select=["status"], where={"dep_set_id": dep_id})
 
         if rows[0][0].lower() == "working":
             logger.warning(f"Deposition `{dep_id}` cannot be compressed as it's being processed by the WFE")
@@ -111,38 +106,3 @@ class Compression:
             tar_files = [tf for tf in files if fnmatch(tf, "*.tar.gz")]
 
         return len(tar_files)
-
-
-@click.group()
-def cli():
-    pass
-
-
-@cli.command()
-@click.argument("depid_list", nargs=-1)
-@click.option("-f", "--force", "force", is_flag=True, default=False)
-def compress(depid_list, force):
-    c = Compression(ConfigInfo(), WfDbApi())
-
-    for d in depid_list:
-        try:
-            c.compress(dep_id=d, overwrite=force)
-        except Exception as e:
-            logger.error(e)
-
-
-@cli.command()
-@click.argument("depid_list", nargs=-1)
-@click.option("-f", "--force", "force", is_flag=True, default=False)
-def decompress(depid_list, force):
-    c = Compression(ConfigInfo(), WfDbApi())
-
-    for d in depid_list:
-        try:
-            c.decompress(dep_id=d, overwrite=force)
-        except Exception as e:
-            logger.error(e)
-
-
-if __name__ == "__main__":
-    cli()

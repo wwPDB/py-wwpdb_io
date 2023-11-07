@@ -57,8 +57,7 @@ def test_compression(monkeypatch, archive_dir):
     open(os.path.join(dep_dir, "foo"), "w").close()
 
     mock_db = Mock()
-    mock_db.return_value.runSelectNQ.return_value = [["", ""]]
-    monkeypatch.setattr("wwpdb.io.misc.Compression.dbAPI", mock_db)
+    mock_db.runSelectNQ.return_value = [["", ""]]
     compression = Compression(ConfigInfo(), mock_db)
 
     # compression
@@ -69,7 +68,7 @@ def test_compression(monkeypatch, archive_dir):
 
     # non-existing deposition
     with pytest.raises(Exception):
-        compression.compress(dep_id="maracatu")
+        compression.compress(dep_id="miltão")
 
     # decompression
     compression.decompress(dep_id="D_800001")
@@ -83,8 +82,7 @@ def test_overwrite_compression(monkeypatch, archive_dir):
     os.makedirs(dep_dir, exist_ok=True)
 
     mock_db = Mock()
-    mock_db.return_value.runSelectNQ.return_value = [["", ""]]
-    monkeypatch.setattr("wwpdb.io.misc.Compression.dbAPI", mock_db)
+    mock_db.runSelectNQ.return_value = [["", ""]]
     compression = Compression(ConfigInfo(), mock_db)
     compression.compress(dep_id="D_800001")
 
@@ -133,8 +131,7 @@ def test_compression_precheck(archive_dir, monkeypatch):
     os.makedirs(dep_dir, exist_ok=True)
 
     mock_db = Mock()
-    mock_db.return_value.runSelectNQ.return_value = [["*", ""]]
-    monkeypatch.setattr("wwpdb.io.misc.Compression.dbAPI", mock_db)
+    mock_db.runSelectNQ.return_value = [["*", ""]]
 
     compression = Compression(ConfigInfo(), mock_db)
 

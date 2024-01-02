@@ -41,6 +41,7 @@ __email__ = "jwest@rcsb.rutgers.edu"
 __license__ = "Apache 2.0"
 __version__ = "V0.01"
 
+import re
 import os
 import sys
 import string
@@ -432,6 +433,7 @@ class DataFileReference(DataReferenceBase):
         True for a recognized content type  or False otherwise.
         """
         tS = str(contentType).lower()
+
         try:
             self.__contentInfoD.keys()
         except Exception as e:
@@ -1281,3 +1283,44 @@ class DataFileReference(DataReferenceBase):
             logger.exception("Failing with %r", str(e))
 
         return 0
+
+    @staticmethod
+    def fromFile(repository, filename):
+        """Parses a filename and creates a WfDataObject from it.
+
+        No exceptions will be caught here, so the caller MUST handle them.
+        """
+        pattern = r'^(D_\d+)_([0-9a-zA-Z-]+)_P(\d+)\.(\w+)\.V(\d+)$'
+        match = re.match(pattern, filename)
+
+        if not match:
+            logger.error("File %s does not adhere to naming convention", filename)
+            raise ValueError("File %s does not adhere to naming convention" % filename)
+
+        dep_id = match.group(1)
+        content_type = match.group(2)
+        partition_number = int(match.group(3))
+        file_format = match.group(4)
+        version = int(match.group(5))
+
+        if content_type in ("sf", "sf-upload", "sf-upload-convert"):
+            left, sf, right = content_type.partition("sf")  # pylint: disable='unused-variable'
+            content_type = f"{left}structure-factors{right}"
+
+        if content_type in ("em-sf", "em-sf-upload", "em-sf-upload-convert"):
+            left, sf, right = content_type.partition("em-sf")
+            content_type = f"{left}em-structure-factors{right}"
+
+        if file_format == "cif":
+            file_format = "pdbx"
+
+        dfr = DataFileReference()
+        dfr.setDepositionDataSetId(dep_id)
+        dfr.setStorageType(repository)
+        # this is not the ideal way of setting the content type as the name
+        # in the file does not always match the name in the dictionary
+        dfr.setContentTypeAndFormat(content_type, file_format)
+        dfr.setPartitionNumber(partition_number)
+        dfr.setVersionId(version)
+
+        return dfr

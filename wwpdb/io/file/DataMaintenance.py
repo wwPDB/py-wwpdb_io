@@ -209,6 +209,9 @@ class DataMaintenance(object):
             elif fileSource == "deposit":
                 pth = self.__pI.getDepositPath(dataSetId)
                 snPth = os.path.join(basePath, "deposit", dataSetId)
+            else:
+                pth = "."
+                snPth = "."
 
             fPattern = self.__pI.getFilePathVersionTemplate(
                 dataSetId=dataSetId,

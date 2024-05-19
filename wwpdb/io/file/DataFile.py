@@ -214,6 +214,9 @@ class DataFile:
                 cmdP1 = "bzcat " + self.srcPath
             elif self.srcType is None:
                 cmdP1 = "cat " + self.srcPath
+            else:
+                # Should provide an error
+                cmdP1 = "cat " + self.srcPath
 
             if op == "copy":
                 redir = " > "
@@ -229,6 +232,9 @@ class DataFile:
             elif self.dstType == "bzip":
                 cmdP2 = " | bzip2 " + redir + self.dstPath
             elif self.dstType is None:
+                cmdP2 = redir + self.dstPath
+            else:
+                # Should log an error somehow
                 cmdP2 = redir + self.dstPath
 
             cmd = cmdP1 + cmdP2

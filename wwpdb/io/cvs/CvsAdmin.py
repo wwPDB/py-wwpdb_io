@@ -649,6 +649,8 @@ class CvsSandBoxAdmin(CvsWrapperBase):
             cmd = " cd " + os.path.join(self.__sandBoxTopPath, projectDir) + " ; "
             if message is not None and len(message) > 0:
                 qm = ' -m "' + message + '" '
+            else:
+                qm = ""
             cmd += "cvs -d " + self._cvsRoot + " add " + relProjectPath + self._getRedirect(fileNameOut=errPath, fileNameErr=errPath) + " ; "
             cmd += "cvs -d " + self._cvsRoot + " commit " + qm + relProjectPath + self._getRedirect(fileNameOut=errPath, fileNameErr=errPath, append=True) + " ; "
         else:
@@ -663,6 +665,8 @@ class CvsSandBoxAdmin(CvsWrapperBase):
             cmd = " cd " + os.path.join(self.__sandBoxTopPath, projectDir) + " ; "
             if message is not None and len(message) > 0:
                 qm = ' -m "' + message + '" '
+            else:
+                qm = ""
             cmd += "cvs -d " + self._cvsRoot + " commit " + qm + relProjectPath + self._getRedirect(fileNameOut=errPath, fileNameErr=errPath, append=True) + " ; "
         else:
             cmd = None
@@ -676,6 +680,8 @@ class CvsSandBoxAdmin(CvsWrapperBase):
             cmd = " cd " + os.path.join(self.__sandBoxTopPath, projectDir) + " ; "
             if message is not None and len(message) > 0:
                 qm = ' -m "' + message + '" '
+            else:
+                qm = ""
             cmd += "cvs -d " + self._cvsRoot + " remove -f " + relProjectPath + self._getRedirect(fileNameOut=errPath, fileNameErr=errPath) + " ; "
             cmd += "cvs -d " + self._cvsRoot + " commit " + qm + relProjectPath + self._getRedirect(fileNameOut=errPath, fileNameErr=errPath, append=True) + " ; "
         else:
@@ -690,6 +696,8 @@ class CvsSandBoxAdmin(CvsWrapperBase):
             cmd = " cd " + os.path.join(self.__sandBoxTopPath, projectDir) + " ; "
             if message is not None and len(message) > 0:
                 qm = ' -m "' + message + '" '
+            else:
+                qm = ""
             cmd += "cvs -d " + self._cvsRoot + " remove " + relProjectPath + self._getRedirect(fileNameOut=errPath, fileNameErr=errPath) + " ; "
             cmd += "cvs -d " + self._cvsRoot + " commit " + qm + relProjectPath + self._getRedirect(fileNameOut=errPath, fileNameErr=errPath, append=True) + " ; "
             cmd += " rm -rf " + relProjectPath + self._getRedirect(fileNameOut=errPath, fileNameErr=errPath, append=True) + " ; "

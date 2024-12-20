@@ -23,8 +23,9 @@
 # 13-Dec-2016   jdw   add getStructureFactorsPdbxFilePath()
 # 23-Oct-2017   jdw   config for logging - add parseFileName wrapper method
 # 24-Mar-2018   ep    add mileStone argument to getFilePathContentTypeTemplate()
-# 06-Jun-2023   dh    add getNMRCombinedFilePath
-# 15-Jun-2023   dh    add getMolecularRestraintsFilePath
+# 06-Jun-2023   dh    add getNMRCombinedFilePath()
+# 15-Jun-2023   dh    add getMolecularRestraintsFilePath()
+# 19-Dec-2024   my    add getNMRifFilePath() (DAOTHER-8905)
 ##
 """
 Common methods for finding path information for resource and data files in the wwPDB data processing
@@ -384,6 +385,17 @@ class PathInfo(object):
             contentTypeBase="nmr-data-str",
             formatType=formatType,
             mileStone=mileStone,
+        )
+
+    def getNMRifFilePath(self, datasetId, wfInstanceId=None, fileSource="deposit", versionId="latest", mileStone=None):
+        return self.__getStandardPath(
+            dataSetId=dataSetId,
+            wfInstanceId=wfInstanceId,
+            fileSource=fileSource,
+            versionId=versionId,
+            contentTypeBase="nmrif",
+            formatType="pdbx",
+            mileStone=mileStone
         )
 
     def getAssemblyModelFilePath(self, dataSetId, wfInstanceId=None, fileSource="deposit", versionId="latest", mileStone=None):

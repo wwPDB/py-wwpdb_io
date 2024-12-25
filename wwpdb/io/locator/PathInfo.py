@@ -387,7 +387,7 @@ class PathInfo(object):
             mileStone=mileStone,
         )
 
-    def getNMRifFilePath(self, datasetId, wfInstanceId=None, fileSource="deposit", versionId="latest", mileStone=None):
+    def getNMRifFilePath(self, dataSetId, wfInstanceId=None, fileSource="deposit", versionId="latest", mileStone=None):
         return self.__getStandardPath(
             dataSetId=dataSetId,
             wfInstanceId=wfInstanceId,

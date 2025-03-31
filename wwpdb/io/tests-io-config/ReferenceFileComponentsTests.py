@@ -19,6 +19,7 @@ import traceback
 import os
 import os.path
 import platform
+from unittest.mock import patch
 
 HERE = os.path.abspath(os.path.dirname(__file__))
 TOPDIR = os.path.dirname(os.path.dirname(os.path.dirname(HERE)))
@@ -32,7 +33,20 @@ from wwpdb.utils.testing.SiteConfigSetup import SiteConfigSetup  # noqa: E402
 
 SiteConfigSetup().setupEnvironment(TESTOUTPUT, mockTopPath)
 
-from wwpdb.io.locator.DataReference import ReferenceFileComponents, ReferenceFileInfo  # noqa: E402
+from wwpdb.utils.config.ConfigInfo import ConfigInfo  # noqa: E402
+from wwpdb.io.locator.DataReference import ReferenceFileComponents, ReferenceFileInfo, DataFileReference  # noqa: E402
+
+
+class MyConfigInfo(ConfigInfo):
+    def __init__(self, siteId=None, verbose=True, log=sys.stderr):
+        super(MyConfigInfo, self).__init__(siteId=siteId, verbose=verbose, log=log)
+
+    def get(self, keyWord, default=None):
+        if keyWord == "SITE_ARCHIVE_UI_STORAGE_PATH":
+            val = os.path.join(TESTOUTPUT, "ui-path")
+        else:
+            val = super(MyConfigInfo, self).get(keyWord, default)
+        return val
 
 
 class ReferenceFileComponentsTests(unittest.TestCase):
@@ -72,9 +86,83 @@ class ReferenceFileComponentsTests(unittest.TestCase):
             self.fail()
 
 
+class DataFileReferenceTests(unittest.TestCase):
+    def setUp(self):
+        self.__verbose = True
+        self.__lfh = sys.stderr
+        #
+
+    def __getdfr(self, loc="deposit"):
+        dfr = DataFileReference(verbose=self.__verbose, log=self.__lfh)
+        dfr.setContentTypeAndFormat("model", "pdbx")
+        dfr.setStorageType(loc)
+        dfr.setVersionId("1")
+        dfr.setDepositionDataSetId("D_12345")
+        return dfr
+
+    def testDepositUIDefault(self):
+        """Test equivalence of deposit-ui and deposit under normal circumstances"""
+        dfr = self.__getdfr()
+        pth = dfr.getDirPathReference()
+        dfr = self.__getdfr("deposit-ui")
+        pth2 = dfr.getDirPathReference()
+        self.assertEqual(pth, pth2)
+
+    def testUploadsUIDefault(self):
+        """Test uploads should not have /deposit-ui/ in path"""
+        dfr = self.__getdfr("uploads")
+        pth = dfr.getDirPathReference()
+        self.assertNotIn("/deposit-ui/", pth)
+
+    def testTempDepUIDefault(self):
+        """Test tempdep should not have /deposit-ui/ in path"""
+        dfr = self.__getdfr("tempdep")
+        pth = dfr.getDirPathReference()
+        self.assertNotIn("/ui-path/tempdep/", pth)
+
+    @patch("wwpdb.io.locator.DataReference.ConfigInfo", side_effect=MyConfigInfo)
+    def testTempDepUISep(self, mock1):
+        """Test tempdep should not have /deposit-ui/ in path"""
+        dfr = self.__getdfr("tempdep")
+        pth = dfr.getDirPathReference()
+        self.assertIn("/ui-path/tempdep/", pth)
+        self.assertTrue(mock1.called, "Patch did not work")
+
+    @patch("wwpdb.io.locator.DataReference.ConfigInfo", side_effect=MyConfigInfo)
+    def testDepositUISep(self, mock1):
+        """Test deposit-ui and deposit should be different"""
+        dfr = self.__getdfr()
+        pth = dfr.getDirPathReference()
+
+        self.assertTrue(mock1.called, "Patch did not work")
+
+        dfr = self.__getdfr("deposit-ui")
+        pth2 = dfr.getDirPathReference()
+        self.assertNotEqual(pth, pth2)
+
+    @patch("wwpdb.io.locator.DataReference.ConfigInfo", side_effect=MyConfigInfo)
+    def testUploadsUISep(self, mock1):
+        """Test uploads should have /deposit-ui/ in path"""
+        dfr = self.__getdfr("uploads")
+        pth = dfr.getDirPathReference()
+        self.assertIn("/deposit-ui/", pth)
+        self.assertTrue(mock1.called, "Patch did not work")
+
+
 def suiteComponentAccessorsTests():  # pragma: no cover
     suiteSelect = unittest.TestSuite()
     suiteSelect.addTest(ReferenceFileComponentsTests("testAccessors"))
+    return suiteSelect
+
+
+def suiteDataFileReferenceTests():  # pragma: no cover
+    suiteSelect = unittest.TestSuite()
+    suiteSelect.addTest(DataFileReferenceTests("testDepositUIDefault"))
+    suiteSelect.addTest(DataFileReferenceTests("testDepositUISep"))
+    suiteSelect.addTest(DataFileReferenceTests("testUploadsUIDefault"))
+    suiteSelect.addTest(DataFileReferenceTests("testUploadsUISep"))
+    suiteSelect.addTest(DataFileReferenceTests("testTempDepUIDefault"))
+    suiteSelect.addTest(DataFileReferenceTests("testTempDepUISep"))
     return suiteSelect
 
 
@@ -82,3 +170,4 @@ if __name__ == "__main__":  # pragma: no cover
     if True:
         mySuite = suiteComponentAccessorsTests()
         unittest.TextTestRunner(verbosity=2).run(mySuite)
+        unittest.TextTestRunner(verbosity=2).run(suiteDataFileReferenceTests())

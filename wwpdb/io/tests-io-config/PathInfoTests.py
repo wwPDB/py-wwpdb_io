@@ -69,6 +69,7 @@ class PathInfoTests(unittest.TestCase):
             ("archive", "D_1000000000", None, "next", "latest"),
             ("archive", "D_1000000000", None, "previous", "latest"),
             ("deposit", "D_1000000000", None, 1, "latest"),
+            ("deposit-ui", "D_1000000000", None, 1, "latest"),            
         ]
         eId = "1"
         for fs, dataSetId, wfInst, pId, vId in tests:

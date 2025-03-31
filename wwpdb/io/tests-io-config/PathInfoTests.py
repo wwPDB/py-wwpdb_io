@@ -69,7 +69,7 @@ class PathInfoTests(unittest.TestCase):
             ("archive", "D_1000000000", None, "next", "latest"),
             ("archive", "D_1000000000", None, "previous", "latest"),
             ("deposit", "D_1000000000", None, 1, "latest"),
-            ("deposit-ui", "D_1000000000", None, 1, "latest"),            
+            ("deposit-ui", "D_1000000000", None, 1, "latest"),
         ]
         eId = "1"
         for fs, dataSetId, wfInst, pId, vId in tests:
@@ -177,11 +177,11 @@ class PathInfoTests(unittest.TestCase):
         for fs, dataSetId, session_dir in tests:
             logger.debug("File source %s dataSetId %s  session dir %s" % (fs, dataSetId, session_dir))
 
-            fileSource = ("session", "wf-session", "session-download")
+            fileSource = ("session", "wf-session", "session-download", "uploads", "pickles")
             for fs in fileSource:
                 pI = PathInfo(siteId=self.__siteId, sessionPath=session_dir)
                 fp = pI.getDirPath(dataSetId=dataSetId, fileSource=fs)
-                logger.debug("session path %s" % fp)
+                logger.debug("%s path %s" % (fs, fp))
                 self.assertIsNotNone(fp, "Failed to get session path")
 
             # fp = pI.getWebDownloadPath(dataSetId=dataSetId)

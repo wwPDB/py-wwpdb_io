@@ -309,7 +309,8 @@ class DataFileReference(DataReferenceBase):
         self.__formatExtensionD = self.__cI.get("FILE_FORMAT_EXTENSION_DICTIONARY")
         """Dictionary of recognized file formats and file name extensions"""
         #
-        self.__storageTypeList = ["archive", "autogroup", "wf-archive", "wf-instance", "wf-shared", "session", "wf-session", "deposit", "deposit-ui", "inline", "tempdep", "uploads"]
+        self.__storageTypeList = ["archive", "autogroup", "wf-archive", "wf-instance", "wf-shared", "session",
+                                  "wf-session", "deposit", "deposit-ui", "inline", "tempdep", "uploads", "pickles"]
         """List of supported storage types/locations"""
         #
         self.__depositionDataSetIdPrefix = "D_"
@@ -882,6 +883,8 @@ class DataFileReference(DataReferenceBase):
         - session files     = session path/
         - uploads files     = <SITE_ARCHIVE_STORAGE_PATH>/deposit/temp_files/deposition_uploads/<deposition data set id>/ or
                               <SITE_ARCHIVE__UI_STORAGE_PATH>/deposit-ui/temp_files/deposition_uploads/<deposition data set id>/
+        - pickle files      = <SITE_ARCHIVE_STORAGE_PATH>/deposit/temp_files/deposition-v200/<deposition data set id>/ or
+                              <SITE_ARCHIVE__UI_STORAGE_PATH>/deposit-ui/temp_files/deposition-v200/<deposition data set id>/
 
         Top-level site-specific path details are obtained from the SiteInfo() class.
 
@@ -916,14 +919,15 @@ class DataFileReference(DataReferenceBase):
                 tpth = os.path.join(self.__cI.get("SITE_ARCHIVE_STORAGE_PATH"), "workflow", self.__depositionDataSetId, "instance", self.__workflowInstanceId)
             elif self.__storageType in ["session", "wf-session"]:
                 tpth = self.__sessionPath
-            elif self.__storageType == "uploads":
+            elif self.__storageType == "uploads" or self.__storageType == "pickles":
                 uipath = self.__cI.get("SITE_ARCHIVE_UI_STORAGE_PATH")
+                subsecondpath = "deposition_uploads" if self.__storageType == "uploads" else "deposition-v200"
                 if uipath is None:
                     uipath = self.__cI.get("SITE_ARCHIVE_STORAGE_PATH")
                     subpath = "deposit"
                 else:
                     subpath = "deposit-ui"
-                tpth = os.path.join(uipath, subpath, "temp_files", "deposition_uploads", self.__depositionDataSetId)
+                tpth = os.path.join(uipath, subpath, "temp_files", subsecondpath, self.__depositionDataSetId)
             else:
                 tpth = None
             pth = os.path.abspath(tpth)

@@ -113,6 +113,7 @@ class DataFileReferenceTests(unittest.TestCase):
         dfr = self.__getdfr("uploads")
         pth = dfr.getDirPathReference()
         self.assertNotIn("/deposit-ui/", pth)
+        self.assertIn("/deposition_uploads/", pth)
 
     def testTempDepUIDefault(self):
         """Test tempdep should not have /deposit-ui/ in path"""
@@ -148,6 +149,13 @@ class DataFileReferenceTests(unittest.TestCase):
         self.assertIn("/deposit-ui/", pth)
         self.assertTrue(mock1.called, "Patch did not work")
 
+    def testUploadsPicklesDefault(self):
+        """Test pickles should not have /deposit-ui/ in path"""
+        dfr = self.__getdfr("pickles")
+        pth = dfr.getDirPathReference()
+        self.assertNotIn("/deposit-ui/", pth)
+        self.assertIn("/deposition-v200/", pth)
+
 
 def suiteComponentAccessorsTests():  # pragma: no cover
     suiteSelect = unittest.TestSuite()
@@ -163,6 +171,7 @@ def suiteDataFileReferenceTests():  # pragma: no cover
     suiteSelect.addTest(DataFileReferenceTests("testUploadsUISep"))
     suiteSelect.addTest(DataFileReferenceTests("testTempDepUIDefault"))
     suiteSelect.addTest(DataFileReferenceTests("testTempDepUISep"))
+    suiteSelect.addTest(DataFileReferenceTests("testUploadsPicklesDefault"))
     return suiteSelect
 
 

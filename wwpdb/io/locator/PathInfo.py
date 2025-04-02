@@ -159,6 +159,12 @@ class PathInfo(object):
         except Exception as _e:  # noqa: F841
             return None
 
+    def getDepositUIPath(self, dataSetId):
+        try:
+            return self.getDirPath(dataSetId=dataSetId, fileSource="deposit-ui")
+        except Exception as _e:  # noqa: F841
+            return None
+
     def getTempDepPath(self, dataSetId):
         try:
             return self.getDirPath(dataSetId=dataSetId, fileSource="tempdep")

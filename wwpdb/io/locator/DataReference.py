@@ -883,8 +883,8 @@ class DataFileReference(DataReferenceBase):
         - session files     = session path/
         - uploads files     = <SITE_ARCHIVE_STORAGE_PATH>/deposit/temp_files/deposition_uploads/<deposition data set id>/ or
                               <SITE_ARCHIVE__UI_STORAGE_PATH>/deposit-ui/temp_files/deposition_uploads/<deposition data set id>/
-        - pickle files      = <SITE_ARCHIVE_STORAGE_PATH>/deposit/temp_files/deposition-v200/<deposition data set id>/ or
-                              <SITE_ARCHIVE__UI_STORAGE_PATH>/deposit-ui/temp_files/deposition-v200/<deposition data set id>/
+        - pickle files      = <SITE_ARCHIVE_STORAGE_PATH>/deposit/temp_files/deposition-v-200/<deposition data set id>/ or
+                              <SITE_ARCHIVE__UI_STORAGE_PATH>/deposit-ui/temp_files/deposition-v-200/<deposition data set id>/
 
         Top-level site-specific path details are obtained from the SiteInfo() class.
 
@@ -921,7 +921,7 @@ class DataFileReference(DataReferenceBase):
                 tpth = self.__sessionPath
             elif self.__storageType == "uploads" or self.__storageType == "pickles":
                 uipath = self.__cI.get("SITE_ARCHIVE_UI_STORAGE_PATH")
-                subsecondpath = "deposition_uploads" if self.__storageType == "uploads" else "deposition-v200"
+                subsecondpath = "deposition_uploads" if self.__storageType == "uploads" else "deposition-v-200"
                 if uipath is None:
                     uipath = self.__cI.get("SITE_ARCHIVE_STORAGE_PATH")
                     subpath = "deposit"

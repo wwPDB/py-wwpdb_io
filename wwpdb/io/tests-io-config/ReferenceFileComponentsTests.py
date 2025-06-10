@@ -154,7 +154,7 @@ class DataFileReferenceTests(unittest.TestCase):
         dfr = self.__getdfr("pickles")
         pth = dfr.getDirPathReference()
         self.assertNotIn("/deposit-ui/", pth)
-        self.assertIn("/deposition-v200/", pth)
+        self.assertIn("/deposition-v-200/", pth)
 
 
 def suiteComponentAccessorsTests():  # pragma: no cover

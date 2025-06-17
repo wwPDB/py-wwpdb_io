@@ -309,7 +309,8 @@ class DataFileReference(DataReferenceBase):
         self.__formatExtensionD = self.__cI.get("FILE_FORMAT_EXTENSION_DICTIONARY")
         """Dictionary of recognized file formats and file name extensions"""
         #
-        self.__storageTypeList = ["archive", "autogroup", "wf-archive", "wf-instance", "wf-shared", "session", "wf-session", "deposit", "inline", "tempdep", "uploads"]
+        self.__storageTypeList = ["archive", "autogroup", "wf-archive", "wf-instance", "wf-shared", "session",
+                                  "wf-session", "deposit", "deposit-ui", "inline", "tempdep", "uploads", "pickles"]
         """List of supported storage types/locations"""
         #
         self.__depositionDataSetIdPrefix = "D_"
@@ -805,7 +806,7 @@ class DataFileReference(DataReferenceBase):
 
                 return False
 
-            if (self.__storageType in ["archive", "autogroup", "wf-archive", "wf-instance", "wf-shared", "deposit", "tempdep"]) and (self.__depositionDataSetId is None):
+            if (self.__storageType in ["archive", "autogroup", "wf-archive", "wf-instance", "wf-shared", "deposit", "deposit-ui", "tempdep"]) and (self.__depositionDataSetId is None):
                 logger.debug("self.__depositionDataSetId is: %s", self.__depositionDataSetId)
                 return False
 
@@ -824,7 +825,7 @@ class DataFileReference(DataReferenceBase):
             if self.__storageType is None:
                 return False
 
-            if (self.__storageType in ["archive", "autogroup", "wf-archive", "wf-instance", "wf-shared", "deposit", "tempdep"]) and (self.__depositionDataSetId is None):
+            if (self.__storageType in ["archive", "autogroup", "wf-archive", "wf-instance", "wf-shared", "deposit", "deposit-ui", "tempdep"]) and (self.__depositionDataSetId is None):
                 return False
 
             if (self.__storageType == "wf-instance") and (self.__workflowInstanceId is None):
@@ -872,11 +873,18 @@ class DataFileReference(DataReferenceBase):
 
         The file path convention is:
         - archive files     = <SITE_ARCHIVE_STORAGE_PATH>/archive/<deposition data set id>/
-        - deposit files     = <SITE_ARCHIVE_STORAGE_PATH>/archive/<deposition data set id>/
-        - temp deposit files     = <SITE_ARCHIVE_STORAGE_PATH>/tempdep/<deposition data set id>/
+        - deposit files     = <SITE_ARCHIVE_STORAGE_PATH>/deposit/<deposition data set id>/
+        - deposit-ui files  = <SITE_ARCHIVE_UI_STORAGE_PATH>/deposit/<deposition data set id>/ or
+                              <SITE_ARCHIVE_STORAGE_PATH>/deposit-ui/<deposition data set id>/
+        - temp deposit files     = <SITE_ARCHIVE_STORAGE_PATH>/tempdep/<deposition data set id>/ or
+                                   <SITE_ARCHIVE_UI_STORAGE_PATH>/tempdep/<deposition data set id>/
         - workflow shared   = <SITE_ARCHIVE_STORAGE_PATH>/workflow/<deposition data set id>/shared/<self.__workflowNameSpace>
         - workflow instance = <SITE_ARCHIVE_STORAGE_PATH>/workflow/<deposition data set id>/instance/<self.__workflowInstanceId>
         - session files     = session path/
+        - uploads files     = <SITE_ARCHIVE_STORAGE_PATH>/deposit/temp_files/deposition_uploads/<deposition data set id>/ or
+                              <SITE_ARCHIVE__UI_STORAGE_PATH>/deposit-ui/temp_files/deposition_uploads/<deposition data set id>/
+        - pickle files      = <SITE_ARCHIVE_STORAGE_PATH>/deposit/temp_files/deposition-v-200/<deposition data set id>/ or
+                              <SITE_ARCHIVE__UI_STORAGE_PATH>/deposit-ui/temp_files/deposition-v-200/<deposition data set id>/
 
         Top-level site-specific path details are obtained from the SiteInfo() class.
 
@@ -892,16 +900,34 @@ class DataFileReference(DataReferenceBase):
                 tpth = os.path.join(self.__cI.get("SITE_ARCHIVE_STORAGE_PATH"), "autogroup", self.__depositionDataSetId)
             elif self.__storageType == "deposit":
                 tpth = os.path.join(self.__cI.get("SITE_ARCHIVE_STORAGE_PATH"), "deposit", self.__depositionDataSetId)
+            elif self.__storageType == "deposit-ui":
+                uipath = self.__cI.get("SITE_ARCHIVE_UI_STORAGE_PATH")
+                if uipath is None:
+                    uipath = self.__cI.get("SITE_ARCHIVE_STORAGE_PATH")
+                    subpath = "deposit"
+                else:
+                    subpath = "deposit-ui"
+                tpth = os.path.join(uipath, subpath, self.__depositionDataSetId)
             elif self.__storageType == "tempdep":
-                tpth = os.path.join(self.__cI.get("SITE_ARCHIVE_STORAGE_PATH"), "tempdep", self.__depositionDataSetId)
+                uipath = self.__cI.get("SITE_ARCHIVE_UI_STORAGE_PATH")
+                if uipath is None:
+                    uipath = self.__cI.get("SITE_ARCHIVE_STORAGE_PATH")
+                tpth = os.path.join(uipath, "tempdep", self.__depositionDataSetId)
             elif self.__storageType == "wf-shared":
                 tpth = os.path.join(self.__cI.get("SITE_ARCHIVE_STORAGE_PATH"), "workflow", self.__depositionDataSetId, "shared", self.__workflowNameSpace)
             elif self.__storageType == "wf-instance":
                 tpth = os.path.join(self.__cI.get("SITE_ARCHIVE_STORAGE_PATH"), "workflow", self.__depositionDataSetId, "instance", self.__workflowInstanceId)
             elif self.__storageType in ["session", "wf-session"]:
                 tpth = self.__sessionPath
-            elif self.__storageType == "uploads":
-                tpth = os.path.join(self.__cI.get("SITE_ARCHIVE_STORAGE_PATH"), "deposit", "temp_files", "deposition_uploads", self.__depositionDataSetId)
+            elif self.__storageType == "uploads" or self.__storageType == "pickles":
+                uipath = self.__cI.get("SITE_ARCHIVE_UI_STORAGE_PATH")
+                subsecondpath = "deposition_uploads" if self.__storageType == "uploads" else "deposition-v-200"
+                if uipath is None:
+                    uipath = self.__cI.get("SITE_ARCHIVE_STORAGE_PATH")
+                    subpath = "deposit"
+                else:
+                    subpath = "deposit-ui"
+                tpth = os.path.join(uipath, subpath, "temp_files", subsecondpath, self.__depositionDataSetId)
             else:
                 tpth = None
             pth = os.path.abspath(tpth)
@@ -930,7 +956,7 @@ class DataFileReference(DataReferenceBase):
             if self.getReferenceType() != "file":
                 return None
 
-            if self.__storageType in ["archive", "autogroup", "wf-archive", "wf-shared", "deposit", "tempdep"]:
+            if self.__storageType in ["archive", "autogroup", "wf-archive", "wf-shared", "deposit", "deposit-ui", "tempdep"]:
                 fn = (
                     self.__depositionDataSetId
                     + "_"
@@ -1197,7 +1223,7 @@ class DataFileReference(DataReferenceBase):
             if self.getReferenceType() != "file":
                 return None
 
-            if self.__storageType in ["archive", "autogroup", "wf-archive", "wf-shared", "deposit", "tempdep"]:
+            if self.__storageType in ["archive", "autogroup", "wf-archive", "wf-shared", "deposit", "deposit-ui", "tempdep"]:
                 fn = self.__depositionDataSetId + "_" + self.__contentInfoD[self.__contentType][1] + "_P*" + "." + self.__formatExtensionD[self.__fileFormat] + "*"
             elif self.__storageType in ["session", "wf-session"]:
                 fn = self.__sessionDataSetId + "_" + self.__contentInfoD[self.__contentType][1] + "_P*" + "." + self.__formatExtensionD[self.__fileFormat] + "*"
@@ -1232,7 +1258,7 @@ class DataFileReference(DataReferenceBase):
             # if (self.getReferenceType() != 'file'):
             #  return None
 
-            if self.__storageType in ["archive", "autogroup", "wf-archive", "wf-shared", "deposit", "tempdep"]:
+            if self.__storageType in ["archive", "autogroup", "wf-archive", "wf-shared", "deposit", "deposit-ui", "tempdep"]:
                 fn = self.__depositionDataSetId + "_" + self.__contentInfoD[self.__contentType][1] + "_P*"
             elif self.__storageType in ["session", "wf-session"]:
                 fn = self.__sessionDataSetId + "_" + self.__contentInfoD[self.__contentType][1] + "_P*"

@@ -159,6 +159,12 @@ class PathInfo(object):
         except Exception as _e:  # noqa: F841
             return None
 
+    def getDepositUIPath(self, dataSetId):
+        try:
+            return self.getDirPath(dataSetId=dataSetId, fileSource="deposit-ui")
+        except Exception as _e:  # noqa: F841
+            return None
+
     def getTempDepPath(self, dataSetId):
         try:
             return self.getDirPath(dataSetId=dataSetId, fileSource="tempdep")
@@ -577,6 +583,12 @@ class PathInfo(object):
             elif fileSource in ["deposit"]:
                 dfRef.setDepositionDataSetId(dataSetId)
                 dfRef.setStorageType("deposit")
+                dfRef.setContentTypeAndFormat(contentType, formatType)
+                dfRef.setPartitionNumber(partNumber)
+                dfRef.setVersionId(versionId)
+            elif fileSource in ["deposit-ui"]:
+                dfRef.setDepositionDataSetId(dataSetId)
+                dfRef.setStorageType("deposit-ui")
                 dfRef.setContentTypeAndFormat(contentType, formatType)
                 dfRef.setPartitionNumber(partNumber)
                 dfRef.setVersionId(versionId)

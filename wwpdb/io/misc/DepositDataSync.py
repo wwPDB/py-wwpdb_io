@@ -528,7 +528,7 @@ class DepositDataSync:
             }
 
 
-def print_sync_result(result):
+def print_sync_result(result, file=sys.stdout):
     """Print sync result dictionary in a nicely formatted way."""
     
     def print_dict(data, indent=0):
@@ -537,42 +537,42 @@ def print_sync_result(result):
         
         for key, value in data.items():
             if isinstance(value, dict):
-                print(f"{spaces}{key}:")
+                print(f"{spaces}{key}:", file=file)
                 print_dict(value, indent + 1)
             elif isinstance(value, list):
-                print(f"{spaces}{key}: {value}")
+                print(f"{spaces}{key}: {value}", file=file)
             else:
-                print(f"{spaces}{key}: {value}")
+                print(f"{spaces}{key}: {value}", file=file)
     
-    print("=" * 50)
-    print("SYNC OPERATION RESULT")
-    print("=" * 50)
+    print("=" * 50, file=file)
+    print("SYNC OPERATION RESULT", file=file)
+    print("=" * 50, file=file)
     
     if result.get('success'):
-        print("Status: SUCCESS")
+        print("Status: SUCCESS", file=file)
     else:
-        print("Status: FAILED")
+        print("Status: FAILED", file=file)
         if 'error' in result:
-            print(f"Error: {result['error']}")
+            print(f"Error: {result['error']}", file=file)
     
-    print(f"Timestamp: {result.get('timestamp', 'N/A')}")
-    print()
+    print(f"Timestamp: {result.get('timestamp', 'N/A')}", file=file)
+    print(file=file)
     
     # Print data sync results if available
     if 'data_sync' in result:
-        print("DATA SYNC RESULTS:")
-        print("-" * 30)
+        print("DATA SYNC RESULTS:", file=file)
+        print("-" * 30, file=file)
         print_dict(result['data_sync'], 1)
-        print()
+        print(file=file)
     
     # Print pickle sync results if available
     if 'pickle_sync' in result:
-        print("PICKLE SYNC RESULTS:")
-        print("-" * 30)
+        print("PICKLE SYNC RESULTS:", file=file)
+        print("-" * 30, file=file)
         print_dict(result['pickle_sync'], 1)
-        print()
+        print(file=file)
     
-    print("=" * 50)
+    print("=" * 50, file=file)
 
 
 # CLI group

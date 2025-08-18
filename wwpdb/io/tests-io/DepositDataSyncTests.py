@@ -6,7 +6,7 @@ import time
 from pathlib import Path
 from unittest.mock import patch, MagicMock
 
-from wwpdb.io.misc.DepositDataSync import RsyncDataMover, DataMoveError
+from wwpdb.io.misc.DataSync import RsyncDataMover, DataMoveError
 
 
 @pytest.fixture

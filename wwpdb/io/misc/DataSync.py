@@ -19,7 +19,7 @@ class DataMoveError(Exception):
 class DataMover(ABC):
     """Abstract base class for data movement operations."""
 
-    def __init__(self, source_path: str, destination_path: str, dry_run: bool = False):
+    def __init__(self, dry_run: bool = False):
         """
         Initialize the data mover.
 
@@ -28,10 +28,7 @@ class DataMover(ABC):
             destination_path: Destination directory path
             dry_run: If True, simulate operations without actual changes
         """
-        self.source_path = Path(source_path)
-        self.destination_path = Path(destination_path)
         self.dry_run = dry_run
-        self.logger = logging.getLogger(self.__class__.__name__)
 
     @abstractmethod
     def sync_files(self, source_path: str, destination_path: str,
@@ -73,6 +70,7 @@ class RsyncDataMover(DataMover):
             rsync_options: Additional rsync options
         """
         self.dry_run = dry_run
+        super().__init__(dry_run)
         self.logger = logging.getLogger(self.__class__.__name__)
 
         # Default rsync options for safety and integrity

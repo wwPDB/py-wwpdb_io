@@ -145,6 +145,7 @@ class RsyncDataMover(DataMover):
                 cmd,
                 capture_output=True,
                 text=True,
+                check=False,
                 timeout=3600  # 1 hour timeout
             )
 
@@ -156,9 +157,9 @@ class RsyncDataMover(DataMover):
             return result
 
         except subprocess.TimeoutExpired:
-            raise DataMoveError("Rsync operation timed out")
+            raise DataMoveError("Rsync operation timed out")  # pylint: disable=raise-missing-from
         except Exception as e:
-            raise DataMoveError(f"Error executing rsync command: {e}")
+            raise DataMoveError(f"Error executing rsync command: {e}")  # pylint: disable=raise-missing-from
 
     def sync_files(self, source_path: str, destination_path: str,
                    file_patterns: Optional[List[str]] = None) -> Dict[str, Any]:

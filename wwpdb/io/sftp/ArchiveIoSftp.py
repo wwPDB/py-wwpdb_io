@@ -86,7 +86,10 @@ class ArchiveIoSftp(ArchiveIoBase):
                 # Get private key used to authenticate user.
                 if keyFileType == "DSA":
                     # The private key is a DSA type key.
-                    key = paramiko.DSSKey.from_private_key_file(keyFilePath)
+                    # key = paramiko.DSSKey.from_private_key_file(keyFilePath)
+                    # No longer supported key type by library
+                    err = "DSA keys no longer supported"
+                    raise ValueError(err)
                 else:
                     # The private key is a RSA type key.
                     key = paramiko.RSAKey.from_private_key_file(keyFilePath)

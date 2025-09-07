@@ -1,3 +1,4 @@
+# pylint: disable=logging-not-lazy
 ##
 # File:    PathInfoTests.py
 # Date:    26-Feb-2013
@@ -26,7 +27,7 @@ import platform
 import logging
 
 HERE = os.path.abspath(os.path.dirname(__file__))
-TOPDIR = os.path.dirname(os.path.dirname(os.path.dirname(HERE)))
+TOPDIR = os.path.dirname(HERE)
 TESTOUTPUT = os.path.join(HERE, "test-output", platform.python_version())
 if not os.path.exists(TESTOUTPUT):
     os.makedirs(TESTOUTPUT)  # pragma: no cover
@@ -49,7 +50,7 @@ logger = logging.getLogger()
 class PathInfoTests(unittest.TestCase):
     def setUp(self):
         #
-        self.__verbose = True
+        # self.__verbose = True
         self.__siteId = getSiteId(defaultSiteId=None)
 
         self.__startTime = time.time()
@@ -229,6 +230,6 @@ def suiteStandardPathTests():  # pragma: no cover
 
 
 if __name__ == "__main__":  # pragma: no cover
-    if True:
+    if True:  # pylint: disable=using-constant-test
         mySuite = suiteStandardPathTests()
         unittest.TextTestRunner(verbosity=2).run(mySuite)

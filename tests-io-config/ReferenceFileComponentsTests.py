@@ -1,3 +1,4 @@
+# pylint: disable=protected-access
 ##
 # File:    ReferenceFileComponentsTests.py
 # Date:    18-Sep-2013
@@ -22,7 +23,7 @@ import platform
 from unittest.mock import patch
 
 HERE = os.path.abspath(os.path.dirname(__file__))
-TOPDIR = os.path.dirname(os.path.dirname(os.path.dirname(HERE)))
+TOPDIR = os.path.dirname(HERE)
 TESTOUTPUT = os.path.join(HERE, "test-output", platform.python_version())
 if not os.path.exists(TESTOUTPUT):
     os.makedirs(TESTOUTPUT)  # pragma: no cover
@@ -81,7 +82,7 @@ class ReferenceFileComponentsTests(unittest.TestCase):
                     "RFC- fileName %s idcode %s contentType %s contentFormat %s partNo %d versionId %s\n" % (fileName, idCode, contentType, contentFormat, partNo, versionNo)
                 )
                 self.assertEqual(valid[fileName], [idCode, contentType, contentFormat, partNo, versionNo])
-        except:  # noqa: E722  # pragma: no cover
+        except:  # noqa: E722  # pragma: no cover  # pylint: disable=bare-except
             traceback.print_exc(file=self.__lfh)
             self.fail()
 
@@ -176,7 +177,7 @@ def suiteDataFileReferenceTests():  # pragma: no cover
 
 
 if __name__ == "__main__":  # pragma: no cover
-    if True:
+    if True:  # pylint: disable=using-constant-test
         mySuite = suiteComponentAccessorsTests()
         unittest.TextTestRunner(verbosity=2).run(mySuite)
         unittest.TextTestRunner(verbosity=2).run(suiteDataFileReferenceTests())

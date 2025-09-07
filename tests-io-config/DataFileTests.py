@@ -1,3 +1,4 @@
+# pylint: disable=protected-access
 """
 
 File:    DataFileTests.py
@@ -15,7 +16,7 @@ import traceback
 import platform
 
 HERE = os.path.abspath(os.path.dirname(__file__))
-TOPDIR = os.path.dirname(os.path.dirname(os.path.dirname(HERE)))
+TOPDIR = os.path.dirname(HERE)
 TESTOUTPUT = os.path.join(HERE, "test-output", platform.python_version())
 if not os.path.exists(TESTOUTPUT):
     os.makedirs(TESTOUTPUT)  # pragma: no cover
@@ -52,7 +53,7 @@ class DataFileTests(unittest.TestCase):
             fPath = os.path.join(self.__testFilePath, self.__testFile)
             f1 = DataFile(fPath)
             f1.pr(self.lfh)
-        except:  # noqa: E722  # pragma: no cover
+        except:  # noqa: E722  # pragma: no cover  # pylint: disable=bare-except
             traceback.print_exc(file=sys.stdout)
             self.fail()
 
@@ -73,7 +74,7 @@ class DataFileTests(unittest.TestCase):
                 f2 = DataFile(fp)
                 if f2.srcFileExists():
                     f2.remove()
-        except:  # noqa: E722  # pragma: no cover
+        except:  # noqa: E722  # pragma: no cover  # pylint: disable=bare-except
             traceback.print_exc(file=sys.stdout)
             self.fail()
 
@@ -94,7 +95,7 @@ class DataFileTests(unittest.TestCase):
                 f2 = DataFile(fp)
                 if f2.srcFileExists():
                     f2.remove()
-        except:  # noqa: E722  # pragma: no cover
+        except:  # noqa: E722  # pragma: no cover  # pylint: disable=bare-except
             traceback.print_exc(file=sys.stdout)
             self.fail()
 
@@ -115,7 +116,7 @@ class DataFileTests(unittest.TestCase):
                 f2 = DataFile(fp)
                 if f2.srcFileExists():
                     f2.remove()
-        except:  # noqa: E722  # pragma: no cover
+        except:  # noqa: E722  # pragma: no cover  # pylint: disable=bare-except
             traceback.print_exc(file=sys.stdout)
             self.fail()
 
@@ -134,7 +135,7 @@ class DataFileTests(unittest.TestCase):
                 f2 = DataFile(fp)
                 if f2.srcFileExists():
                     f2.remove()
-        except:  # noqa: E722  # pragma: no cover
+        except:  # noqa: E722  # pragma: no cover  # pylint: disable=bare-except
             traceback.print_exc(file=sys.stdout)
             self.fail()
 
@@ -145,7 +146,7 @@ class DataFileTests(unittest.TestCase):
             fPath = os.path.join(self.__testFilePath, self.__testFile)
             f1 = DataFile(fPath)
             f1.eMail("jwest@rcsb.rutgers.edu", "jwest@rcsb.rutgers.edu", "IGNORE THIS TEST MESSAGE")
-        except:  # noqa: E722
+        except:  # noqa: E722  # pylint: disable=bare-except
             traceback.print_exc(file=sys.stdout)
             self.fail()
 
@@ -227,7 +228,6 @@ class DataFileTests(unittest.TestCase):
 
             with open(f1path, "w") as f:
                 f.write(tmode)
-                pass
 
             d1 = DataFile(f1path)
             d1.timeMode(tmode)

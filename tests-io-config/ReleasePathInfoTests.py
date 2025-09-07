@@ -18,7 +18,7 @@ import platform
 import logging
 
 HERE = os.path.abspath(os.path.dirname(__file__))
-TOPDIR = os.path.dirname(os.path.dirname(os.path.dirname(HERE)))
+TOPDIR = os.path.dirname(HERE)
 TESTOUTPUT = os.path.join(HERE, "test-output", platform.python_version())
 if not os.path.exists(TESTOUTPUT):
     os.makedirs(TESTOUTPUT)  # pragma: no cover
@@ -176,9 +176,9 @@ def suitePreviousPathTests():  # pragma: no cover
 
 
 if __name__ == "__main__":  # pragma: no cover
-    if True:
+    if True:  # pylint: disable=using-constant-test
         mySuite = suiteStandardPathTests()
         unittest.TextTestRunner(verbosity=2).run(mySuite)
-    if True:
+    if True:  # pylint: disable=using-constant-test
         mySuite = suitePreviousPathTests()
         unittest.TextTestRunner(verbosity=2).run(mySuite)

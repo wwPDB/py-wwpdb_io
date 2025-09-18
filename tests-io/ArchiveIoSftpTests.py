@@ -20,15 +20,16 @@ __version__ = "V0.001"
 
 #
 #
-import sys
+import logging
 import os.path
+import sys
 import time
 import unittest
-import logging
+
+from wwpdb.io.sftp.ArchiveIoSftp import ArchiveIoSftp
 
 #
 from wwpdb.utils.config.ConfigInfo import ConfigInfo, getSiteId
-from wwpdb.io.sftp.ArchiveIoSftp import ArchiveIoSftp
 from wwpdb.utils.testing.Features import Features
 
 #

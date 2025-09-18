@@ -10,23 +10,22 @@
 Common methods for finding path information for chemical reference data files.
 
 """
+
 __docformat__ = "restructuredtext en"
 __author__ = "John Westbrook"
 __email__ = "jwest@rcsb.rutgers.edu"
 __license__ = "Creative Commons Attribution 3.0 Unported"
 __version__ = "V0.07"
 
-import os.path
-
 import os
+import os.path
 import sys
-
 
 from wwpdb.utils.config.ConfigInfo import ConfigInfo
 from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCc
 
 
-class ChemRefPathInfo(object):
+class ChemRefPathInfo:
     """Common methods for finding path information for chemical reference data files."""
 
     #
@@ -38,7 +37,7 @@ class ChemRefPathInfo(object):
         log=sys.stderr,
         testMode=False,
         # Old API - to be deprecated
-        reqObj=None,
+        reqObj=None,  # noqa: ARG002
         configObj=None,
         configCommonObj=None,
     ):  # pylint: disable=unused-argument
@@ -83,11 +82,10 @@ class ChemRefPathInfo(object):
 
         if len(idCode) > 3:
             hash_key = idCode.upper()[-2:]
+        elif len(idCode) > 0:
+            hash_key = idCode.upper()[0]
         else:
-            if len(idCode) > 0:
-                hash_key = idCode.upper()[0]
-            else:
-                hash_key = ""
+            hash_key = ""
 
         return hash_key
 
@@ -149,14 +147,13 @@ class ChemRefPathInfo(object):
         #
         if id_type == "CC":
             return self.__cIcommonAppCc.get_site_cc_cvs_path()
-        elif id_type == "PRDCC":
+        if id_type == "PRDCC":
             return self.__cIcommonAppCc.get_site_prdcc_cvs_path()
-        elif id_type == "PRD":
+        if id_type == "PRD":
             return self.__cIcommonAppCc.get_site_prd_cvs_path()
-        elif id_type == "PRD_FAMILY":
+        if id_type == "PRD_FAMILY":
             return self.__cIcommonAppCc.get_site_family_cvs_path()
-        else:
-            return None
+        return None
 
     def getCvsProjectInfo(self, idCode, id_type=None):
         """Assign the CVS project name and relative path based on the input ID code.
@@ -177,11 +174,7 @@ class ChemRefPathInfo(object):
         if id_type == "CC":
             hash_key = self.getCcdHash(idCode)
             rel_path = os.path.join(hash_key, idCode, idCode + ".cif")
-        elif id_type == "PRDCC":
-            rel_path = os.path.join(idCode[-1], idCode + ".cif")
-        elif id_type == "PRD":
-            rel_path = os.path.join(idCode[-1], idCode + ".cif")
-        elif id_type == "PRD_FAMILY":
+        elif id_type == "PRDCC" or id_type == "PRD" or id_type == "PRD_FAMILY":
             rel_path = os.path.join(idCode[-1], idCode + ".cif")
         else:
             pass
@@ -213,24 +206,19 @@ class ChemRefPathInfo(object):
         if self.__testMode:
             if repType == "CC":
                 project_name = "test-ligand-v1"
-            elif repType == "PRDCC":
-                project_name = "test-project-v1"
-            elif repType == "PRD":
-                project_name = "test-project-v1"
-            elif repType == "PRD_FAMILY":
+            elif repType == "PRDCC" or repType == "PRD" or repType == "PRD_FAMILY":
                 project_name = "test-project-v1"
             else:
                 pass
+        elif repType == "CC":
+            project_name = self.__cI.get("SITE_REFDATA_PROJ_NAME_CC")
+        elif repType == "PRDCC":
+            project_name = self.__cI.get("SITE_REFDATA_PROJ_NAME_PRDCC")
+        elif repType == "PRD":
+            project_name = self.__cI.get("SITE_REFDATA_PROJ_NAME_PRD")
+        elif repType == "PRD_FAMILY":
+            project_name = self.__cI.get("SITE_REFDATA_PROJ_NAME_PRD_FAMILY")
         else:
-            if repType == "CC":
-                project_name = self.__cI.get("SITE_REFDATA_PROJ_NAME_CC")
-            elif repType == "PRDCC":
-                project_name = self.__cI.get("SITE_REFDATA_PROJ_NAME_PRDCC")
-            elif repType == "PRD":
-                project_name = self.__cI.get("SITE_REFDATA_PROJ_NAME_PRD")
-            elif repType == "PRD_FAMILY":
-                project_name = self.__cI.get("SITE_REFDATA_PROJ_NAME_PRD_FAMILY")
-            else:
-                pass
+            pass
 
         return project_name

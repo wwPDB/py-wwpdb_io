@@ -12,6 +12,7 @@
 Test cases for the CvsUtiltity module.
 
 """
+
 __docformat__ = "restructuredtext en"
 __author__ = "John Westbrook"
 __email__ = "jwest@rcsb.rutgers.edu"
@@ -20,12 +21,13 @@ __version__ = "V0.001"
 
 # Disable checks for use of _getframe
 # pylint: disable=protected-access
+# ruff: noqa: SLF001
 
-import sys
-import unittest
+import logging
 import os
 import os.path
-import logging
+import sys
+import unittest
 
 from wwpdb.io.cvs.CvsUtility import CvsWrapper
 from wwpdb.utils.testing.Features import Features

@@ -23,7 +23,6 @@ classifiers = [
     "Programming Language :: Python :: 3.7",
 ]
 dependencies = [
-    "click",
     "mmcif >= 0.3",
     "mmcif.utils",
     "paramiko",
@@ -61,6 +60,11 @@ include = [
   "*.ipynb",        # Jupyter notebooks
 ]
 
+exclude = [
+  "Archive",
+  "fixtures",
+  "OldTests",
+]
 #
 #=================================== Ruff lint ==============================#
 
@@ -115,7 +119,7 @@ ignore = [
 # -------------------- default environment scripts ------------------
 [tool.hatch.envs.default]
 skip-install = true
-dependencies = ["mypy", "ruff >=0.6.9", "wwpdb.utils.testing", "matplotlib", "pygal"]
+dependencies = ["mypy", "ruff >=0.6.9", "mmcif", "mmcif.utils", "paramiko", "wwpdb.utils.config", "pytest", "wwpdb.utils.testing"]
 
 
 [tool.hatch.envs.default.scripts]
@@ -136,7 +140,7 @@ check = ["ruff check --no-fix .", "mypy --non-interactive --install-types -p wwp
 check-ruff = "ruff check --no-fix . {args}"
 
 # to complement 'check-ruff'
-check-mypy = "mypy --non-interactive --install-types -p wwpdb -p tests {args}"
+check-mypy = "mypy --non-interactive --install-types -p wwpdb -p tests-io -p tests-io-config {args}"
 
 # only check security via Bandit; we require these rules to pass
 check-security = "ruff check --select S --no-fix ."
@@ -151,12 +155,15 @@ run = ["tox"]
 
 # -------------------------  Mypy disable ---------
 [[tool.mypy.overrides]]
-module = ["mmcif.*", "wwpdb.*", "tests.*", "commonsetup", "gemmi.*", "pygal.*"]
+module = ["mmcif_utils.*", "wwpdb.utils.config.*", "mmcif.*", "wwpdb.utils.testing.*"]
+#"mmcif.*", "wwpdb.*", "tests.*", "commonsetup", "gemmi.*"]
 ignore_missing_imports = true
 
 [tool.mypy]
 exclude = [
 	"test-output",
+	"wwpdb/io/Archive",
+	"tests-io/OldTests"
 ]
 
 # ------------------------ ruff disable per file

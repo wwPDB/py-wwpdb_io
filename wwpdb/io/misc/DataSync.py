@@ -1,19 +1,19 @@
-# pylint: disable=logging-fstring-interpolation
+# ruff: noqa: G004,FA100,DTZ005,DTZ006  pylint: disable=logging-fstring-interpolation
 
+import hashlib
+import logging
 import os
 import subprocess
-import logging
-import hashlib
-
-from datetime import datetime
 from abc import ABC, abstractmethod
+from datetime import datetime
 from pathlib import Path
-from typing import List, Optional, Dict, Any
+from typing import Any, Dict, List, Optional
 
 
 class DataMoveError(Exception):
     """Custom exception for data movement errors."""
-    pass  # pylint: disable=unnecessary-pass
+
+    # pylint: disable=unnecessary-pass
 
 
 class DataMover(ABC):
@@ -31,8 +31,7 @@ class DataMover(ABC):
         self.dry_run = dry_run
 
     @abstractmethod
-    def sync_files(self, source_path: str, destination_path: str,
-                   file_patterns: Optional[List[str]] = None) -> Dict[str, Any]:
+    def sync_files(self, source_path: str, destination_path: str, file_patterns: Optional[List[str]] = None) -> Dict[str, Any]:
         """
         Sync files from source to destination.
 
@@ -42,7 +41,7 @@ class DataMover(ABC):
         Returns:
             Dictionary containing sync results and statistics
         """
-        pass  # pylint: disable=unnecessary-pass
+        # pylint: disable=unnecessary-pass
 
     @abstractmethod
     def verify_integrity(self, source_path: str, destination_path: str, file_path: str) -> bool:
@@ -55,7 +54,7 @@ class DataMover(ABC):
         Returns:
             True if file integrity is verified, False otherwise
         """
-        pass  # pylint: disable=unnecessary-pass
+        # pylint: disable=unnecessary-pass
 
 
 class RsyncDataMover(DataMover):
@@ -75,18 +74,18 @@ class RsyncDataMover(DataMover):
 
         # Default rsync options for safety and integrity
         self.default_options = [
-            '-avz',           # archive mode, verbose, compress
-            '--update',       # only transfer files that are newer
-            '--checksum',     # use checksums instead of mod-time & size
-            '--partial',      # keep partially transferred files
-            '--progress',     # show progress
-            '--stats',        # show file transfer statistics
-            '--human-readable',  # human readable numbers
-            '--itemize-changes',  # itemize changes
+            "-avz",  # archive mode, verbose, compress
+            "--update",  # only transfer files that are newer
+            "--checksum",  # use checksums instead of mod-time & size
+            "--partial",  # keep partially transferred files
+            "--progress",  # show progress
+            "--stats",  # show file transfer statistics
+            "--human-readable",  # human readable numbers
+            "--itemize-changes",  # itemize changes
         ]
 
         if dry_run:
-            self.default_options.append('--dry-run')
+            self.default_options.append("--dry-run")
 
         self.rsync_options = rsync_options or []
         self.all_options = self.default_options + self.rsync_options
@@ -94,10 +93,12 @@ class RsyncDataMover(DataMover):
     def _validate_paths(self, source_path: Path, destination_path: Path) -> None:
         """Validate source and destination paths."""
         if not source_path.exists():
-            raise DataMoveError(f"Source path does not exist: {source_path}")
+            msg = f"Source path does not exist: {source_path}"
+            raise DataMoveError(msg)
 
         if not source_path.is_dir():
-            raise DataMoveError(f"Source path is not a directory: {source_path}")
+            msg = f"Source path is not a directory: {source_path}"
+            raise DataMoveError(msg)
 
         # Create destination directory if it doesn't exist
         if not self.dry_run:
@@ -105,18 +106,17 @@ class RsyncDataMover(DataMover):
 
     def _calculate_checksum(self, file_path: Path) -> str:
         """Calculate MD5 checksum of a file."""
-        hash_md5 = hashlib.md5()
+        hash_md5 = hashlib.md5()  # noqa: S324
         try:
             with open(file_path, "rb") as f:
                 for chunk in iter(lambda: f.read(4096), b""):
                     hash_md5.update(chunk)
             return hash_md5.hexdigest()
-        except IOError as e:
+        except OSError as e:
             self.logger.error(f"Error calculating checksum for {file_path}: {e}")
             return ""
 
-    def _run_rsync_command(self, source_path: Path, destination_path: Path,
-                           additional_options: Optional[List[str]] = None) -> subprocess.CompletedProcess:
+    def _run_rsync_command(self, source_path: Path, destination_path: Path, additional_options: Optional[List[str]] = None) -> subprocess.CompletedProcess:
         """
         Execute rsync command with proper error handling.
 
@@ -133,10 +133,10 @@ class RsyncDataMover(DataMover):
             options.extend(additional_options)
 
         # Ensure source path ends with / to sync contents, not the directory itself
-        source_str = str(source_path).rstrip('/') + '/'
+        source_str = str(source_path).rstrip("/") + "/"
         destination_str = str(destination_path)
 
-        cmd = ['rsync'] + options + [source_str, destination_str]
+        cmd = ["rsync"] + options + [source_str, destination_str]  # noqa: RUF005
 
         self.logger.info(f"Executing rsync command: {' '.join(cmd)}")
 
@@ -146,7 +146,7 @@ class RsyncDataMover(DataMover):
                 capture_output=True,
                 text=True,
                 check=False,
-                timeout=3600  # 1 hour timeout
+                timeout=3600,  # 1 hour timeout
             )
 
             if result.stdout:
@@ -157,12 +157,13 @@ class RsyncDataMover(DataMover):
             return result
 
         except subprocess.TimeoutExpired:
-            raise DataMoveError("Rsync operation timed out")  # pylint: disable=raise-missing-from
-        except Exception as e:
-            raise DataMoveError(f"Error executing rsync command: {e}")  # pylint: disable=raise-missing-from
+            msg = "Rsync operation timed out"
+            raise DataMoveError(msg)  # noqa: B904 pylint: disable=raise-missing-from
+        except Exception as e:  # noqa: BLE001
+            msg = f"Error executing rsync command: {e}"
+            raise DataMoveError(msg)  # noqa: B904 pylint: disable=raise-missing-from
 
-    def sync_files(self, source_path: str, destination_path: str,
-                   file_patterns: Optional[List[str]] = None) -> Dict[str, Any]:
+    def sync_files(self, source_path: str, destination_path: str, file_patterns: Optional[List[str]] = None) -> Dict[str, Any]:
         """
         Sync files using rsync with integrity checks.
 
@@ -184,10 +185,10 @@ class RsyncDataMover(DataMover):
         # Add include/exclude patterns if specified
         if file_patterns:
             for pattern in file_patterns:
-                if pattern.startswith('!'):  # Exclude pattern
-                    additional_options.extend(['--exclude', pattern[1:]])
+                if pattern.startswith("!"):  # Exclude pattern
+                    additional_options.extend(["--exclude", pattern[1:]])
                 else:  # Include pattern
-                    additional_options.extend(['--include', pattern])
+                    additional_options.extend(["--include", pattern])
 
         # Get pre-sync file counts for statistics
         pre_sync_stats = self._get_directory_stats(source_path_obj)
@@ -209,14 +210,14 @@ class RsyncDataMover(DataMover):
         transfer_stats = self._parse_rsync_stats(result.stdout)
 
         return {
-            'success': success,
-            'dry_run': self.dry_run,
-            'source_path': str(source_path_obj),
-            'destination_path': str(destination_path_obj),
-            'pre_sync_stats': pre_sync_stats,
-            'post_sync_stats': post_sync_stats,
-            'transfer_stats': transfer_stats,
-            'timestamp': datetime.now().isoformat()
+            "success": success,
+            "dry_run": self.dry_run,
+            "source_path": str(source_path_obj),
+            "destination_path": str(destination_path_obj),
+            "pre_sync_stats": pre_sync_stats,
+            "post_sync_stats": post_sync_stats,
+            "transfer_stats": transfer_stats,
+            "timestamp": datetime.now().isoformat(),
         }
 
     def verify_integrity(self, source_path: str, destination_path: str, file_path: str) -> bool:
@@ -277,48 +278,48 @@ class RsyncDataMover(DataMover):
             full_path = Path(file_path)
 
         if not full_path.exists():
-            return {'exists': False, 'path': str(full_path)}
+            return {"exists": False, "path": str(full_path)}
 
         stat = full_path.stat()
 
         return {
-            'exists': True,
-            'path': str(full_path),
-            'size': stat.st_size,
-            'modified_time': datetime.fromtimestamp(stat.st_mtime).isoformat(),
-            'created_time': datetime.fromtimestamp(stat.st_ctime).isoformat(),
-            'checksum': self._calculate_checksum(full_path),
-            'is_file': full_path.is_file(),
-            'is_directory': full_path.is_dir(),
-            'permissions': oct(stat.st_mode)[-3:]
+            "exists": True,
+            "path": str(full_path),
+            "size": stat.st_size,
+            "modified_time": datetime.fromtimestamp(stat.st_mtime).isoformat(),
+            "created_time": datetime.fromtimestamp(stat.st_ctime).isoformat(),
+            "checksum": self._calculate_checksum(full_path),
+            "is_file": full_path.is_file(),
+            "is_directory": full_path.is_dir(),
+            "permissions": oct(stat.st_mode)[-3:],
         }
 
     def _get_directory_stats(self, path: Path) -> Dict[str, Any]:
         """Get statistics about a directory."""
         if not path.exists():
-            return {'exists': False}
+            return {"exists": False}
 
         file_count = 0
         dir_count = 0
         total_size = 0
 
         try:
-            for item in path.rglob('*'):
+            for item in path.rglob("*"):
                 if item.is_file():
                     file_count += 1
                     total_size += item.stat().st_size
                 elif item.is_dir():
                     dir_count += 1
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             self.logger.warning(f"Error getting directory stats: {e}")
 
         return {
-            'exists': True,
-            'path': str(path),
-            'file_count': file_count,
-            'directory_count': dir_count,
-            'total_size_bytes': total_size,
-            'total_size_human': self._human_readable_size(total_size)
+            "exists": True,
+            "path": str(path),
+            "file_count": file_count,
+            "directory_count": dir_count,
+            "total_size_bytes": total_size,
+            "total_size_human": self._human_readable_size(total_size),
         }
 
     def _parse_rsync_stats(self, rsync_output: str) -> Dict[str, Any]:
@@ -326,23 +327,24 @@ class RsyncDataMover(DataMover):
         stats = {}
 
         # Look for common rsync statistics patterns
-        lines = rsync_output.split('\n')
-        for line in lines:
-            line = line.strip()
-            if 'sent' in line and 'received' in line:
+        lines = rsync_output.split("\n")
+        for oline in lines:
+            line = oline.strip()
+            if "sent" in line and "received" in line:
                 # Parse: "sent 1,234 bytes  received 567 bytes  890.00 bytes/sec"
-                stats['transfer_summary'] = line
-            elif line.startswith('Number of files'):
-                stats['file_summary'] = line
-            elif line.startswith('Total file size'):
-                stats['size_summary'] = line
+                stats["transfer_summary"] = line
+            elif line.startswith("Number of files"):
+                stats["file_summary"] = line
+            elif line.startswith("Total file size"):
+                stats["size_summary"] = line
 
         return stats
 
     def _human_readable_size(self, size_in_bytes: int) -> str:
         """Convert bytes to human readable format."""
-        for unit in ['B', 'KB', 'MB', 'GB', 'TB']:
-            if size_in_bytes < 1024:
-                return f"{size_in_bytes:.1f} {unit}"
-            size_in_bytes /= 1024
-        return f"{size_in_bytes:.1f} PB"
+        fsize_in_bytes = float(size_in_bytes)
+        for unit in ["B", "KB", "MB", "GB", "TB"]:
+            if fsize_in_bytes < 1024:
+                return f"{fsize_in_bytes:.1f} {unit}"
+            fsize_in_bytes /= 1024
+        return f"{fsize_in_bytes:.1f} PB"

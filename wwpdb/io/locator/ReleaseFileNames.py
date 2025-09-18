@@ -68,10 +68,10 @@ class ReleaseFileNames:
         """looks up the accession remapping in __accession_remap"""
         if remap_type == "hyphen":
             return self.__get_emdb_hyphen_format(accession)
-        elif remap_type == "underscore":
+        if remap_type == "underscore":
             return self.__get_emdb_underscore_format(accession)
-        else:
-            raise NameError("unknown EMDB file remapping: {}".format(remap_type))  # pragma: no cover
+        msg = "unknown EMDB file remapping: {}".format(remap_type)
+        raise NameError(msg)  # pragma: no cover
 
     def __do_accession_remap(self, content, accession, for_release):
         """does accession remapping"""
@@ -85,7 +85,7 @@ class ReleaseFileNames:
 
     def __getfname(self, content, accession, for_release):
         """Retrieves the released content file name with compression"""
-        assert content in self.__mapping
+        assert content in self.__mapping  # noqa: S101
         (public, release, pub_gzip, rel_gzip) = self.__mapping[content]
         accession = self.__do_accession_remap(accession=accession, content=content, for_release=for_release)
         if for_release:

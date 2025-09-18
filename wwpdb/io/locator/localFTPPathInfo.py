@@ -2,14 +2,13 @@ import logging
 import os
 import os.path
 
-from wwpdb.utils.config.ConfigInfo import ConfigInfo
-
 from wwpdb.io.locator.ReleaseFileNames import ReleaseFileNames
+from wwpdb.utils.config.ConfigInfo import ConfigInfo
 
 logger = logging.getLogger(__name__)
 
 
-class LocalFTPPathInfo(object):
+class LocalFTPPathInfo:
     def __init__(self, siteId=None):
         self.__siteId = siteId
         self.__cI = ConfigInfo(siteId=self.__siteId)

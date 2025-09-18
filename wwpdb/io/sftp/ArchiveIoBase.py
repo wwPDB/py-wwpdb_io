@@ -27,10 +27,10 @@ from wwpdb.utils.config.ConfigInfo import ConfigInfo, getSiteId
 logger = logging.getLogger(__name__)
 
 
-class ArchiveIoBase(object):
+class ArchiveIoBase:
     """A base class for for archive data transfer operation utilities."""
 
-    def __init__(self, *args, **kwargs):  # pylint: disable=unused-argument
+    def __init__(self, *args, **kwargs):  # noqa: ARG002  pylint: disable=unused-argument
         self._raiseExceptions = kwargs.get("raiseExceptions", False)
         self._siteId = kwargs.get("siteId", getSiteId())
         self._serverId = kwargs.get("serverId", None)
@@ -48,29 +48,33 @@ class ArchiveIoBase(object):
         self._keyFileType = cD.get("HOST_KEY_FILE_TYPE", None)
         #
 
-    def connect(self, hostName, userName, **kwargs):
-        raise NotImplementedError("To be implemented in subclass")
+    def __raise_unimplemented(self):
+        err = "To be implemented in subclass"
+        raise NotImplementedError(err)
 
-    def mkdir(self, path, **kwargs):
-        raise NotImplementedError("To be implemented in subclass")
+    def connect(self, hostName, userName, **kwargs):  # noqa: ARG002  pylint: disable=unused-argument
+        self.__raise_unimplemented()
 
-    def stat(self, path):
-        raise NotImplementedError("To be implemented in subclass")
+    def mkdir(self, path, **kwargs):  # noqa: ARG002  pylint: disable=unused-argument
+        self.__raise_unimplemented()
 
-    def put(self, localPath, remotePath):
-        raise NotImplementedError("To be implemented in subclass")
+    def stat(self, path):  # noqa: ARG002  pylint: disable=unused-argument
+        self.__raise_unimplemented()
 
-    def get(self, remotePath, localPath):
-        raise NotImplementedError("To be implemented in subclass")
+    def put(self, localPath, remotePath):  # noqa: ARG002  pylint: disable=unused-argument
+        self.__raise_unimplemented()
 
-    def listdir(self, path):
-        raise NotImplementedError("To be implemented in subclass")
+    def get(self, remotePath, localPath):  # noqa: ARG002  pylint: disable=unused-argument
+        self.__raise_unimplemented()
 
-    def rmdir(self, path):
-        raise NotImplementedError("To be implemented in subclass")
+    def listdir(self, path):  # noqa: ARG002  pylint: disable=unused-argument
+        self.__raise_unimplemented()
 
-    def remove(self, path):
-        raise NotImplementedError("To be implemented in subclass")
+    def rmdir(self, path):  # noqa: ARG002  pylint: disable=unused-argument
+        self.__raise_unimplemented()
 
-    def close(self):
-        raise NotImplementedError("To be implemented in subclass")
+    def remove(self, path):  # noqa: ARG002  pylint: disable=unused-argument
+        self.__raise_unimplemented()
+
+    def close(self):  # noqa: ARG002  pylint: disable=unused-argument
+        self.__raise_unimplemented()

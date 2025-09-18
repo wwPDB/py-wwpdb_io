@@ -8,14 +8,16 @@
 Tests to ensure access to for_release directories
 
 """
+
 __docformat__ = "restructuredtext en"
 __author__ = "Ezra Peisach"
 __email__ = "peisach@rcsb.rutgers.edu"
 
-import unittest
+# ruff: noqa: PT027
+import logging
 import os
 import platform
-import logging
+import unittest
 
 HERE = os.path.abspath(os.path.dirname(__file__))
 TOPDIR = os.path.dirname(HERE)
@@ -29,8 +31,8 @@ from wwpdb.utils.testing.SiteConfigSetup import SiteConfigSetup  # noqa: E402
 
 SiteConfigSetup().setupEnvironment(TESTOUTPUT, mockTopPath)
 
-from wwpdb.utils.config.ConfigInfo import getSiteId  # noqa: E402
 from wwpdb.io.locator.ReleasePathInfo import ReleasePathInfo  # noqa: E402
+from wwpdb.utils.config.ConfigInfo import getSiteId  # noqa: E402
 
 FORMAT = "[%(levelname)s]-%(module)s.%(funcName)s: %(message)s"
 logging.basicConfig(format=FORMAT, level=logging.DEBUG)

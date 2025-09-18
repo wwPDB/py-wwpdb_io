@@ -1,48 +1,50 @@
-import os
-import json
-import pytest
-import shutil
+# ruff: noqa: S101,PT011,B017
+
 import importlib
+import json
+import logging
+import os
+import shutil
 from unittest.mock import Mock
+
+import pytest
 
 from wwpdb.io.misc.Compression import Compression
 from wwpdb.utils.config.ConfigInfo import ConfigInfo
 from wwpdb.utils.config.ConfigInfoData import ConfigInfoData
 
-import logging
-
 logging.basicConfig(level=logging.INFO)
 
 
 def compile_site_config():
-    from wwpdb.utils.config.ConfigInfoFileExec import ConfigInfoFileExec
+    from wwpdb.utils.config.ConfigInfoFileExec import ConfigInfoFileExec  # noqa: PLC0415
 
     ci = ConfigInfoFileExec()
     ci.writeConfigCache(siteLoc="test", siteId="TEST")
 
 
 @pytest.fixture
-def mock_config(monkeypatch):
+def mock_config(monkeypatch):  # noqa: ARG001
     with open("./wwpdb/io/tests-io/fixtures/site-config/test/test/ConfigInfoFileCache.json") as fp:
         test_config = json.load(fp)
-    monkeypatch.setattr(ConfigInfoData, "getConfigDictionary", lambda s: test_config["TEST"])
+    monkeypatch.setattr(ConfigInfoData, "getConfigDictionary", lambda s: test_config["TEST"])  # noqa: ARG005
     module = importlib.import_module("wwpdb.io.misc.Compression")
     importlib.reload(module)
 
 
 @pytest.fixture
 def config():
-    from wwpdb.utils.config.ConfigInfo import ConfigInfo  # pylint: disable=redefined-outer-name,reimported
+    from wwpdb.utils.config.ConfigInfo import ConfigInfo  # noqa: PLC0415 pylint: disable=redefined-outer-name,reimported
 
     return ConfigInfo(siteId="TEST")
 
 
 @pytest.fixture
-def archive_dir(mock_config, config):  # pylint: disable=unused-argument,redefined-outer-name
+def archive_dir(mock_config, config):  # noqa: ARG001 pylint: disable=unused-argument,redefined-outer-name
     onedep_base = config.get("SITE_ARCHIVE_STORAGE_PATH")
 
-    if onedep_base is None or not onedep_base.startswith("/tmp"):
-        raise Exception("Error getting test archive dir")  # pylint: disable=broad-exception-raised
+    if onedep_base is None or not onedep_base.startswith("/tmp"):  # noqa: S108
+        raise Exception("Error getting test archive dir")  # noqa: EM101,TRY002,TRY003 pylint: disable=broad-exception-raised
 
     l_archive_dir = os.path.join(onedep_base, "archive")
     cold_archive_dir = os.path.join(onedep_base, "cold_archive")
@@ -54,7 +56,7 @@ def archive_dir(mock_config, config):  # pylint: disable=unused-argument,redefin
     shutil.rmtree(onedep_base)
 
 
-def test_compression(monkeypatch, archive_dir):  # pylint: disable=unused-argument,redefined-outer-name
+def test_compression(monkeypatch, archive_dir):  # noqa: ARG001  pylint: disable=unused-argument,redefined-outer-name
     dep_dir = os.path.join(archive_dir, "D_800001")
     os.makedirs(dep_dir, exist_ok=True)
     open(os.path.join(dep_dir, "foo"), "w").close()
@@ -80,7 +82,7 @@ def test_compression(monkeypatch, archive_dir):  # pylint: disable=unused-argume
     assert os.path.exists(os.path.join(dep_dir, "foo"))
 
 
-def test_overwrite_compression(monkeypatch, archive_dir):  # pylint: disable=unused-argument,redefined-outer-name
+def test_overwrite_compression(monkeypatch, archive_dir):  # noqa: ARG001  pylint: disable=unused-argument,redefined-outer-name
     dep_dir = os.path.join(archive_dir, "D_800001")
     os.makedirs(dep_dir, exist_ok=True)
 
@@ -129,7 +131,7 @@ def test_count(archive_dir):  # pylint: disable=redefined-outer-name
     assert compression.get_compressed_count() == 5
 
 
-def test_compression_precheck(archive_dir, monkeypatch):  # pylint: disable=unused-argument,redefined-outer-name
+def test_compression_precheck(archive_dir, monkeypatch):  # noqa: ARG001  pylint: disable=unused-argument,redefined-outer-name
     dep_dir = os.path.join(archive_dir, "D_800001")
     os.makedirs(dep_dir, exist_ok=True)
 
@@ -148,7 +150,7 @@ def test_compression_precheck(archive_dir, monkeypatch):  # pylint: disable=unus
 
     assert str(e.value) == "Deposition D_800001 cannot be compressed"
 
-    def mock_select_comm(table, select, where):  # pylint: disable=unused-argument
+    def mock_select_comm(table, select, where):  # noqa: ARG001 pylint: disable=unused-argument
         if table == "communication":
             return [["working"]]
         return [["", ""]]

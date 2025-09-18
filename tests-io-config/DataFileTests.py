@@ -1,4 +1,5 @@
 # pylint: disable=protected-access
+# ruff: noqa: SLF001
 """
 
 File:    DataFileTests.py
@@ -7,13 +8,14 @@ Date:    21-Aug-2009
 Version: 0.001
 
 """
-import sys
-import unittest
-import time
+
 import os
 import os.path
-import traceback
 import platform
+import sys
+import time
+import traceback
+import unittest
 
 HERE = os.path.abspath(os.path.dirname(__file__))
 TOPDIR = os.path.dirname(HERE)
@@ -27,8 +29,8 @@ from wwpdb.utils.testing.SiteConfigSetup import SiteConfigSetup  # noqa: E402
 
 SiteConfigSetup().setupEnvironment(TESTOUTPUT, mockTopPath)
 
-from wwpdb.utils.config.ConfigInfo import ConfigInfo  # noqa: E402
 from wwpdb.io.file.DataFile import DataFile  # noqa: E402
+from wwpdb.utils.config.ConfigInfo import ConfigInfo  # noqa: E402
 
 
 class DataFileTests(unittest.TestCase):
@@ -170,7 +172,7 @@ class DataFileTests(unittest.TestCase):
             if os.path.exists(f):
                 os.remove(f)
             # touch file
-            with open(f, "w") as f:
+            with open(f, "w"):
                 pass
             # So timestamp not same
             time.sleep(1.2)

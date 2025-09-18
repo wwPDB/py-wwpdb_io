@@ -15,6 +15,7 @@
 Test cases for the CvsAdmin module.
 
 """
+
 __docformat__ = "restructuredtext en"
 __author__ = "John Westbrook"
 __email__ = "jwest@rcsb.rutgers.edu"
@@ -23,13 +24,14 @@ __version__ = "V0.001"
 
 # Disable checks for use of _getframe
 # pylint: disable=protected-access
+# ruff: noqa: SLF001,BLE001
 
-import sys
-import unittest
 import os
 import os.path
-import traceback
 import shutil
+import sys
+import traceback
+import unittest
 
 from wwpdb.io.cvs.CvsAdmin import CvsAdmin, CvsSandBoxAdmin
 from wwpdb.utils.testing.Features import Features

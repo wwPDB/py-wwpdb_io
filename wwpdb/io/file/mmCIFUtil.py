@@ -21,7 +21,7 @@ from mmcif.io.PdbxWriter import PdbxWriter
 class mmCIFUtil:
     """Using pdbx mmCIF utility to parse mmCIF file"""
 
-    def __init__(self, verbose=False, log=sys.stderr, filePath=None):  # pylint: disable=unused-argument
+    def __init__(self, verbose=False, log=sys.stderr, filePath=None):  # noqa: ARG002 pylint: disable=unused-argument
         # self.__verbose = verbose
         self.__lfh = log
         self.__filePath = filePath
@@ -37,7 +37,7 @@ class mmCIFUtil:
             return
         #
         try:
-            ifh = open(self.__filePath, "r")
+            ifh = open(self.__filePath)
             pRd = PdbxReader(ifh)
             pRd.read(self.__dataList)
             ifh.close()
@@ -47,10 +47,10 @@ class mmCIFUtil:
                 idx = 0
                 for container in self.__dataList:
                     self.__dataMap[container.getName()] = idx
-                    idx += 1
+                    idx += 1  # noqa: SIM113
                 #
             #
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             self.__lfh.write("Read %s failed %s.\n" % (self.__filePath, str(e)))
         #
 
@@ -119,7 +119,7 @@ class mmCIFUtil:
             return
         #
         rowNo = catObj.getRowCount()
-        for row in range(0, rowNo):
+        for row in range(rowNo):
             catObj.setValue(value, itemName, row)
         #
 

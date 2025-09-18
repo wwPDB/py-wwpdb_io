@@ -19,8 +19,9 @@ __license__ = "Apache 2.0"
 __version__ = "V0.001"
 
 #
-import paramiko
 import logging
+
+import paramiko
 
 from wwpdb.io.sftp.ArchiveIoBase import ArchiveIoBase
 
@@ -46,17 +47,18 @@ class ArchiveIoSftp(ArchiveIoBase):
             if self._password is not None:
                 self.__sftpClient = self.__makeSftpClient(self._hostName, self._hostPort, self._userName, pw=self._password)
             elif self._keyFilePath is not None:
-                self.__sftpClient = self.__makeSftpClient(self._hostName, self._hostPort, self._userName, keyFilePath=self._keyFilePath, keyFileType=self._keyFileType)
+                self.__sftpClient = self.__makeSftpClient(
+                    self._hostName, self._hostPort, self._userName, keyFilePath=self._keyFilePath, keyFileType=self._keyFileType
+                )
             else:
                 logger.error("Failing connect for server %s with missing configuration information", self._serverId)
                 return False
             return True
         except Exception as e:
             if self._raiseExceptions:
-                raise e
-            else:
-                logger.error("Failing connect for server %s with %s", self._serverId, str(e))
-                return False
+                raise  # reraises e
+            logger.error("Failing connect for server %s with %s", self._serverId, str(e))
+            return False
 
     def connect(self, hostName, userName, port=22, pw=None, keyFilePath=None, keyFileType="RSA"):  # pylint: disable=arguments-differ
         try:
@@ -64,10 +66,9 @@ class ArchiveIoSftp(ArchiveIoBase):
             return True
         except Exception as e:
             if self._raiseExceptions:
-                raise e
-            else:
-                logger.error("Failing connect for hostname %s with %s", hostName, str(e))
-                return False
+                raise  # reraises e
+            logger.error("Failing connect for hostname %s with %s", hostName, str(e))
+            return False
 
     def __makeSftpClient(self, hostName, port, userName, pw=None, keyFilePath=None, keyFileType="RSA"):
         """
@@ -78,6 +79,11 @@ class ArchiveIoSftp(ArchiveIoBase):
         :rtype: Paramiko SFTPClient object.
 
         """
+
+        def raise_no_support():
+            err = "DSA keys no longer supported"
+            raise ValueError(err)
+
         sftp = None
         key = None
         self.__transport = None
@@ -88,11 +94,9 @@ class ArchiveIoSftp(ArchiveIoBase):
                     # The private key is a DSA type key.
                     # key = paramiko.DSSKey.from_private_key_file(keyFilePath)
                     # No longer supported key type by library
-                    err = "DSA keys no longer supported"
-                    raise ValueError(err)
-                else:
-                    # The private key is a RSA type key.
-                    key = paramiko.RSAKey.from_private_key_file(keyFilePath)
+                    raise_no_support()
+                # The private key is a RSA type key.
+                key = paramiko.RSAKey.from_private_key_file(keyFilePath)
 
             # Create Transport object using supplied method of authentication.
             self.__transport = paramiko.Transport((hostName, port))
@@ -111,7 +115,7 @@ class ArchiveIoSftp(ArchiveIoBase):
             if self.__transport is not None:
                 self.__transport.close()
             if self._raiseExceptions:
-                raise e
+                raise  # reraises e
 
     def mkdir(self, path, mode=511):  # pylint: disable=arguments-differ
         try:
@@ -119,10 +123,9 @@ class ArchiveIoSftp(ArchiveIoBase):
             return True
         except Exception as e:
             if self._raiseExceptions:
-                raise e
-            else:
-                logger.error("mkdir failing for path %s with %s", path, str(e))
-                return False
+                raise  # reraises e
+            logger.error("mkdir failing for path %s with %s", path, str(e))
+            return False
 
     def stat(self, path):
         """sftp  stat attributes  = [ size=17 uid=0 gid=0 mode=040755 atime=1507723473 mtime=1506956503 ]"""
@@ -132,10 +135,9 @@ class ArchiveIoSftp(ArchiveIoBase):
             return d
         except Exception as e:
             if self._raiseExceptions:
-                raise e
-            else:
-                logger.error("stat failing for path %s with %s", path, str(e))
-                return {}
+                raise  # reraises e
+            logger.error("stat failing for path %s with %s", path, str(e))
+            return {}
 
     def put(self, localPath, remotePath):
         try:
@@ -143,10 +145,9 @@ class ArchiveIoSftp(ArchiveIoBase):
             return True
         except Exception as e:
             if self._raiseExceptions:
-                raise e
-            else:
-                logger.error("put failing for localPath %s  remotePath %s with %s", localPath, remotePath, str(e))
-                return False
+                raise  # reraises e
+            logger.error("put failing for localPath %s  remotePath %s with %s", localPath, remotePath, str(e))
+            return False
 
     def get(self, remotePath, localPath):
         try:
@@ -154,20 +155,18 @@ class ArchiveIoSftp(ArchiveIoBase):
             return True
         except Exception as e:
             if self._raiseExceptions:
-                raise e
-            else:
-                logger.error("get failing for remotePath %s localPath %s with %s", remotePath, localPath, str(e))
-                return False
+                raise  # reraises e
+            logger.error("get failing for remotePath %s localPath %s with %s", remotePath, localPath, str(e))
+            return False
 
     def listdir(self, path):
         try:
             return self.__sftpClient.listdir(path)
         except Exception as e:
             if self._raiseExceptions:
-                raise e
-            else:
-                logger.error("listdir failing for path %s with %s", path, str(e))
-                return False
+                raise  # reraises e
+            logger.error("listdir failing for path %s with %s", path, str(e))
+            return False
 
     def rmdir(self, dirPath):  # pylint: disable=arguments-differ,arguments-renamed
         try:
@@ -175,10 +174,9 @@ class ArchiveIoSftp(ArchiveIoBase):
             return True
         except Exception as e:
             if self._raiseExceptions:
-                raise e
-            else:
-                logger.error("rmdir failing for path %s with %s", dirPath, str(e))
-                return False
+                raise  # reraises e
+            logger.error("rmdir failing for path %s with %s", dirPath, str(e))
+            return False
 
     def remove(self, filePath):  # pylint: disable=arguments-differ,arguments-renamed
         try:
@@ -186,10 +184,9 @@ class ArchiveIoSftp(ArchiveIoBase):
             return True
         except Exception as e:
             if self._raiseExceptions:
-                raise e
-            else:
-                logger.error("remove failing for path %s with %s", filePath, str(e))
-                return False
+                raise  # reraises e
+            logger.error("remove failing for path %s with %s", filePath, str(e))
+            return False
 
     def close(self):
         try:
@@ -201,6 +198,5 @@ class ArchiveIoSftp(ArchiveIoBase):
             return True
         except Exception as e:
             if self._raiseExceptions:
-                raise e
-            else:
-                logger.error("Close failing with %s", str(e))
+                raise  # reraises e
+            logger.error("Close failing with %s", str(e))

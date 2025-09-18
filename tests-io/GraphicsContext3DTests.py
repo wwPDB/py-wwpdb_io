@@ -12,6 +12,7 @@
 Test cases for GraphicsContext3D using a PDBx persistent store as a data source.
 
 """
+
 __docformat__ = "restructuredtext en"
 __author__ = "John Westbrook"
 __email__ = "jwest@rcsb.rutgers.edu"
@@ -20,14 +21,15 @@ __version__ = "V0.01"
 
 # Disable checks for use of _getframe
 # pylint: disable=protected-access
+# ruff: noqa: SLF001
 
-import unittest
-import traceback
-import time
 import os
 import os.path
-import sys
 import platform
+import sys
+import time
+import traceback
+import unittest
 
 from mmcif_utils.persist.PdbxPersist import PdbxPersist
 from mmcif_utils.persist.PdbxPyIoAdapter import PdbxPyIoAdapter as PdbxIoAdapter
@@ -68,7 +70,7 @@ class GraphicsContext3DTests(unittest.TestCase):
                 self.__lfh.write("GraphicsContext3D.getFirstObject() container name list %r\n" % indexD.items())
             myObj = myPersist.fetchOneObject(dbFileName=persistFilePath, containerName=firstContainerName, objectName=objectName)
             return myObj
-        except Exception as e:  # pragma: no cover
+        except Exception as e:  # noqa: BLE001 pragma: no cover
             if self.__verbose:
                 self.__lfh.write("+ERROR- GraphicsContext3D.getFirstObject() Read failed for file %s - %s\n" % (persistFilePath, str(e)))
                 traceback.print_exc(file=self.__lfh)
@@ -76,7 +78,9 @@ class GraphicsContext3DTests(unittest.TestCase):
 
     def testSimpleContexts(self):
         """Test case -  create simple graphics contexts."""
-        self.__lfh.write("\nStarting %s %s at %s\n" % (self.__class__.__name__, sys._getframe().f_code.co_name, time.strftime("%Y %m %d %H:%M:%S", time.localtime())))
+        self.__lfh.write(
+            "\nStarting %s %s at %s\n" % (self.__class__.__name__, sys._getframe().f_code.co_name, time.strftime("%Y %m %d %H:%M:%S", time.localtime()))
+        )
 
         try:
             gC = GraphicsContext3D(app3D="JMol", verbose=self.__verbose, log=self.__lfh)
@@ -125,7 +129,9 @@ class GraphicsContext3DTests(unittest.TestCase):
 
     def testSiteContexts(self):
         """Test case -  create graphics contexts for a full site"""
-        self.__lfh.write("\nStarting %s %s at %s\n" % (self.__class__.__name__, sys._getframe().f_code.co_name, time.strftime("%Y %m %d %H:%M:%S", time.localtime())))
+        self.__lfh.write(
+            "\nStarting %s %s at %s\n" % (self.__class__.__name__, sys._getframe().f_code.co_name, time.strftime("%Y %m %d %H:%M:%S", time.localtime()))
+        )
         try:
             #
             #  Create a persistent store for the test file --
@@ -160,7 +166,9 @@ class GraphicsContext3DTests(unittest.TestCase):
 
     def testSiteContextsOld(self):
         """Test case -  create graphics contexts for a full site"""
-        self.__lfh.write("\nStarting %s %s at %s\n" % (self.__class__.__name__, sys._getframe().f_code.co_name, time.strftime("%Y %m %d %H:%M:%S", time.localtime())))
+        self.__lfh.write(
+            "\nStarting %s %s at %s\n" % (self.__class__.__name__, sys._getframe().f_code.co_name, time.strftime("%Y %m %d %H:%M:%S", time.localtime()))
+        )
         try:
             #
             #  Create a persistent store for the test file --

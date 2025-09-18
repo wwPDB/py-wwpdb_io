@@ -35,28 +35,27 @@
 Classes defining references and naming conventions for data resources.
 
 """
+
 __docformat__ = "restructuredtext en"
 __author__ = "John Westbrook"
 __email__ = "jwest@rcsb.rutgers.edu"
 __license__ = "Apache 2.0"
 __version__ = "V0.01"
 
-import os
-import sys
-import string
 import glob
+import logging
+import os
+import string
+import sys
 import traceback
 
 from wwpdb.utils.config.ConfigInfo import ConfigInfo
 from wwpdb.utils.config.ConfigInfoData import ConfigInfoData
 
-import logging
-
 logger = logging.getLogger(__name__)
 
 
-class DataReferenceBase(object):
-
+class DataReferenceBase:
     """Base class for data references such as files, web services and
     database services.
 
@@ -72,8 +71,7 @@ class DataReferenceBase(object):
         return self._referenceType
 
 
-class ReferenceFileInfo(object):
-
+class ReferenceFileInfo:
     """Accessors for nomenclature conventions for reference files."""
 
     def __init__(self, verbose=False, log=sys.stderr):
@@ -98,32 +96,32 @@ class ReferenceFileInfo(object):
 
     def contentTypeExists(self, contentType):
         try:
-            return contentType in self.__contentD.keys()
-        except Exception as _e:  # noqa: F841
+            return contentType in self.__contentD
+        except Exception as _e:  # noqa: F841,BLE001
             return False
 
     def getContentType(self, acronymName):
         try:
             return self.__acronymD[acronymName]
-        except Exception as _e:  # noqa: F841
+        except Exception as _e:  # noqa: F841,BLE001
             return None
 
     def getFormatTypes(self, contentType):
         try:
             return self.__contentD[contentType][0]
-        except Exception as _e:  # noqa: F841
+        except Exception as _e:  # noqa: F841,BLE001
             return []
 
     def getContentTypeAcronym(self, contentType):
         try:
             return self.__contentD[contentType][1]
-        except Exception as _e:  # noqa: F841
+        except Exception as _e:  # noqa: F841,BLE001
             return None
 
     def getExtensionFormats(self, extension):
         try:
             return self.__extD[extension]
-        except Exception as _e:  # noqa: F841
+        except Exception as _e:  # noqa: F841,BLE001
             return []
 
     def dump(self, ofh):
@@ -136,8 +134,7 @@ class ReferenceFileInfo(object):
         ofh.write("\n+RefernceFileInfo.dump() extension dictionary %r\n" % self.__extD.items())
 
 
-class ReferenceFileComponents(object):
-
+class ReferenceFileComponents:
     """Provides methods for deconstructing  reference file names in terms of
     of their constituent attributes.
     """
@@ -205,7 +202,7 @@ class ReferenceFileComponents(object):
                 if fmt in fList:
                     self.__contentFormat = fmt
             return True
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             if self.__debug:
                 logger.debug("+DataFileReferenceComponents.__splitFileName() failed for %r %r", self.__fileName, str(e))
                 traceback.print_exc(self.__lfh)
@@ -237,7 +234,6 @@ class ReferenceFileComponents(object):
 
 
 class DataFileReference(DataReferenceBase):
-
     """"""
 
     def __init__(self, siteId=None, verbose=False, log=sys.stderr):
@@ -309,8 +305,21 @@ class DataFileReference(DataReferenceBase):
         self.__formatExtensionD = self.__cI.get("FILE_FORMAT_EXTENSION_DICTIONARY")
         """Dictionary of recognized file formats and file name extensions"""
         #
-        self.__storageTypeList = ["archive", "autogroup", "wf-archive", "wf-instance", "wf-shared", "session",
-                                  "wf-session", "deposit", "deposit-ui", "inline", "tempdep", "uploads", "pickles"]
+        self.__storageTypeList = [
+            "archive",
+            "autogroup",
+            "wf-archive",
+            "wf-instance",
+            "wf-shared",
+            "session",
+            "wf-session",
+            "deposit",
+            "deposit-ui",
+            "inline",
+            "tempdep",
+            "uploads",
+            "pickles",
+        ]
         """List of supported storage types/locations"""
         #
         self.__depositionDataSetIdPrefix = "D_"
@@ -364,8 +373,7 @@ class DataFileReference(DataReferenceBase):
         if dirPath is not None:
             self.__sessionPath = dirPath
             return True
-        else:
-            return False
+        return False
 
     def setExternalFilePath(self, filePath, fileFormat="any"):
         """Set the full file path for this reference outside of the archive/workflow system.
@@ -384,7 +392,7 @@ class DataFileReference(DataReferenceBase):
         if (filePath is None) or (len(filePath) < 1):
             return False
 
-        if fileFormat in self.__formatExtensionD.keys():
+        if fileFormat in self.__formatExtensionD:
             self.__fileFormat = fileFormat
         else:
             return False
@@ -407,7 +415,7 @@ class DataFileReference(DataReferenceBase):
             if pth is None or fn is None:
                 return False
             return True
-        except Exception as _e:  # noqa: F841
+        except Exception as _e:  # noqa: F841,BLE001
             pass
 
         return False
@@ -438,7 +446,7 @@ class DataFileReference(DataReferenceBase):
         except Exception as e:
             logger.exception("Failing with %r", str(e))
 
-        if tS in self.__contentInfoD.keys():
+        if tS in self.__contentInfoD:
             self.__contentType = tS
             fS = str(fileFormat).lower()
             if (fS in self.__contentInfoD[tS][0]) or ("any" in self.__contentInfoD[tS][0]):
@@ -449,15 +457,13 @@ class DataFileReference(DataReferenceBase):
                     logger.debug("++setContentTypeAndFormat -- returning True with self.__fileFormat: %s", self.__fileFormat)
                 self.setReferenceType("file")
                 return True
-            else:
-                if self.__debug:
-                    logger.debug("++setContentTypeAndFormat -- returning False with tS: %s", tS)
-                    logger.debug("++setContentTypeAndFormat -- returning False with fS: %s", fS)
-                return False
-        else:
             if self.__debug:
-                logger.debug("++setContentTypeAndFormat -- unrecognized cotentent type %r", tS)
+                logger.debug("++setContentTypeAndFormat -- returning False with tS: %s", tS)
+                logger.debug("++setContentTypeAndFormat -- returning False with fS: %s", fS)
             return False
+        if self.__debug:
+            logger.debug("++setContentTypeAndFormat -- unrecognized cotentent type %r", tS)
+        return False
 
     def getStorageTypeList(self):
         return self.__storageTypeList
@@ -484,8 +490,7 @@ class DataFileReference(DataReferenceBase):
             if tS not in ["inline", "constant"]:
                 self.setReferenceType("file")
             return True
-        else:
-            return False
+        return False
 
     def setVersionId(self, versionId):
         """Set the version identifier for this file reference.
@@ -501,14 +506,10 @@ class DataFileReference(DataReferenceBase):
 
         """
         tS = str(versionId).lower()
-        if versionId in self.__versionNameList:
+        if versionId in self.__versionNameList or self.__isInteger(tS):
             self.__versionId = tS
             return True
-        elif self.__isInteger(tS):
-            self.__versionId = tS
-            return True
-        else:
-            return False
+        return False
 
     def __isInteger(self, str_in):
         """Is the given string an integer?"""
@@ -538,8 +539,7 @@ class DataFileReference(DataReferenceBase):
         if (len(tSL) > 1) and self.__isInteger(tSL[1]):
             self.__depositionDataSetId = tS
             return True
-        else:
-            return False
+        return False
 
     def setWorkflowInstanceId(self, wId):
         """Set the workflow instance identifier.
@@ -560,8 +560,7 @@ class DataFileReference(DataReferenceBase):
         if (len(tSL) > 1) and self.__isInteger(tSL[1]):
             self.__workflowInstanceId = tS
             return True
-        else:
-            return False
+        return False
 
     def setSessionDataSetId(self, sId):
         """Set the session data set identifier.
@@ -578,8 +577,7 @@ class DataFileReference(DataReferenceBase):
         if sId is not None and len(sId) > 0:
             self.__sessionDataSetId = str(sId).upper()
             return True
-        else:
-            return False
+        return False
 
     def setWorkflowNameSpace(self, wNameSpace):
         """Set the workflow name space identifier.
@@ -626,7 +624,7 @@ class DataFileReference(DataReferenceBase):
                 ok = True
             else:
                 ok = False
-        except Exception:
+        except Exception:  # noqa: BLE001
             ok = False
         if self.__debug:
             logger.debug("+DataFileReference.setPartitionNumber() setting is  %r", self.__filePartNumber)
@@ -714,8 +712,7 @@ class DataFileReference(DataReferenceBase):
         """
         if self.__externalFilePath is not None:
             return True
-        else:
-            return self.__isInternalReferenceValid()
+        return self.__isInternalReferenceValid()
 
     def getDirPathReference(self):
         """Get the path to the directory containing the data file reference.
@@ -730,8 +727,7 @@ class DataFileReference(DataReferenceBase):
             return self.__externalFilePath
         # if (self.__isInternalReferenceValid()):
         #    return self.__getInternalPath()
-        else:
-            return self.__getInternalPath()
+        return self.__getInternalPath()
 
     def getFilePathReference(self):
         """Get the versioned file path for an internal data file reference or the path
@@ -752,9 +748,8 @@ class DataFileReference(DataReferenceBase):
         try:
             if os.access(fP, os.R_OK):
                 return True
-            else:
-                return False
-        except Exception as _e:  # noqa: F841
+            return False
+        except Exception as _e:  # noqa: F841,BLE001
             if self.__verbose:
                 traceback.print_exc(self.__lfh)
             return False
@@ -806,7 +801,9 @@ class DataFileReference(DataReferenceBase):
 
                 return False
 
-            if (self.__storageType in ["archive", "autogroup", "wf-archive", "wf-instance", "wf-shared", "deposit", "deposit-ui", "tempdep"]) and (self.__depositionDataSetId is None):
+            if (self.__storageType in ["archive", "autogroup", "wf-archive", "wf-instance", "wf-shared", "deposit", "deposit-ui", "tempdep"]) and (
+                self.__depositionDataSetId is None
+            ):
                 logger.debug("self.__depositionDataSetId is: %s", self.__depositionDataSetId)
                 return False
 
@@ -821,11 +818,13 @@ class DataFileReference(DataReferenceBase):
 
             return True
 
-        elif referenceType == "directory":
+        if referenceType == "directory":
             if self.__storageType is None:
                 return False
 
-            if (self.__storageType in ["archive", "autogroup", "wf-archive", "wf-instance", "wf-shared", "deposit", "deposit-ui", "tempdep"]) and (self.__depositionDataSetId is None):
+            if (self.__storageType in ["archive", "autogroup", "wf-archive", "wf-instance", "wf-shared", "deposit", "deposit-ui", "tempdep"]) and (
+                self.__depositionDataSetId is None
+            ):
                 return False
 
             if (self.__storageType == "wf-instance") and (self.__workflowInstanceId is None):
@@ -839,8 +838,7 @@ class DataFileReference(DataReferenceBase):
 
             return True
 
-        else:
-            return False
+        return False
 
     # def __getExternalPath(self):
     #     """Get the path of the current external file reference.
@@ -852,7 +850,7 @@ class DataFileReference(DataReferenceBase):
     #     try:
     #         (pth, _fn) = os.path.split(self.__externalFilePath)
     #         return pth
-    #     except Exception as _e:  # noqa: F841
+    #     except Exception as _e:  # noqa: F841,BLE001
     #         return None
 
     # def __getExternalFileNameBase(self):
@@ -865,7 +863,7 @@ class DataFileReference(DataReferenceBase):
     #     try:
     #         (_pth, fn) = os.path.split(self.__externalFilePath)
     #         return fn
-    #     except Exception as _e:  # noqa: F841
+    #     except Exception as _e:  # noqa: F841,BLE001
     #         return None
 
     def __getInternalPath(self):
@@ -976,7 +974,7 @@ class DataFileReference(DataReferenceBase):
                     + "."
                     + self.__formatExtensionD[self.__fileFormat]
                 )
-            elif self.__storageType in ["wf-instance"]:
+            elif self.__storageType == "wf-instance":
                 fn = (
                     self.__depositionDataSetId
                     + "_"
@@ -1013,7 +1011,7 @@ class DataFileReference(DataReferenceBase):
             fN = self.__getInternalFileNameVersioned()
             pth = os.path.join(dirPath, fN)
             return pth
-        except Exception as _e:  # noqa: F841
+        except Exception as _e:  # noqa: F841,BLE001
             return None
 
     def getVersionIdSearchTarget(self):
@@ -1028,7 +1026,7 @@ class DataFileReference(DataReferenceBase):
             baseName = self.__getInternalFileNameBase()
             vst = baseName + ".V*"
             return vst
-        except Exception as _e:  # noqa: F841
+        except Exception as _e:  # noqa: F841,BLE001
             return None
 
     def __getInternalFileNameVersioned(self):
@@ -1116,8 +1114,7 @@ class DataFileReference(DataReferenceBase):
             elif self.__versionId == "previous":
                 iV = self.__latestVersion(dirPath, baseName)
                 iV -= 1
-                if iV < 0:
-                    iV = 0
+                iV = max(iV, 0)
             elif self.__versionId == "original":
                 iV = 1
             else:
@@ -1155,8 +1152,7 @@ class DataFileReference(DataReferenceBase):
             if len(vList) > 0:
                 vList.sort()
                 return vList[-1]
-            else:
-                return 0
+            return 0
         except Exception as e:
             if self.__debug:
                 logger.exception("Failing -dirPath %s  baseName %s fN %s with %s", dirPath, baseName, fN, str(e))
@@ -1196,8 +1192,7 @@ class DataFileReference(DataReferenceBase):
             if len(pList) > 0:
                 pList.sort()
                 return pList[-1]
-            else:
-                return 0
+            return 0
         except Exception as e:
             if self.__debug:
                 logger.exception("Failing with %r", str(e))
@@ -1224,11 +1219,27 @@ class DataFileReference(DataReferenceBase):
                 return None
 
             if self.__storageType in ["archive", "autogroup", "wf-archive", "wf-shared", "deposit", "deposit-ui", "tempdep"]:
-                fn = self.__depositionDataSetId + "_" + self.__contentInfoD[self.__contentType][1] + "_P*" + "." + self.__formatExtensionD[self.__fileFormat] + "*"
+                fn = (
+                    self.__depositionDataSetId
+                    + "_"
+                    + self.__contentInfoD[self.__contentType][1]
+                    + "_P*"
+                    + "."
+                    + self.__formatExtensionD[self.__fileFormat]
+                    + "*"
+                )
             elif self.__storageType in ["session", "wf-session"]:
                 fn = self.__sessionDataSetId + "_" + self.__contentInfoD[self.__contentType][1] + "_P*" + "." + self.__formatExtensionD[self.__fileFormat] + "*"
-            elif self.__storageType in ["wf-instance"]:
-                fn = self.__depositionDataSetId + "_" + self.__contentInfoD[self.__contentType][1] + "_P*" + "." + self.__formatExtensionD[self.__fileFormat] + "*"
+            elif self.__storageType == "wf-instance":
+                fn = (
+                    self.__depositionDataSetId
+                    + "_"
+                    + self.__contentInfoD[self.__contentType][1]
+                    + "_P*"
+                    + "."
+                    + self.__formatExtensionD[self.__fileFormat]
+                    + "*"
+                )
             else:
                 fn = None
         except Exception as e:
@@ -1262,12 +1273,14 @@ class DataFileReference(DataReferenceBase):
                 fn = self.__depositionDataSetId + "_" + self.__contentInfoD[self.__contentType][1] + "_P*"
             elif self.__storageType in ["session", "wf-session"]:
                 fn = self.__sessionDataSetId + "_" + self.__contentInfoD[self.__contentType][1] + "_P*"
-            elif self.__storageType in ["wf-instance"]:
+            elif self.__storageType == "wf-instance":
                 fn = self.__depositionDataSetId + "_" + self.__contentInfoD[self.__contentType][1] + "_P*"
             else:
                 fn = None
         except Exception as e:
-            logger.exception("Failing storage %r data set id %r content type %r with %r", self.__storageType, self.__depositionDataSetId, self.__contentType, str(e))
+            logger.exception(
+                "Failing storage %r data set id %r content type %r with %r", self.__storageType, self.__depositionDataSetId, self.__contentType, str(e)
+            )
             fn = None
 
         return fn
@@ -1296,8 +1309,7 @@ class DataFileReference(DataReferenceBase):
             elif self.__filePartNumber == "previous":
                 iP = self.__latestPartitionNumber(dirPath, searchTarget)
                 iP -= 1
-                if iP < 0:
-                    iP = 0
+                iP = max(iP, 0)
             elif self.__filePartNumber == "original":
                 iP = 1
             else:

@@ -17,25 +17,28 @@
 and workflow storage, accessing files in workflow directories,  and routine file maintenance operations.
 
 """
+
 __docformat__ = "restructuredtext en"
 __author__ = "John Westbrook"
 __email__ = "jwest@rcsb.rutgers.edu"
 __license__ = "Creative Commons Attribution 3.0 Unported"
 __version__ = "V0.09"
 
-import sys
+# ruff: noqa: SIM105
+
+import glob
+import operator
 import os
 import shutil
+import sys
 import traceback
-import glob
 from datetime import datetime
 
-from wwpdb.utils.config.ConfigInfo import ConfigInfo
 from wwpdb.io.locator.PathInfo import PathInfo
+from wwpdb.utils.config.ConfigInfo import ConfigInfo
 
 
-class DataExchange(object):
-
+class DataExchange:
     """
     Implements common data exchange operations
     including: moving annotation data files between session
@@ -74,7 +77,9 @@ class DataExchange(object):
             self.__lfh.write("+DataExchange.__setup() - session id   %s\n" % (self.__sessionObj.getId()))
             self.__lfh.write("+DataExchange.__setup() - session path %s\n" % (self.__sessionObj.getPath()))
 
-            self.__lfh.write("+DataExchange.__setup() - data set %s  instance %s file source %s\n" % (self.__depDataSetId, self.__wfInstanceId, self.__fileSource))
+            self.__lfh.write(
+                "+DataExchange.__setup() - data set %s  instance %s file source %s\n" % (self.__depDataSetId, self.__wfInstanceId, self.__fileSource)
+            )
             self.__pI.setDebugFlag(flag=self.__debug)
 
     def setFileSource(self, fileSource):
@@ -146,10 +151,8 @@ class DataExchange(object):
             if os.access(dirPath, os.W_OK):
                 shutil.rmtree(dirPath)
                 return True
-            else:
-                return False
-        else:
             return False
+        return False
 
     def createArchiveDir(self, purgeFlag=True):
         """Create new the archive directory if this is needed."""
@@ -166,17 +169,15 @@ class DataExchange(object):
                     self.__lfh.write("+DataExchange.createArchiveDir() creating archive directory path %s\n" % dirPath)
                 os.makedirs(dirPath)
                 return True
-            else:
-                if purgeFlag:
-                    if self.__verbose:
-                        self.__lfh.write("+DataExchange.export() existing archive directory path purged: %s\n" % dirPath)
-                    shutil.rmtree(dirPath)
-                    os.makedirs(dirPath)
-                    return True
-                else:
-                    if self.__verbose:
-                        self.__lfh.write("+DataExchange.export() archive directory exists: %s\n" % dirPath)
-                    return False
+            if purgeFlag:
+                if self.__verbose:
+                    self.__lfh.write("+DataExchange.export() existing archive directory path purged: %s\n" % dirPath)
+                shutil.rmtree(dirPath)
+                os.makedirs(dirPath)
+                return True
+            if self.__verbose:
+                self.__lfh.write("+DataExchange.export() archive directory exists: %s\n" % dirPath)
+            return False
         except:  # noqa: E722 pylint: disable=bare-except
             if self.__verbose:
                 traceback.print_exc(file=self.__lfh)
@@ -188,7 +189,9 @@ class DataExchange(object):
         Return the full path of the copied file or None
 
         """
-        inpFilePath = self.__getFilePath(fileSource=self.__fileSource, contentType=contentType, formatType=formatType, version=version, partitionNumber=partitionNumber)
+        inpFilePath = self.__getFilePath(
+            fileSource=self.__fileSource, contentType=contentType, formatType=formatType, version=version, partitionNumber=partitionNumber
+        )
         if self.__verbose:
             self.__lfh.write("+DataExchange.fetch() source type %s format %s version %s path %s\n" % (contentType, formatType, version, inpFilePath))
 
@@ -206,10 +209,9 @@ class DataExchange(object):
                     self.__lfh.write("+DataExchange.fetch() destination file path %s\n" % outFilePath)
                 shutil.copyfile(inpFilePath, outFilePath)
                 return outFilePath
-            else:
-                if self.__verbose:
-                    self.__lfh.write("+DataExchange.fetch() missing input file at path %s\n" % inpFilePath)
-                return None
+            if self.__verbose:
+                self.__lfh.write("+DataExchange.fetch() missing input file at path %s\n" % inpFilePath)
+            return None
         except:  # noqa: E722 pylint: disable=bare-except
             if self.__verbose:
                 traceback.print_exc(file=self.__lfh)
@@ -221,7 +223,9 @@ class DataExchange(object):
         Return True on success or False otherwise.
 
         """
-        outFilePath = self.__getFilePath(fileSource=self.__fileSource, contentType=contentType, formatType=formatType, version=version, partitionNumber=partitionNumber)
+        outFilePath = self.__getFilePath(
+            fileSource=self.__fileSource, contentType=contentType, formatType=formatType, version=version, partitionNumber=partitionNumber
+        )
         if self.__verbose:
             self.__lfh.write("+DataExchange.export() destination type %s format %s version %s path %s\n" % (contentType, formatType, version, outFilePath))
 
@@ -234,10 +238,9 @@ class DataExchange(object):
                 else:
                     shutil.copyfile(inpFilePath, outFilePath)
                 return True
-            else:
-                if self.__verbose:
-                    self.__lfh.write("+DataExchange.export() missing or zero length input file at path %s\n" % inpFilePath)
-                return False
+            if self.__verbose:
+                self.__lfh.write("+DataExchange.export() missing or zero length input file at path %s\n" % inpFilePath)
+            return False
         except:  # noqa: E722 pylint: disable=bare-except
             if self.__verbose:
                 traceback.print_exc(file=self.__lfh)
@@ -247,7 +250,7 @@ class DataExchange(object):
         """"""
         try:
             cmd = " gzip -cd  %s > %s " % (inpFilePath, outFilePath)
-            os.system(cmd)
+            os.system(cmd)  # noqa: S605
             return True
         except:  # noqa: E722 pylint: disable=bare-except
             if self.__verbose:
@@ -259,9 +262,9 @@ class DataExchange(object):
         try:
             if self.__fileSource in ["archive", "wf-archive"]:
                 pth = self.__pI.getArchivePath(self.__depDataSetId)
-            elif self.__fileSource in ["deposit"]:
+            elif self.__fileSource == "deposit":
                 pth = self.__pI.getDepositPath(self.__depDataSetId)
-            elif self.__fileSource in ["wf-instance"]:
+            elif self.__fileSource == "wf-instance":
                 pth = self.__pI.getInstancePath(self.__depDataSetId, self.__wfInstanceId)
             else:
                 return False
@@ -298,9 +301,13 @@ class DataExchange(object):
         Return the full path of the session file or None
 
         """
-        inpFilePath = self.__getFilePath(fileSource=self.__fileSource, contentType=contentType, formatType=formatType, version=version, partitionNumber=partitionNumber)
+        inpFilePath = self.__getFilePath(
+            fileSource=self.__fileSource, contentType=contentType, formatType=formatType, version=version, partitionNumber=partitionNumber
+        )
         if self.__debug:
-            self.__lfh.write("+DataExchange.copyToSession() source file type %s format %s version %s path %s\n" % (contentType, formatType, version, inpFilePath))
+            self.__lfh.write(
+                "+DataExchange.copyToSession() source file type %s format %s version %s path %s\n" % (contentType, formatType, version, inpFilePath)
+            )
 
         try:
             outFilePath = None
@@ -308,17 +315,20 @@ class DataExchange(object):
                 fn = self.__getArchiveFileName(contentType, formatType, version="none", partitionNumber=partitionNumber)
                 outFilePath = os.path.join(self.__sessionPath, fn)
                 if self.__verbose:
-                    self.__lfh.write("+DataExchange.copyToSession() content type %s format %s copied to session path %s\n" % (contentType, formatType, outFilePath))
+                    self.__lfh.write(
+                        "+DataExchange.copyToSession() content type %s format %s copied to session path %s\n" % (contentType, formatType, outFilePath)
+                    )
                 shutil.copyfile(inpFilePath, outFilePath)
                 return outFilePath
-            else:
-                if self.__debug:
-                    self.__lfh.write("+DataExchange.copyToSession() missing input file at path %s\n" % inpFilePath)
-                return None
+            if self.__debug:
+                self.__lfh.write("+DataExchange.copyToSession() missing input file at path %s\n" % inpFilePath)
+            return None
         except:  # noqa: E722 pylint: disable=bare-except
             if self.__verbose:
                 if self.__verbose:
-                    self.__lfh.write("+DataExchange.copyToSession() Failing for content type %s format %s with session path %s\n" % (contentType, formatType, outFilePath))
+                    self.__lfh.write(
+                        "+DataExchange.copyToSession() Failing for content type %s format %s with session path %s\n" % (contentType, formatType, outFilePath)
+                    )
                 traceback.print_exc(file=self.__lfh)
             return None
 
@@ -336,15 +346,16 @@ class DataExchange(object):
 
         try:
             if os.access(inpFilePath, os.R_OK):
-                outFilePath = self.__getFilePath(fileSource="archive", contentType=contentType, formatType=formatType, version=version, partitionNumber=partitionNumber)
+                outFilePath = self.__getFilePath(
+                    fileSource="archive", contentType=contentType, formatType=formatType, version=version, partitionNumber=partitionNumber
+                )
                 if self.__verbose:
                     self.__lfh.write("+DataExchange.updateArchiveFromSession() archive destination file path %s\n" % outFilePath)
                 shutil.copyfile(inpFilePath, outFilePath)
                 return outFilePath
-            else:
-                if self.__verbose:
-                    self.__lfh.write("+DataExchange.updateArchiveFrom() missing session input file at path %s\n" % inpFilePath)
-                return None
+            if self.__verbose:
+                self.__lfh.write("+DataExchange.updateArchiveFrom() missing session input file at path %s\n" % inpFilePath)
+            return None
         except:  # noqa: E722 pylint: disable=bare-except
             if self.__verbose:
                 traceback.print_exc(file=self.__lfh)
@@ -373,7 +384,7 @@ class DataExchange(object):
                 mileStone=mileStone,
             )
             return self.__getFileList([fPattern], sortFlag=True)
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             if self.__verbose:
                 self.__lfh.write(
                     "+DataExchange.getVersionFileList() failing for data set %s instance %s file source %s error %r\n"
@@ -395,7 +406,12 @@ class DataExchange(object):
                 self.__pI.setSessionPath(self.__inputSessionPath)
 
             fPattern = self.__pI.getFilePathPartitionTemplate(
-                dataSetId=self.__depDataSetId, wfInstanceId=self.__wfInstanceId, contentType=contentType, formatType=formatType, fileSource=fileSource, mileStone=mileStone
+                dataSetId=self.__depDataSetId,
+                wfInstanceId=self.__wfInstanceId,
+                contentType=contentType,
+                formatType=formatType,
+                fileSource=fileSource,
+                mileStone=mileStone,
             )
             tL = self.__getFileList([fPattern], sortFlag=True)
             if self.__debug:
@@ -403,7 +419,7 @@ class DataExchange(object):
                 self.__lfh.write("+DataExchange.getPartionFileList() file list %r\n" % tL)
             #
             return tL
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             if self.__verbose:
                 self.__lfh.write(
                     "+DataExchange.getVersionFileList() failing for data set %s instance %s file source %s error %r\n"
@@ -427,13 +443,15 @@ class DataExchange(object):
                 self.__pI.setSessionPath(self.__inputSessionPath)
             fPatternList = []
             for contentType in contentTypeList:
-                fPattern = self.__pI.getFilePathContentTypeTemplate(dataSetId=self.__depDataSetId, wfInstanceId=self.__wfInstanceId, contentType=contentType, fileSource=fileSource)
+                fPattern = self.__pI.getFilePathContentTypeTemplate(
+                    dataSetId=self.__depDataSetId, wfInstanceId=self.__wfInstanceId, contentType=contentType, fileSource=fileSource
+                )
 
                 fPatternList.append(fPattern)
             if self.__debug:
                 self.__lfh.write("+DataExchange.getContentTypeFileList() patterns %r\n" % fPatternList)
             return self.__getFileList(fPatternList, sortFlag=True)
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             if self.__verbose:
                 self.__lfh.write(
                     "+DataExchange.getVersionFileList() failing for data set %s instance %s file source %s error %r\n"
@@ -453,7 +471,7 @@ class DataExchange(object):
             fpat1 = os.path.join(pth, "*log")
             fpat2 = os.path.join(pth, "log", "*")
             patList = [fpat1, fpat2]
-        elif fileSource in ["deposit"]:
+        elif fileSource == "deposit":
             pth = self.__pI.getDepositPath(entryId)
             fpat1 = os.path.join(pth, "*log")
             fpat2 = os.path.join(pth, "log", "*")
@@ -490,13 +508,13 @@ class DataExchange(object):
 
             # Sort the tuple list by the modification time (recent changes first)
             if sortFlag:
-                file_date_tuple_list.sort(key=lambda x: x[1], reverse=True)
+                file_date_tuple_list.sort(key=operator.itemgetter(1), reverse=True)
 
             for fP, mT, sZ in file_date_tuple_list:
-                tS = datetime.fromtimestamp(mT).strftime("%Y-%b-%d %H:%M:%S")
+                tS = datetime.fromtimestamp(mT).strftime("%Y-%b-%d %H:%M:%S")  # noqa: DTZ006
                 rTup.append((fP, tS, sZ))
             return rTup
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             if self.__verbose:
                 self.__lfh.write("+DataExchange.__getFileList() failing for patternlist %r error %r\n" % (fPatternList, str(e)))
                 traceback.print_exc(file=self.__lfh)
@@ -541,7 +559,7 @@ class DataExchange(object):
             )
             dN, fN = os.path.split(fP)
             return fP, dN, fN
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             if self.__debug:
                 self.__lfh.write(
                     "+DataExchange.__targetFilePath() failing for data set %s instance %s file source %s error %r\n"

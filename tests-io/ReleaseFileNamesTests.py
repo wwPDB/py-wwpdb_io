@@ -12,6 +12,8 @@
 Test cases for ReleaseFileNames()
 
 """
+# ruff: noqa: T201
+
 __docformat__ = "restructuredtext en"
 __author__ = "Ezra Peisach"
 __email__ = "peisach@rcsb.rutgers.edu"

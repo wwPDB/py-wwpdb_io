@@ -32,24 +32,24 @@ Common methods for finding path information for resource and data files in the w
 and annotation system.
 
 """
+
 __docformat__ = "restructuredtext en"
 __author__ = "John Westbrook"
 __email__ = "jwest@rcsb.rutgers.edu"
 __license__ = "Apache 2.0"
 __version__ = "V0.07"
 
+import logging
 import os
 import os.path
-import logging
 
-from wwpdb.utils.config.ConfigInfo import ConfigInfo, getSiteId
 from wwpdb.io.locator.DataReference import DataFileReference, ReferenceFileComponents
+from wwpdb.utils.config.ConfigInfo import ConfigInfo, getSiteId
 
 logger = logging.getLogger(__name__)
 
 
-class PathInfo(object):
-
+class PathInfo:
     """Common methods for finding path information for sequence resources and data files.
 
     In these methods the parameter contentType refers to a base content type.
@@ -80,8 +80,7 @@ class PathInfo(object):
         rfc = ReferenceFileComponents(verbose=self.__verbose, log=self.__lfh)
         if rfc.set(fileName=fileName):
             return rfc.get()
-        else:
-            return None, None, None, None, None
+        return None, None, None, None, None
 
     def isValidFileName(self, fileName, requireVersion=True):
         """Is the input file name project compliant ?"""
@@ -91,21 +90,17 @@ class PathInfo(object):
             if requireVersion:
                 if (dId is None) or (cT is None) or (cF is None) or (pN is None) or (vN is None):
                     return False
-                else:
-                    return True
-            else:
-                if (dId is None) or (cT is None) or (cF is None) or (pN is None):
-                    return False
-                else:
-                    return True
-        else:
-            return False
+                return True
+            if (dId is None) or (cT is None) or (cF is None) or (pN is None):
+                return False
+            return True
+        return False
 
     def getFileExtension(self, formatType):
         eD = self.__cI.get("FILE_FORMAT_EXTENSION_DICTIONARY")
         try:
             return eD[formatType]
-        except Exception as _e:  # noqa: F841
+        except Exception as _e:  # noqa: F841,BLE001
             return None
 
     def splitFileName(self, fileName):
@@ -116,7 +111,7 @@ class PathInfo(object):
             rfc = ReferenceFileComponents(verbose=self.__verbose, log=self.__lfh)
             rfc.set(fileName=fileName)
             return rfc.get()
-        except Exception as _e:  # noqa: F841
+        except Exception as _e:  # noqa: F841,BLE001
             return (None, None, None, None, None)
 
     #
@@ -130,60 +125,75 @@ class PathInfo(object):
         try:
             if dataSetId.startswith("G_"):
                 return self.getDirPath(dataSetId=dataSetId, fileSource="autogroup")
-                # return os.path.join(self.__cI.get('SITE_ARCHIVE_STORAGE_PATH'), 'autogroup', dataSetId)
-            else:
-                return self.getDirPath(dataSetId=dataSetId, fileSource="archive")
-                # return os.path.join(self.__cI.get('SITE_ARCHIVE_STORAGE_PATH'), 'archive', dataSetId)
+            return self.getDirPath(dataSetId=dataSetId, fileSource="archive")
             #
-        except Exception as _e:  # noqa: F841
+        except Exception as _e:  # noqa: F841,BLE001
             return None
 
     def getInstancePath(self, dataSetId, wfInstanceId):
         try:
             return self.getDirPath(dataSetId=dataSetId, fileSource="wf-instance", wfInstanceId=wfInstanceId)
             # return os.path.join(self.__cI.get('SITE_ARCHIVE_STORAGE_PATH'), 'workflow', dataSetId, 'instance', wfInstanceId)
-        except Exception as _e:  # noqa: F841
+        except Exception as _e:  # noqa: F841,BLE001
             return None
 
     def getInstanceTopPath(self, dataSetId):
         try:
             return os.path.dirname(self.getDirPath(dataSetId=dataSetId, fileSource="wf-instance", wfInstanceId="W_001"))
             # return os.path.join(self.__cI.get('SITE_ARCHIVE_STORAGE_PATH'), 'workflow', dataSetId, 'instance')
-        except Exception as _e:  # noqa: F841
+        except Exception as _e:  # noqa: F841,BLE001
             return None
 
     def getDepositPath(self, dataSetId):
         try:
             return self.getDirPath(dataSetId=dataSetId, fileSource="deposit")
             # return os.path.join(self.__cI.get('SITE_ARCHIVE_STORAGE_PATH'), 'deposit', dataSetId)
-        except Exception as _e:  # noqa: F841
+        except Exception as _e:  # noqa: F841,BLE001
             return None
 
     def getDepositUIPath(self, dataSetId):
         try:
             return self.getDirPath(dataSetId=dataSetId, fileSource="deposit-ui")
-        except Exception as _e:  # noqa: F841
+        except Exception as _e:  # noqa: F841,BLE001
             return None
 
     def getTempDepPath(self, dataSetId):
         try:
             return self.getDirPath(dataSetId=dataSetId, fileSource="tempdep")
-        except Exception as _e:  # noqa: F841
+        except Exception as _e:  # noqa: F841,BLE001
             return None
 
     def getModelPdbxFilePath(self, dataSetId, wfInstanceId=None, fileSource="archive", versionId="latest", mileStone=None):
         return self.__getStandardPath(
-            dataSetId=dataSetId, wfInstanceId=wfInstanceId, fileSource=fileSource, versionId=versionId, contentTypeBase="model", formatType="pdbx", mileStone=mileStone
+            dataSetId=dataSetId,
+            wfInstanceId=wfInstanceId,
+            fileSource=fileSource,
+            versionId=versionId,
+            contentTypeBase="model",
+            formatType="pdbx",
+            mileStone=mileStone,
         )
 
     def getModelPdbFilePath(self, dataSetId, wfInstanceId=None, fileSource="archive", versionId="latest", mileStone=None):
         return self.__getStandardPath(
-            dataSetId=dataSetId, wfInstanceId=wfInstanceId, fileSource=fileSource, versionId=versionId, contentTypeBase="model", formatType="pdb", mileStone=mileStone
+            dataSetId=dataSetId,
+            wfInstanceId=wfInstanceId,
+            fileSource=fileSource,
+            versionId=versionId,
+            contentTypeBase="model",
+            formatType="pdb",
+            mileStone=mileStone,
         )
 
     def getStructureFactorsPdbxFilePath(self, dataSetId, wfInstanceId=None, fileSource="archive", versionId="latest", mileStone=None):
         return self.__getStandardPath(
-            dataSetId=dataSetId, wfInstanceId=wfInstanceId, fileSource=fileSource, versionId=versionId, contentTypeBase="structure-factors", formatType="pdbx", mileStone=mileStone
+            dataSetId=dataSetId,
+            wfInstanceId=wfInstanceId,
+            fileSource=fileSource,
+            versionId=versionId,
+            contentTypeBase="structure-factors",
+            formatType="pdbx",
+            mileStone=mileStone,
         )
 
     def getPolyLinkFilePath(self, dataSetId, wfInstanceId=None, fileSource="archive", versionId="latest", mileStone=None):
@@ -210,7 +220,13 @@ class PathInfo(object):
 
     def getSequenceStatsFilePath(self, dataSetId, wfInstanceId=None, fileSource="archive", versionId="latest", mileStone=None):
         return self.__getStandardPath(
-            dataSetId=dataSetId, wfInstanceId=wfInstanceId, fileSource=fileSource, versionId=versionId, contentTypeBase="seq-data-stats", formatType="pic", mileStone=mileStone
+            dataSetId=dataSetId,
+            wfInstanceId=wfInstanceId,
+            fileSource=fileSource,
+            versionId=versionId,
+            contentTypeBase="seq-data-stats",
+            formatType="pic",
+            mileStone=mileStone,
         )
 
     def getSequenceAlignFilePath(self, dataSetId, entityId="1", wfInstanceId=None, fileSource="archive", versionId="latest", mileStone=None):
@@ -239,12 +255,24 @@ class PathInfo(object):
 
     def getSequenceAssignmentFilePath(self, dataSetId, wfInstanceId=None, fileSource="archive", versionId="latest", mileStone=None):
         return self.__getStandardPath(
-            dataSetId=dataSetId, wfInstanceId=wfInstanceId, fileSource=fileSource, versionId=versionId, contentTypeBase="seq-assign", formatType="pdbx", mileStone=mileStone
+            dataSetId=dataSetId,
+            wfInstanceId=wfInstanceId,
+            fileSource=fileSource,
+            versionId=versionId,
+            contentTypeBase="seq-assign",
+            formatType="pdbx",
+            mileStone=mileStone,
         )
 
     def getAssemblyAssignmentFilePath(self, dataSetId, wfInstanceId=None, fileSource="archive", versionId="latest", mileStone=None):
         return self.__getStandardPath(
-            dataSetId=dataSetId, wfInstanceId=wfInstanceId, fileSource=fileSource, versionId=versionId, contentTypeBase="assembly-assign", formatType="pdbx", mileStone=mileStone
+            dataSetId=dataSetId,
+            wfInstanceId=wfInstanceId,
+            fileSource=fileSource,
+            versionId=versionId,
+            contentTypeBase="assembly-assign",
+            formatType="pdbx",
+            mileStone=mileStone,
         )
 
     def getBlastMatchFilePath(self, dataSetId, entityId="1", wfInstanceId=None, fileSource="archive", versionId="latest", mileStone=None):
@@ -345,7 +373,9 @@ class PathInfo(object):
             mileStone=mileStone,
         )
 
-    def getAuthChemcialShiftsFilePath(self, dataSetId, formatType="nmr-star", partNumber="next", wfInstanceId=None, fileSource="archive", versionId="latest", mileStone=None):
+    def getAuthChemcialShiftsFilePath(
+        self, dataSetId, formatType="nmr-star", partNumber="next", wfInstanceId=None, fileSource="archive", versionId="latest", mileStone=None
+    ):
         return self.__getStandardPath(
             dataSetId=dataSetId,
             wfInstanceId=wfInstanceId,
@@ -401,26 +431,47 @@ class PathInfo(object):
             versionId=versionId,
             contentTypeBase="nmrif",
             formatType="pdbx",
-            mileStone=mileStone
+            mileStone=mileStone,
         )
 
     def getAssemblyModelFilePath(self, dataSetId, wfInstanceId=None, fileSource="deposit", versionId="latest", mileStone=None):
         return self.__getStandardPath(
-            dataSetId=dataSetId, wfInstanceId=wfInstanceId, fileSource=fileSource, versionId=versionId, contentTypeBase="assembly-model", formatType="pdbx", mileStone=mileStone
+            dataSetId=dataSetId,
+            wfInstanceId=wfInstanceId,
+            fileSource=fileSource,
+            versionId=versionId,
+            contentTypeBase="assembly-model",
+            formatType="pdbx",
+            mileStone=mileStone,
         )
 
     def getAssemblySuggestedFilePath(self, dataSetId, wfInstanceId=None, fileSource="deposit", versionId="latest", mileStone=None):
         return self.__getStandardPath(
-            dataSetId=dataSetId, wfInstanceId=wfInstanceId, fileSource=fileSource, versionId=versionId, contentTypeBase="assembly-suggested", formatType="json", mileStone=mileStone
+            dataSetId=dataSetId,
+            wfInstanceId=wfInstanceId,
+            fileSource=fileSource,
+            versionId=versionId,
+            contentTypeBase="assembly-suggested",
+            formatType="json",
+            mileStone=mileStone,
         )
 
     def getStatusHistoryFilePath(self, dataSetId, fileSource="archive", versionId="latest"):
         return self.__getStandardPath(
-            dataSetId=dataSetId, wfInstanceId=None, fileSource=fileSource, versionId=versionId, partNumber="1", contentTypeBase="status-history", formatType="pdbx", mileStone=None
+            dataSetId=dataSetId,
+            wfInstanceId=None,
+            fileSource=fileSource,
+            versionId=versionId,
+            partNumber="1",
+            contentTypeBase="status-history",
+            formatType="pdbx",
+            mileStone=None,
         )
 
     #
-    def getFilePath(self, dataSetId, wfInstanceId=None, contentType=None, formatType=None, fileSource="archive", versionId="latest", partNumber="1", mileStone=None):
+    def getFilePath(
+        self, dataSetId, wfInstanceId=None, contentType=None, formatType=None, fileSource="archive", versionId="latest", partNumber="1", mileStone=None
+    ):
         return self.__getStandardPath(
             dataSetId=dataSetId,
             wfInstanceId=wfInstanceId,
@@ -433,7 +484,9 @@ class PathInfo(object):
         )
 
     #
-    def getFileName(self, dataSetId, wfInstanceId=None, contentType=None, formatType=None, fileSource="archive", versionId="latest", partNumber="1", mileStone=None):
+    def getFileName(
+        self, dataSetId, wfInstanceId=None, contentType=None, formatType=None, fileSource="archive", versionId="latest", partNumber="1", mileStone=None
+    ):
         return os.path.basename(
             self.__getStandardPath(
                 dataSetId=dataSetId,
@@ -448,7 +501,15 @@ class PathInfo(object):
         )
 
     def getDirPath(
-        self, dataSetId, wfInstanceId=None, contentType=None, formatType=None, fileSource="archive", versionId="latest", partNumber="1", mileStone=None
+        self,
+        dataSetId,
+        wfInstanceId=None,
+        contentType=None,  # noqa: ARG002
+        formatType=None,  # noqa: ARG002
+        fileSource="archive",
+        versionId="latest",  # noqa: ARG002
+        partNumber="1",  # noqa: ARG002
+        mileStone=None,  # noqa: ARG002
     ):  # noqa: E501 pylint: disable=unused-argument
         dfRef = DataFileReference(siteId=self.__siteId, verbose=self.__verbose, log=self.__lfh)
         dfRef.setDepositionDataSetId(dataSetId)
@@ -527,7 +588,9 @@ class PathInfo(object):
         )
         return cct
 
-    def __getStandardPath(self, dataSetId, wfInstanceId=None, contentTypeBase=None, formatType=None, fileSource="archive", versionId="latest", partNumber="1", mileStone=None):
+    def __getStandardPath(
+        self, dataSetId, wfInstanceId=None, contentTypeBase=None, formatType=None, fileSource="archive", versionId="latest", partNumber="1", mileStone=None
+    ):
         fP = None
         try:
             fP, _vT, _pT, _ccT = self.__getPathWorker(
@@ -545,7 +608,9 @@ class PathInfo(object):
 
         return fP
 
-    def __getPathWorker(self, dataSetId, wfInstanceId=None, contentTypeBase=None, formatType=None, fileSource="archive", versionId="latest", partNumber="1", mileStone=None):
+    def __getPathWorker(
+        self, dataSetId, wfInstanceId=None, contentTypeBase=None, formatType=None, fileSource="archive", versionId="latest", partNumber="1", mileStone=None
+    ):
         """Return the path and templates corresponding to the input file typing arguments.
 
         Return:  <full file path>,<file path as a version template>,<file path as a partition template>
@@ -574,25 +639,25 @@ class PathInfo(object):
                 dfRef.setContentTypeAndFormat(contentType, formatType)
                 dfRef.setPartitionNumber(partNumber)
                 dfRef.setVersionId(versionId)
-            elif fileSource in ["autogroup"]:
+            elif fileSource == "autogroup":
                 dfRef.setDepositionDataSetId(dataSetId)
                 dfRef.setStorageType("autogroup")
                 dfRef.setContentTypeAndFormat(contentType, formatType)
                 dfRef.setPartitionNumber(partNumber)
                 dfRef.setVersionId(versionId)
-            elif fileSource in ["deposit"]:
+            elif fileSource == "deposit":
                 dfRef.setDepositionDataSetId(dataSetId)
                 dfRef.setStorageType("deposit")
                 dfRef.setContentTypeAndFormat(contentType, formatType)
                 dfRef.setPartitionNumber(partNumber)
                 dfRef.setVersionId(versionId)
-            elif fileSource in ["deposit-ui"]:
+            elif fileSource == "deposit-ui":
                 dfRef.setDepositionDataSetId(dataSetId)
                 dfRef.setStorageType("deposit-ui")
                 dfRef.setContentTypeAndFormat(contentType, formatType)
                 dfRef.setPartitionNumber(partNumber)
                 dfRef.setVersionId(versionId)
-            elif fileSource in ["tempdep"]:
+            elif fileSource == "tempdep":
                 dfRef.setDepositionDataSetId(dataSetId)
                 dfRef.setStorageType("tempdep")
                 dfRef.setContentTypeAndFormat(contentType, formatType)
@@ -613,7 +678,7 @@ class PathInfo(object):
                 dfRef.setPartitionNumber(partNumber)
                 dfRef.setVersionId(versionId)
 
-            elif fileSource in ["session-download"]:
+            elif fileSource == "session-download":
                 dfRef.setSessionPath(self.__sessionDownloadPath)
                 dfRef.setSessionDataSetId(dataSetId)
                 dfRef.setStorageType("session")
@@ -621,7 +686,9 @@ class PathInfo(object):
                 dfRef.setPartitionNumber(partNumber)
                 dfRef.setVersionId(versionId)
             else:
-                logger.debug("+PathInfo.__getPathworker() bad file source %s for id %s wf id %s contentType %r", fileSource, dataSetId, wfInstanceId, contentType)
+                logger.debug(
+                    "+PathInfo.__getPathworker() bad file source %s for id %s wf id %s contentType %r", fileSource, dataSetId, wfInstanceId, contentType
+                )
                 return None, None, None, None
 
             fP = None

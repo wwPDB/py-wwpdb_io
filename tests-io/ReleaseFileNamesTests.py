@@ -26,10 +26,10 @@ from wwpdb.io.locator.ReleaseFileNames import ReleaseFileNames
 
 
 class ReleaseFileNamesTests(unittest.TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         pass
 
-    def testNames(self):
+    def testNames(self) -> None:
         """Tests that retrieving different file names is successful"""
         rf = ReleaseFileNames()
         print("Pub model %s" % rf.get_model("1abc"))

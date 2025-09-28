@@ -9,6 +9,8 @@ Common methods for finding path information for release directories used in the 
 
 """
 
+from __future__ import annotations
+
 __docformat__ = "restructuredtext en"
 __author__ = "Ezra Peisach"
 __email__ = "peisach@rcsb.rutgers.edu"
@@ -25,13 +27,13 @@ logger = logging.getLogger(__name__)
 
 
 class ReleasePathInfo:
-    def __init__(self, siteId=None):
+    def __init__(self, siteId: str | None = None) -> None:
         self.__siteId = siteId
         self.__cICommon = ConfigInfoAppCommon(self.__siteId)
         self.current_folder_name = "current"
         self.previous_folder_name = "previous"
 
-    def getForReleasePath(self, subdir=None, version="current", accession=None, em_sub_path=None):
+    def getForReleasePath(self, subdir: str | None = None, version: str = "current", accession: str | None = None, em_sub_path: str | None = None) -> str:
         """Returns path to for-release directory.
 
         Input Parameters:
@@ -71,38 +73,38 @@ class ReleasePathInfo:
 
         return basedir
 
-    def get_for_release_path(self):
+    def get_for_release_path(self) -> str:
         """Returns path to for_release directory"""
         return self.__cICommon.get_for_release_path()
 
-    def get_for_release_beta_path(self):
+    def get_for_release_beta_path(self) -> str:
         """Returns path to for_release_beta directory"""
         return self.__cICommon.get_for_release_beta_path()
 
-    def get_for_release_version_path(self):
+    def get_for_release_version_path(self) -> str:
         """Returns path to for_release_version directory"""
         return self.__cICommon.get_for_release_version_path()
 
-    def get_added_path(self, version=None):
+    def get_added_path(self, version: str | None = None) -> str:
         if version is None:
             version = self.current_folder_name
         return self.getForReleasePath(subdir="added", version=version)
 
-    def get_previous_added_path(self):
+    def get_previous_added_path(self) -> str:
         return self.get_added_path(version=self.previous_folder_name)
 
-    def get_modified_path(self, version=None):
+    def get_modified_path(self, version: str | None = None) -> str:
         if version is None:
             version = self.current_folder_name
         return self.getForReleasePath(subdir="modified", version=version)
 
-    def get_previous_modified_path(self):
+    def get_previous_modified_path(self) -> str:
         return self.get_modified_path(version=self.previous_folder_name)
 
-    def get_emd_subfolder_path(self, accession, subfolder, version=None):
+    def get_emd_subfolder_path(self, accession: str, subfolder: str, version: str | None = None) -> str:
         if version is None:
             version = self.current_folder_name
         return self.getForReleasePath(subdir="emd", accession=accession, em_sub_path=subfolder, version=version)
 
-    def get_previous_emd_subfolder_path(self, accession, subfolder):
+    def get_previous_emd_subfolder_path(self, accession: str, subfolder: str) -> str:
         return self.get_emd_subfolder_path(accession=accession, subfolder=subfolder, version=self.previous_folder_name)

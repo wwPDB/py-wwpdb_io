@@ -373,7 +373,7 @@ class TestRsyncDataMover:
         mock_result = MagicMock()
         mock_result.returncode = 0
         mock_result.stdout = (
-            "sending incremental file list\n"
+            "sending incremental file list\n"  # noqa: ISC003
             + "sent 67 bytes  received 12 bytes  158.00 bytes/sec\n"
             + "Number of files: 3\n"
             + "Number of files transferred: 0\n"

@@ -118,6 +118,7 @@ ignore = [
 
 # -------------------- default environment scripts ------------------
 [tool.hatch.envs.default]
+python = "3.8"
 skip-install = true
 dependencies = ["mypy", "ruff >=0.6.9", "mmcif", "mmcif.utils", "paramiko", "wwpdb.utils.config", "pytest", "wwpdb.utils.testing"]
 
@@ -134,7 +135,7 @@ format = [
 format-python = ["ruff format", "ruff check --fix-only"]
 
 # 'check' only checks but never fixes
-check = ["ruff check --no-fix .", "mypy --non-interactive --install-types -p wwpdb -p tests"]
+check = ["ruff check --no-fix .", "mypy --non-interactive --install-types -p wwpdb -p tests-io -p tests-io-config"]
 
 # only checks with ruff (mypy has a lot of false positives)
 check-ruff = "ruff check --no-fix . {args}"

@@ -11,6 +11,8 @@ Common methods for finding path information for chemical reference data files.
 
 """
 
+from __future__ import annotations
+
 __docformat__ = "restructuredtext en"
 __author__ = "John Westbrook"
 __email__ = "jwest@rcsb.rutgers.edu"
@@ -20,6 +22,7 @@ __version__ = "V0.07"
 import os
 import os.path
 import sys
+from typing import Any, TextIO
 
 from wwpdb.utils.config.ConfigInfo import ConfigInfo
 from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCc
@@ -32,15 +35,15 @@ class ChemRefPathInfo:
 
     def __init__(
         self,
-        siteId=None,
-        verbose=False,
-        log=sys.stderr,
-        testMode=False,
+        siteId: str | None = None,
+        verbose: bool = False,
+        log: TextIO = sys.stderr,
+        testMode: bool = False,
         # Old API - to be deprecated
-        reqObj=None,  # noqa: ARG002
-        configObj=None,
-        configCommonObj=None,
-    ):  # pylint: disable=unused-argument
+        reqObj: Any = None,  # noqa: ARG002  pylint: disable=unused-argument
+        configObj: ConfigInfo | None = None,
+        configCommonObj: ConfigInfoAppCc = None,
+    ) -> None:  # pylint: disable=unused-argument
         """Input request object and configuration (ConfigInfo()) object are used to
         supply information required to compute path details for chemical reference
         data files.
@@ -57,7 +60,7 @@ class ChemRefPathInfo:
         self.__testMode = testMode
         #
 
-    def getIdType(self, idCode):
+    def getIdType(self, idCode: str) -> str | None:
         id_u = idCode.upper()
         #
         if (idCode is None) or (len(idCode) < 1):
@@ -75,7 +78,7 @@ class ChemRefPathInfo:
 
         return id_type
 
-    def getCcdHash(self, idCode):
+    def getCcdHash(self, idCode: str | None) -> str | None:
         """Returns the hash code for a CCD id.  Currently first letter or last two (if extended CCD)"""
         if not idCode:
             return None
@@ -89,7 +92,7 @@ class ChemRefPathInfo:
 
         return hash_key
 
-    def getFilePath(self, idCode, id_type=None):
+    def getFilePath(self, idCode: str, id_type: str | None = None) -> str | None:
         """Return the repository file path corresponding to the input reference data id code
         (CC,PRD,FAMILY or PRDCC).
 
@@ -109,7 +112,9 @@ class ChemRefPathInfo:
         file_name = id_u + ".cif"
         #
         if id_type == "CC":
-            hash_key = self.getCcdHash(id_u)
+            new_hash_key = self.getCcdHash(id_u)
+            if new_hash_key is None:
+                raise ValueError
             file_path = os.path.join(self.__cIcommonAppCc.get_site_cc_cvs_path(), hash_key, id_u, file_name)
         elif id_type == "PRDCC":
             file_path = os.path.join(self.__cIcommonAppCc.get_site_prdcc_cvs_path(), hash_key, file_name)
@@ -122,7 +127,7 @@ class ChemRefPathInfo:
 
         return file_path
 
-    def getFileDir(self, idCode, id_type=None):
+    def getFileDir(self, idCode: str, id_type: str | None = None) -> str | None:
         """Return the repository file directory corresponding to the input reference data id code
         (CC,PRD,FAMILY or PRDCC).
 
@@ -134,13 +139,16 @@ class ChemRefPathInfo:
             return os.path.dirname(filePath)
         return None
 
-    def getProjectPath(self, idCode=None, id_type=None):
+    def getProjectPath(self, idCode: str | None = None, id_type: str | None = None) -> str | None:
         """
         Return the project path for an input reference data id code
         (CC,PRD,FAMILY or PRDCC).
         """
         #
         if id_type is None:
+            if idCode is None:
+                # getIIdType would raise an exception when .upper() used
+                raise TypeError
             id_type = self.getIdType(idCode)
         if id_type is None:
             return None
@@ -155,7 +163,7 @@ class ChemRefPathInfo:
             return self.__cIcommonAppCc.get_site_family_cvs_path()
         return None
 
-    def getCvsProjectInfo(self, idCode, id_type=None):
+    def getCvsProjectInfo(self, idCode: str, id_type: str | None = None) -> tuple[str | None, str | None]:
         """Assign the CVS project name and relative path based on the input ID code.
 
         The project name represents the directory containing the checked out
@@ -173,6 +181,8 @@ class ChemRefPathInfo:
         project_name = self.assignCvsProjectName(id_type)
         if id_type == "CC":
             hash_key = self.getCcdHash(idCode)
+            if hash_key is None:
+                raise ValueError
             rel_path = os.path.join(hash_key, idCode, idCode + ".cif")
         elif id_type == "PRDCC" or id_type == "PRD" or id_type == "PRD_FAMILY":
             rel_path = os.path.join(idCode[-1], idCode + ".cif")
@@ -181,7 +191,7 @@ class ChemRefPathInfo:
 
         return project_name, rel_path
 
-    def assignIdCodeFromFileName(self, filePath):
+    def assignIdCodeFromFileName(self, filePath: str | None) -> str | None:
         if self.__verbose:
             self.__lfh.write("+PathInfo.assignIdCodeFromFileName() input file path: %s\n" % filePath)
 
@@ -192,7 +202,7 @@ class ChemRefPathInfo:
 
         return None
 
-    def assignCvsProjectName(self, repType):
+    def assignCvsProjectName(self, repType: str | None) -> str | None:
         """Assign the CVS project name from the input repository type.
 
         This wrapper provides for a testing mode which assign an existing  surogate

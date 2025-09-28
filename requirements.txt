@@ -5,4 +5,5 @@ mmcif.utils
 # For testing
 wwpdb.utils.testing
 pytest
+types-paramiko
 #

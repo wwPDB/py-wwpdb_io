@@ -13,6 +13,8 @@ Construct a 3D graphics context from selected rows in PDBx/mmCIF data catagories
 
 """
 
+from __future__ import annotations
+
 __docformat__ = "restructuredtext en"
 __author__ = "John Westbrook"
 __email__ = "jwest@rcsb.rutgers.edu"
@@ -22,8 +24,14 @@ __version__ = "V0.01"
 
 import sys
 import traceback
+from typing import TYPE_CHECKING, TextIO, cast
 
 from mmcif_utils.persist.PdbxPersist import PdbxPersist
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping
+
+    from mmcif.api.DataCategory import DataCategory
 
 
 class GraphicsContext3D:
@@ -32,17 +40,17 @@ class GraphicsContext3D:
     Only app3D='JMol' is currently supported.
     """
 
-    def __init__(self, app3D="JMol", verbose=True, log=sys.stderr):
+    def __init__(self, app3D: str = "JMol", verbose: bool = True, log: TextIO = sys.stderr) -> None:
         self.__verbose = verbose
         self.__debug = False
         self.__lfh = log
         self.__app3D = app3D
-        self.__persistFilePath = None
+        self.__persistFilePath: str | None = None
 
         self.__setup()
         #
 
-    def __setup(self):
+    def __setup(self) -> None:
         """Category dictionary containing data attribute names which define 3D context.
 
         For each category with a graphics context a list of atom/component/polymer features is
@@ -61,7 +69,7 @@ class GraphicsContext3D:
         self.__rangeTypeCategoryList = ["struct_conf", "struct_sheet_range"]
         self.__atomContextCategoryList = ["atom_site", "struct_conn", "pdbx_struct_sheet_hbond"]
         self.__componentContextCategoryList = ["struct_conf", "struct_sheet_range", "pdbx_poly_seq_scheme", "pdbx_nonpoly_scheme"]
-        self.__polymerContextCategoryList = []
+        self.__polymerContextCategoryList: list[str] = []
         #
         #  Templates for extracting structur features from selected categories.
         #
@@ -223,14 +231,14 @@ class GraphicsContext3D:
     #
     #  Public methods
     #
-    def getCategoriesWithContext(self):
+    def getCategoriesWithContext(self) -> list[str]:
         """Return the list of categories with a defined graphics context."""
-        cL = []
+        cL: list[str] = []
         cL.extend(self.__d.keys())
         cL.extend(self.__searchContextCategoryList)
         return cL
 
-    def setPersistStorePath(self, persistFilePath):
+    def setPersistStorePath(self, persistFilePath: str) -> None:
         """Set the path of persistent store.
 
         Required for categories in the __searchContextCategoryList.
@@ -238,7 +246,7 @@ class GraphicsContext3D:
         """
         self.__persistFilePath = persistFilePath
 
-    def getGraphicsContext(self, categoryName=None, rowDictList=None):
+    def getGraphicsContext(self, categoryName: str | None = None, rowDictList: list[dict[str, str]] | None = None) -> str:
         """Create a command string to highlight the 3D graphics context for the
         input list of rows (stored with attribute keys) in the target category.
 
@@ -249,6 +257,8 @@ class GraphicsContext3D:
             return self.__getContextViaSearch(categoryName=categoryName, rowDictList=rowDictList)
         #
         contextList = []
+        if rowDictList is None:
+            raise TypeError
         for rowDict in rowDictList:
             cS = self.__createContext(categoryName=categoryName, rowDict=rowDict)
             if (cS is not None) and (len(cS) > 0):
@@ -270,10 +280,9 @@ class GraphicsContext3D:
     #
     # Internal methods for here on --
     #
-    def __createContext(self, categoryName=None, rowDict=None):
+    def __createContext(self, categoryName: str | None = None, rowDict: dict[str, str] | None = None) -> list[str]:
         """Wrapper to create the feature selection ---"""
-        contextL = []
-
+        contextL: list[str] = []
         if categoryName in self.__rangeTypeCategoryList:
             contextL = self.__createComponentRangeContext(categoryName=categoryName, rowDict=rowDict)
         elif categoryName in self.__d:
@@ -283,7 +292,7 @@ class GraphicsContext3D:
 
         return contextL
 
-    def __getContextViaSearch(self, categoryName=None, rowDictList=None):
+    def __getContextViaSearch(self, categoryName: str | None = None, rowDictList: list[dict[str, str]] | None = None) -> str:
         """Establish the context for cases where the structural details may be determined from
         related data categories.
         """
@@ -294,6 +303,8 @@ class GraphicsContext3D:
             searchCategoryName = "struct_site_gen"
             #
             rDL = []
+            if rowDictList is None:
+                raise TypeError
             for rowDict in rowDictList:
                 keyValue = self.__getStringValue(rowDict)
                 rDL.extend(self.__searchAttribute(keyValue=keyValue, searchKeyName=searchKeyName, searchCategoryName=searchCategoryName))
@@ -305,6 +316,8 @@ class GraphicsContext3D:
             searchCategoryName = "struct_sheet_range"
             #
             rDL = []
+            if rowDictList is None:
+                raise TypeError
             for rowDict in rowDictList:
                 keyValue = self.__getStringValue(rowDict)
                 rDL.extend(self.__searchAttribute(keyValue=keyValue, searchKeyName=searchKeyName, searchCategoryName=searchCategoryName))
@@ -316,13 +329,15 @@ class GraphicsContext3D:
 
         return gcS
 
-    def __createContextSimple(self, categoryName=None, rowDict=None):
+    def __createContextSimple(self, categoryName: str | None = None, rowDict: dict[str, str] | None = None) -> list[str]:
         """Create a graphics context from the list of feature templates for this category.
 
         The features are treated independently and the associated contexts are returned as
         a list of JMol "atom expressions" appropriate for a JMol "select" statement.
         """
         contextL = []
+        if categoryName is None:
+            raise ValueError
         catNameLC = categoryName.lower()
         if catNameLC in self.__d:
             for fD in self.__d[catNameLC]:
@@ -330,7 +345,8 @@ class GraphicsContext3D:
                 fS = self.__assignFeatureContext(self.__app3D, fI)
                 if self.__debug:
                     self.__lfh.write("+GraphicsContext3D.__createContext - feature dict     %r\n" % fD.items())
-                    self.__lfh.write("+GraphicsContext3D.__createContext - row     dict     %r\n" % rowDict.items())
+                    if rowDict:
+                        self.__lfh.write("+GraphicsContext3D.__createContext - row     dict     %r\n" % rowDict.items())
                     self.__lfh.write("+GraphicsContext3D.__createContext - feature instance %r\n" % fI.items())
                     self.__lfh.write("+GraphicsContext3D.__createContext - feature context  %s\n" % fS)
 
@@ -341,14 +357,16 @@ class GraphicsContext3D:
         #
         return contextL
 
-    def __createComponentRangeContext(self, categoryName=None, rowDict=None):
+    def __createComponentRangeContext(self, categoryName: str | None = None, rowDict: dict[str, str] | None = None) -> list[str]:
         """Create a "component range" graphics context from a pair of features templates for this category.
 
         The feature pair are treated as defining a contiguous range of components and a range style
         JMol "atom expression" appropriate for a JMol "select" statement is returned.
         """
 
-        contextL = []
+        contextL: list[str] = []
+        if categoryName is None:
+            raise ValueError
         catNameLC = categoryName.lower()
         if (catNameLC in self.__d) and (len(self.__d[catNameLC]) == 2):
             fD1 = self.__d[catNameLC][0]
@@ -370,9 +388,15 @@ class GraphicsContext3D:
             ):
                 #
                 # create the component range assignment in the first instance.
-                fI1["auth_seq_id_range"] = (fI1["auth_seq_id"], fI2["auth_seq_id"])
-                fI1["auth_seq_id"] = None
-                fS = self.__assignFeatureContext(self.__app3D, fI1)
+
+                # Casting dictionary to allow tuple
+                fI1copy: dict[str, str | tuple[str, str] | None] = dict(fI1)
+
+                # fI1["auth_seq_id_range"] = (fI1["auth_seq_id"], fI2["auth_seq_id"])
+                # fI1["auth_seq_id"] = None
+                fI1copy["auth_seq_id_range"] = (fI1["auth_seq_id"], fI2["auth_seq_id"])
+                fI1copy["auth_seq_id"] = None
+                fS = self.__assignFeatureContext(self.__app3D, fI1copy)
                 if fS is not None and len(fS) > 0:
                     contextL.append(fS)
             else:
@@ -388,7 +412,7 @@ class GraphicsContext3D:
         #
         return contextL
 
-    def __assignFeatureContext(self, app3D, featureInstDict=None):
+    def __assignFeatureContext(self, app3D: str, featureInstDict: Mapping[str, str | tuple[str, str] | None] | None = None) -> str:
         """The general syntax for JMol is  [<compId>]<seqId>^<insertCode>:<authAsymId>.<atomId>/<model_num>
         [<compId>]<beg_seqId>-<end_seqId>^<insertCode>:<authAsymId>.<atomId>/<model_num>
         """
@@ -398,33 +422,33 @@ class GraphicsContext3D:
         if app3D == "JMol":
             if featureInstDict["sym_op"] is not None and featureInstDict["sym_op"] != "1_555":
                 # bail out here if the feature is not in the deposited coordinates.
-                return
+                return ""
             if featureInstDict["auth_comp_id"] is not None:
-                s = "[%s]" % featureInstDict["auth_comp_id"]
+                s = "[%s]" % cast(str, featureInstDict["auth_comp_id"])
                 sL.append(s)
             if featureInstDict["auth_seq_id"] is not None:
-                s = "%s" % featureInstDict["auth_seq_id"]
+                s = "%s" % cast(str, featureInstDict["auth_seq_id"])
                 sL.append(s)
             if featureInstDict["auth_seq_id_range"] is not None:
-                s = "%s-%s" % featureInstDict["auth_seq_id_range"]
+                s = "%s-%s" % cast(tuple[str, str], featureInstDict["auth_seq_id_range"])
                 sL.append(s)
             if featureInstDict["ins_code"] is not None:
-                s = "^%s" % featureInstDict["ins_code"]
+                s = "^%s" % cast(str, featureInstDict["ins_code"])
                 sL.append(s)
             if featureInstDict["auth_asym_id"] is not None:
-                s = ":%s" % featureInstDict["auth_asym_id"]
+                s = ":%s" % cast(str, featureInstDict["auth_asym_id"])
                 sL.append(s)
             if featureInstDict["atom_id"] is not None:
-                s = ".%s" % featureInstDict["atom_id"]
+                s = ".%s" % cast(str, featureInstDict["atom_id"])
                 sL.append(s)
             if featureInstDict["model_num"] is not None:
-                s = "/%s" % featureInstDict["model_num"]
+                s = "/%s" % cast(str, featureInstDict["model_num"])
                 sL.append(s)
         else:
             sL = []
         return "".join(sL)
 
-    def __getFirstObject(self, persistFilePath, objectName=None):
+    def __getFirstObject(self, persistFilePath: str, objectName: str | None = None) -> DataCategory | None:
         """Open the persistent data store and fetch the input object name from the first container.
 
         Note -- Will be used for more complex cases which require additional information from
@@ -451,19 +475,21 @@ class GraphicsContext3D:
                 traceback.print_exc(file=self.__lfh)
             return None
 
-    def __getStringValue(self, rowDict):
+    def __getStringValue(self, rowDict: dict[str, str]) -> str | None:
         if "id" in rowDict and len(rowDict["id"]) > 0 and rowDict["id"] != "?" and rowDict["id"] != ".":
             return rowDict["id"]
         return None
 
-    def __searchAttribute(self, keyValue=None, searchKeyName=None, searchCategoryName=None):
+    def __searchAttribute(self, keyValue: str | None = None, searchKeyName: str | None = None, searchCategoryName: str | None = None) -> list[dict[str, str]]:
         """Search input category for rows where the attribue searchKeyName equals
         the input keyValue.
 
         Return a list of rows stored as dictionaries with attribute names mapped to  values.
         """
-        rDL = []
+        rDL: list[dict[str, str]] = []
         if keyValue is not None:
+            if self.__persistFilePath is None:
+                raise ValueError
             myCatObj = self.__getFirstObject(persistFilePath=self.__persistFilePath, objectName=searchCategoryName)
             if myCatObj is not None:
                 aL = myCatObj.getAttributeList()
@@ -483,7 +509,7 @@ class GraphicsContext3D:
                             self.__lfh.write("GraphicsContext3D.__getContextViaSearch KeyValue %s row : %r\n" % (keyValue, rD.items()))
         return rDL
 
-    def __assignLabelStyle(self, categoryName=None):
+    def __assignLabelStyle(self, categoryName: str | None = None) -> str:
         if categoryName in self.__atomContextCategoryList:
             return "label '%c:%n:%r:%a' ; "
         if categoryName in self.__componentContextCategoryList:
@@ -492,11 +518,13 @@ class GraphicsContext3D:
             return "label '%c' ; "
         return "label '%c:%n:%r' ; "
 
-    def __extractValues(self, attribDict, rowDict):
+    def __extractValues(self, attribDict: dict[str, str | None], rowDict: dict[str, str] | None) -> dict[str, str | None]:
         """Return a value dictionary"""
-        rD = {}
+        rD: dict[str, str | None] = {}
         for ky, attrib in attribDict.items():
             rD[ky] = None
+            if rowDict is None:
+                raise ValueError
             if attrib is not None and attrib in rowDict:
                 if (len(rowDict[attrib]) > 0) and (rowDict[attrib] != "?") and (rowDict[attrib] != "."):
                     rD[ky] = rowDict[attrib]

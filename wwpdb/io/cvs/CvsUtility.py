@@ -12,6 +12,8 @@ Methods are provided to manage archiving of chemical component data files.
 
 """
 
+from __future__ import annotations
+
 __docformat__ = "restructuredtext en"
 __author__ = "John Westbrook"
 __email__ = "jwest@rcsb.rutgers.edu"
@@ -29,31 +31,31 @@ import tempfile
 class CvsWrapper:
     """Wrapper class for opertations on cvs repositories."""
 
-    def __init__(self, tmpPath="./"):
+    def __init__(self, tmpPath: str = "./") -> None:
         self.__tmpPath = tmpPath
         self.__logger = logging.getLogger("wwpdb.utils.rcsb.CvsWrapper")
         self.__logger.debug("Created instance of CvsWrapper")
         #
         # self.__debug = True
-        self.__repositoryHost = None
-        self.__repositoryPath = None
-        self.__cvsUser = None
-        self.__cvsPassword = None
-        self.__cvsRoot = None
+        self.__repositoryHost: str | None = None
+        self.__repositoryPath: str | None = None
+        self.__cvsUser: str | None = None
+        self.__cvsPassword: str | None = None
+        self.__cvsRoot: str | None = None
         #
-        self.__wrkPath = None
+        self.__wrkPath: str | None = None
         self.__cvsInfoFileName = "cvsInfo.txt"
         self.__cvsErrorFileName = "cvsError.txt"
 
-    def setRepositoryPath(self, host, path):
+    def setRepositoryPath(self, host: str, path: str) -> None:
         self.__repositoryHost = host
         self.__repositoryPath = path
 
-    def setAuthInfo(self, user, password):
+    def setAuthInfo(self, user: str, password: str) -> None:
         self.__cvsUser = user
         self.__cvsPassword = password
 
-    def getHistory(self, cvsPath):
+    def getHistory(self, cvsPath: str) -> str:
         text = ""
         cmd = self.__getHistoryCmd(cvsPath)
         if cmd is not None:
@@ -62,7 +64,7 @@ class CvsWrapper:
 
         return text
 
-    def getRevisionList(self, cvsPath):
+    def getRevisionList(self, cvsPath: str) -> list[tuple[str, str, str]]:
         """Return a list of tuples containing the revision identifiers for the input file.
 
         Return data has the for [(RevId, A/M, timeStamp),...] where A=Added and M=Modified.
@@ -74,11 +76,13 @@ class CvsWrapper:
             revList = self.__extractRevisions()
         return revList
 
-    def cleanup(self):
+    def cleanup(self) -> None:
         """Cleanup temporary files and directories"""
+        if self.__wrkPath is None:
+            raise ValueError
         return shutil.rmtree(self.__wrkPath)
 
-    def checkOutFile(self, cvsPath, outPath, revId=None):
+    def checkOutFile(self, cvsPath: str, outPath: str, revId: str | None = None) -> str:
         text = ""
         (pth, fn) = os.path.split(cvsPath)
         self.__logger.debug("Cvs directory %s   target file name %s", pth, fn)
@@ -91,20 +95,29 @@ class CvsWrapper:
             pass
         return text
 
-    def __getHistoryCmd(self, cvsPath):
+    def __getHistoryCmd(self, cvsPath: str) -> str | None:
         if self.__wrkPath is None:
             self.__makeTempWorkingDir()
+            # sets self.__wrkPath
+        if self.__wrkPath is None:
+            raise ValueError
         outPath = os.path.join(self.__wrkPath, self.__cvsInfoFileName)
         errPath = os.path.join(self.__wrkPath, self.__cvsErrorFileName)
         if self.__setCvsRoot():
+            # Should never happen
+            if self.__cvsRoot is None:
+                raise ValueError
             cmd = "cvs -d " + self.__cvsRoot + " history -a -x AM " + cvsPath + self.__getRedirect(fileNameOut=outPath, fileNameErr=errPath)
         else:
             cmd = None
         return cmd
 
-    def __getCheckOutCmd(self, cvsPath, outPath, revId=None):
+    def __getCheckOutCmd(self, cvsPath: str, outPath: str, revId: str | None = None) -> str | None:
         if self.__wrkPath is None:
             self.__makeTempWorkingDir()
+            # sets self.__wrkPath
+        if self.__wrkPath is None:
+            raise ValueError
         errPath = os.path.join(self.__wrkPath, self.__cvsErrorFileName)
         (pth, fn) = os.path.split(cvsPath)
         self.__logger.debug("CVS directory %s  target file name %s", pth, fn)
@@ -112,6 +125,9 @@ class CvsWrapper:
         #
         #
         if self.__setCvsRoot():
+            # Should be set..
+            if self.__cvsRoot is None:
+                raise ValueError
             if revId is None:
                 rS = " "
                 cmd = (
@@ -153,7 +169,7 @@ class CvsWrapper:
             cmd = None
         return cmd
 
-    def __getRedirect(self, fileNameOut="myLog.log", fileNameErr="myLog.log", append=False):
+    def __getRedirect(self, fileNameOut: str = "myLog.log", fileNameErr: str = "myLog.log", append: bool = False) -> str:
         if append:
             if fileNameOut == fileNameErr:
                 oReDir = " >> " + fileNameOut + " 2>&1 "
@@ -166,7 +182,7 @@ class CvsWrapper:
 
         return oReDir
 
-    def __runCvsCommand(self, myCommand):
+    def __runCvsCommand(self, myCommand: str) -> bool:
         retcode = -100
         try:
             self.__logger.debug("Command: %s", myCommand)
@@ -190,17 +206,22 @@ class CvsWrapper:
             #    self.__lfh.write("+CvsWrapper(__runCvsCommand) Execution failed: %r\n" % e)
             return False
 
-    def __setCvsRoot(self):
+    def __setCvsRoot(self) -> bool:
         try:
+            if self.__cvsUser is None or self.__cvsPassword is None or self.__repositoryHost is None or self.__repositoryPath is None:
+                return False
             self.__cvsRoot = ":pserver:" + self.__cvsUser + ":" + self.__cvsPassword + "@" + self.__repositoryHost + ":" + self.__repositoryPath
             return True
         except:  # noqa: E722 pylint: disable=bare-except
             return False
 
-    def __extractRevisions(self):
+    def __extractRevisions(self) -> list[tuple[str, str, str]]:
         """Extract revisions details from the last history command."""
-        revList = []
+        revList: list[tuple[str, str, str]] = []
         try:
+            if self.__wrkPath is None or self.__cvsInfoFileName is None:
+                self.__logger.exception("Extracting revision list - missing wrkPath or cvsInfoFileName")
+                return revList
             fName = os.path.join(self.__wrkPath, self.__cvsInfoFileName)
             self.__logger.debug("Reading revisions from %r", fName)
             ifh = open(fName)
@@ -218,8 +239,11 @@ class CvsWrapper:
 
         return revList
 
-    def __getOutputText(self):
+    def __getOutputText(self) -> str:
         text = ""
+        if self.__wrkPath is None or self.__cvsInfoFileName is None:
+            self.__logger.exception("Execption reading cvs output file: __wrkPath %s _cvsInfoFileName %s", self.__wrkPath, self.__cvsInfoFileName)
+            return text
         try:
             fPath = os.path.join(self.__wrkPath, self.__cvsInfoFileName)
             ifh = open(fPath)
@@ -229,8 +253,10 @@ class CvsWrapper:
 
         return text
 
-    def __getErrorText(self):
+    def __getErrorText(self) -> str:
         text = ""
+        if self.__wrkPath is None:
+            return text
         try:
             fName = os.path.join(self.__wrkPath, self.__cvsErrorFileName)
             ifh = open(fName)
@@ -240,7 +266,7 @@ class CvsWrapper:
 
         return text
 
-    def __makeTempWorkingDir(self):
+    def __makeTempWorkingDir(self) -> None:
         if self.__tmpPath is not None and os.path.isdir(self.__tmpPath):
             self.__wrkPath = tempfile.mkdtemp("tmpdir", "rcsbCVS", self.__tmpPath)
         else:

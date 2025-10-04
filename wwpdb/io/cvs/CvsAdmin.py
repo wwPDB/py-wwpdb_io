@@ -21,6 +21,8 @@ Methods are provided to manage archiving of chemical component data files.
 
 """
 
+from __future__ import annotations
+
 __docformat__ = "restructuredtext en"
 __author__ = "John Westbrook"
 __email__ = "jwest@rcsb.rutgers.edu"
@@ -34,29 +36,30 @@ import subprocess
 import sys
 import tempfile
 import traceback
+from typing import TextIO
 
 
 class CvsWrapperBase:
     """Core wrapper class for opertations on cvs administrative operations on repositories."""
 
-    def __init__(self, tmpPath="./", verbose=True, log=sys.stderr):
+    def __init__(self, tmpPath: str = "./", verbose: bool = True, log: TextIO = sys.stderr) -> None:
         self.__tmpPath = tmpPath
         #
         self.__verbose = verbose
         self.__lfh = log
         self.__debug = False
 
-        self._repositoryHost = None
-        self._repositoryPath = None
-        self._cvsUser = None
-        self._cvsPassword = None
-        self._cvsRoot = None
+        self._repositoryHost: str | None = None
+        self._repositoryPath: str | None = None
+        self._cvsUser: str | None = None
+        self._cvsPassword: str | None = None
+        self._cvsRoot: str | None = None
         #
-        self._wrkPath = None
+        self._wrkPath: str | None = None
         self._cvsInfoFileName = "cvsInfo.txt"
         self._cvsErrorFileName = "cvsError.txt"
-        self.__outputFilePath = None
-        self.__errorFilePath = None
+        self.__outputFilePath: str | None = None
+        self.__errorFilePath: str | None = None
 
     def setRepositoryPath(self, host, path):
         self._repositoryHost = host

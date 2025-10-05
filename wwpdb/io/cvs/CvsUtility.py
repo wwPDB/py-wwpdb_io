@@ -47,11 +47,11 @@ class CvsWrapper:
         self.__cvsInfoFileName = "cvsInfo.txt"
         self.__cvsErrorFileName = "cvsError.txt"
 
-    def setRepositoryPath(self, host: str, path: str) -> None:
+    def setRepositoryPath(self, host: str | None, path: str | None) -> None:
         self.__repositoryHost = host
         self.__repositoryPath = path
 
-    def setAuthInfo(self, user: str, password: str) -> None:
+    def setAuthInfo(self, user: str | None, password: str | None) -> None:
         self.__cvsUser = user
         self.__cvsPassword = password
 

@@ -61,15 +61,15 @@ class CvsWrapperBase:
         self.__outputFilePath: str | None = None
         self.__errorFilePath: str | None = None
 
-    def setRepositoryPath(self, host, path):
+    def setRepositoryPath(self, host: str | None, path: str | None) -> None:
         self._repositoryHost = host
         self._repositoryPath = path
 
-    def setAuthInfo(self, user, password):
+    def setAuthInfo(self, user: str | None, password: str | None) -> None:
         self._cvsUser = user
         self._cvsPassword = password
 
-    def _getRedirect(self, fileNameOut="myLog.log", fileNameErr="myLog.log", append=False):
+    def _getRedirect(self, fileNameOut: str = "myLog.log", fileNameErr: str = "myLog.log", append: bool = False) -> str:
         if append:
             if fileNameOut == fileNameErr:
                 oReDir = " >> " + fileNameOut + " 2>&1 "
@@ -82,7 +82,7 @@ class CvsWrapperBase:
 
         return oReDir
 
-    def _runCvsCommand(self, myCommand):
+    def _runCvsCommand(self, myCommand: str) -> bool:
         retcode = -100
         try:
             if self.__debug:
@@ -104,24 +104,28 @@ class CvsWrapperBase:
                 self.__lfh.write("+CvsWrapperBase(_runCvsCommand) Execution failed: %r\n" % e)
             return False
 
-    def _setCvsRoot(self):
+    def _setCvsRoot(self) -> bool:
         try:
-            self._cvsRoot = ":pserver:" + self._cvsUser + ":" + self._cvsPassword + "@" + self._repositoryHost + ":" + self._repositoryPath
+            self._cvsRoot = ":pserver:" + self._cvsUser + ":" + self._cvsPassword + "@" + self._repositoryHost + ":" + self._repositoryPath  # type: ignore[operator]
             return True
         except Exception as e:  # noqa: BLE001
             self.__lfh.write("+CvsWrapperBase(_cvsRoot) failed")
-            self.__lfh.write(e)
+            self.__lfh.write(str(e))
             return False
 
-    def _getOutputFilePath(self):
+    def _getOutputFilePath(self) -> str:
+        if self._wrkPath is None:
+            raise ValueError
         self.__outputFilePath = os.path.join(self._wrkPath, self._cvsInfoFileName)
         return self.__outputFilePath
 
-    def _getErrorFilePath(self):
+    def _getErrorFilePath(self) -> str:
+        if self._wrkPath is None:
+            raise ValueError
         self.__errorFilePath = os.path.join(self._wrkPath, self._cvsErrorFileName)
         return self.__errorFilePath
 
-    def _getOutputText(self):
+    def _getOutputText(self) -> str:
         text = ""
         try:
             filePath = self.__outputFilePath
@@ -133,7 +137,7 @@ class CvsWrapperBase:
 
         return text
 
-    def _getErrorText(self, filterInfo=False):
+    def _getErrorText(self, filterInfo: bool = False) -> str:
         text = ""
         try:
             filePath = self.__errorFilePath
@@ -149,8 +153,10 @@ class CvsWrapperBase:
 
         return text
 
-    def __getTextFile(self, filePath, filterInfo=False):  # noqa: ARG002 pylint: disable=unused-argument
+    def __getTextFile(self, filePath: str | None, filterInfo: bool = False) -> str:  # noqa: ARG002 pylint: disable=unused-argument
         text = ""
+        if filePath is None:
+            return text
         try:
             ifh = open(filePath)
             tL = []
@@ -166,7 +172,7 @@ class CvsWrapperBase:
 
         return text
 
-    def _makeTempWorkingDir(self):
+    def _makeTempWorkingDir(self) -> None:
         if self.__tmpPath is not None and os.path.isdir(self.__tmpPath):
             self._wrkPath = os.path.abspath(tempfile.mkdtemp("tmpdir", "tmpCVS", self.__tmpPath))
 
@@ -176,7 +182,7 @@ class CvsWrapperBase:
         if self.__debug:
             self.__lfh.write("+CvsWrapperBase(_makeTempWorkingDir) Working directory path set to  %r\n" % self._wrkPath)
 
-    def cleanup(self):
+    def cleanup(self) -> bool:
         """Cleanup any temporary files and directories created by this class."""
         if self._wrkPath is not None and len(self._wrkPath) > 0:
             try:
@@ -185,7 +191,7 @@ class CvsWrapperBase:
                 return True
             except Exception as e:  # noqa: BLE001
                 self.__lfh.write("cleanup - unable to remove self._wrkpath")
-                self.__lfh.write(e)
+                self.__lfh.write(str(e))
                 return False
         else:
             return True
@@ -194,13 +200,13 @@ class CvsWrapperBase:
 class CvsAdmin(CvsWrapperBase):
     """Wrapper class for opertations on cvs administrative operations on repositories."""
 
-    def __init__(self, tmpPath="./", verbose=True, log=sys.stderr):
+    def __init__(self, tmpPath: str = "./", verbose: bool = True, log: TextIO = sys.stderr):
         super(CvsAdmin, self).__init__(tmpPath=tmpPath, verbose=verbose, log=log)
         #
         self.__verbose = verbose
         self.__lfh = log
 
-    def getHistory(self, cvsPath):
+    def getHistory(self, cvsPath: str) -> tuple[bool, str]:
         """Return the history text for project files identified by cvsPath in the
         current repository.
         """
@@ -215,7 +221,7 @@ class CvsAdmin(CvsWrapperBase):
 
         return (ok, text)
 
-    def getRevisionList(self, cvsPath):
+    def getRevisionList(self, cvsPath: str) -> tuple[bool, list[tuple[str, str, str]]]:
         """Return a list of tuples containing the revision identifiers for the input file.
 
         Return data has the for [(RevId, A/M, timeStamp),...] where A=Added and M=Modified.
@@ -231,7 +237,7 @@ class CvsAdmin(CvsWrapperBase):
 
         return (ok, revList)
 
-    def checkOutFile(self, cvsPath, outPath, revId=None):
+    def checkOutFile(self, cvsPath: str, outPath: str, revId: str | None = None) -> tuple[bool, str]:
         """Perform CVS checkout operation for the project files identified by the input cvsPath
         subject to the input revision identifier.
 
@@ -257,7 +263,7 @@ class CvsAdmin(CvsWrapperBase):
 
         return (ok, text)
 
-    def __getHistoryCmd(self, cvsPath, incldel=False):
+    def __getHistoryCmd(self, cvsPath: str, incldel: bool = False) -> str | None:
         """Generate command to retrieve history.  If incldel is set, include removed revisions"""
         if self._wrkPath is None:
             self._makeTempWorkingDir()
@@ -269,24 +275,31 @@ class CvsAdmin(CvsWrapperBase):
         else:
             opts = "AM "
         if self._setCvsRoot():
+            # Should not happen
+            if self._cvsRoot is None:
+                raise ValueError
             cmd = "cvs -d " + self._cvsRoot + " history -a -x " + opts + cvsPath + self._getRedirect(fileNameOut=outPath, fileNameErr=errPath)
         else:
             cmd = None
         return cmd
 
-    def __getCheckOutCmd(self, cvsPath, outPath, revId=None):
+    def __getCheckOutCmd(self, cvsPath: str, outPath: str, revId: str | None = None) -> str | None:
         if self._wrkPath is None:
             self._makeTempWorkingDir()
         errPath = self._getErrorFilePath()
         (pth, fn) = os.path.split(cvsPath)
         if self.__verbose:
             self.__lfh.write("+CvsAdmin(__getCheckOutCmd) CVS directory %s  target file name %s\n" % (pth, fn))
+        if self._wrkPath is None:
+            raise ValueError
         lclPath = os.path.join(self._wrkPath, cvsPath)
         outPathAbs = os.path.abspath(outPath)
         #
         #
         if self._setCvsRoot():
             if revId is None:
+                if self._wrkPath is None or self._cvsRoot is None:
+                    raise ValueError
                 rS = " "
                 cmd = (
                     "cd "
@@ -309,6 +322,8 @@ class CvsAdmin(CvsWrapperBase):
                 #     " mv -f  " + lclPath + " " + outPath + self._getRedirect(fileNameOut=errPath,fileNameErr=errPath,append=True) + ' ; '
             else:
                 rS = " -r " + revId + " "
+                if self._wrkPath is None or self._cvsRoot is None:
+                    raise ValueError
                 cmd = (
                     "cd "
                     + self._wrkPath
@@ -334,9 +349,9 @@ class CvsAdmin(CvsWrapperBase):
             cmd = None
         return cmd
 
-    def __extractRevisions(self):
+    def __extractRevisions(self) -> list[tuple[str, str, str]]:
         """Extract revisions details from the last history command."""
-        revList = []
+        revList: list[tuple[str, str, str]] = []
         try:
             fName = self._getOutputFilePath()
             if self.__verbose:
@@ -361,16 +376,16 @@ class CvsAdmin(CvsWrapperBase):
 class CvsSandBoxAdmin(CvsWrapperBase):
     """Wrapper class for opertations on cvs working directories (aka cvs sandboxes)."""
 
-    def __init__(self, tmpPath="./", verbose=True, log=sys.stderr):
+    def __init__(self, tmpPath: str = "./", verbose: bool = True, log: TextIO = sys.stderr) -> None:
         super(CvsSandBoxAdmin, self).__init__(tmpPath=tmpPath, verbose=verbose, log=log)
         #
         self.__verbose = verbose
         self.__lfh = log
         self.__debug = False
         #
-        self.__sandBoxTopPath = None
+        self.__sandBoxTopPath: str | None = None
 
-    def setSandBoxTopPath(self, dirPath):
+    def setSandBoxTopPath(self, dirPath: str) -> bool:
         """Assign the path that contains or will contain the working copy of the cvs project."""
         if not os.path.exists(dirPath):
             try:
@@ -383,10 +398,12 @@ class CvsSandBoxAdmin(CvsWrapperBase):
         self.__lfh.write("+setSandBoxTopPath - can't access sandboxpath\n")
         return False
 
-    def getSandBoxTopPath(self):
+    def getSandBoxTopPath(self) -> str | None:
+        if self.__sandBoxTopPath is None:
+            raise ValueError
         return os.path.abspath(self.__sandBoxTopPath)
 
-    def checkOut(self, projectPath=None, revId=None):
+    def checkOut(self, projectPath: str | None = None, revId: str | None = None) -> tuple[bool, str]:
         """Create CVS sandbox working copy of the input project path within the current repository."""
         if self.__verbose:
             self.__lfh.write(
@@ -409,7 +426,13 @@ class CvsSandBoxAdmin(CvsWrapperBase):
 
         return (ok, text)
 
-    def updateList(self, dataList, procName, optionsD, workingDir):  # noqa: ARG002 pylint: disable=unused-argument
+    def updateList(
+        self,
+        dataList: list[tuple[str, str, bool]],
+        procName: str,
+        optionsD: dict[str, str],  # noqa: ARG002  pylint: disable=unused-argument
+        workingDir: str,  # noqa: ARG002  pylint: disable=unused-argument
+    ) -> tuple[list[tuple[str, str, bool]], list[tuple[str, str, bool]], list[str]]:
         """Implements an interface for multiprocessing module --
 
         input is [(CvsProjectDir, relativePath, pruneFlag),...]
@@ -432,7 +455,9 @@ class CvsSandBoxAdmin(CvsWrapperBase):
                 retList.append(dTup)
         return retList, retList, diagTextList
 
-    def update(self, projectDir, relProjectPath=".", prune=False, fetchErrorLog=True, appendErrors=False):
+    def update(
+        self, projectDir: str, relProjectPath: str = ".", prune: bool = False, fetchErrorLog: bool = True, appendErrors: bool = False
+    ) -> tuple[bool, str]:
         """Update CVS sandbox working copy of the input project path.   The project path must
         correspond to an existing working copy of the repository.
 
@@ -442,6 +467,8 @@ class CvsSandBoxAdmin(CvsWrapperBase):
                 "\n+CvsSandBoxAdmin(update) Updating CVS repository working path %s project %s relative file path %s\n"
                 % (self.__sandBoxTopPath, projectDir, relProjectPath)
             )
+        if self.__sandBoxTopPath is None:
+            raise ValueError
         targetPath = os.path.join(self.__sandBoxTopPath, projectDir)
         text = ""
         ok = False
@@ -475,7 +502,7 @@ class CvsSandBoxAdmin(CvsWrapperBase):
 
         return (ok, text)
 
-    def add(self, projectDir, relProjectPath):
+    def add(self, projectDir: str, relProjectPath: str) -> tuple[bool, str]:
         """Add an new definition in CVS working direcotry in the input project path.   The project path must
         correspond to an existing file path in the local working copy.
 
@@ -484,6 +511,8 @@ class CvsSandBoxAdmin(CvsWrapperBase):
             self.__lfh.write(
                 "\n+CvsSandBoxAdmin(add) Add %s to project %s in CVS repository working path %s\n" % (relProjectPath, projectDir, self.__sandBoxTopPath)
             )
+        if self.__sandBoxTopPath is None:
+            raise ValueError
         targetPath = os.path.join(self.__sandBoxTopPath, projectDir, relProjectPath)
         text = ""
         ok = False
@@ -500,7 +529,7 @@ class CvsSandBoxAdmin(CvsWrapperBase):
 
         return (ok, text)
 
-    def commit(self, projectDir, relProjectPath):
+    def commit(self, projectDir: str, relProjectPath: str) -> tuple[bool, str]:
         """Commit changes in the input project/file path to the CVS repository. The project path must
         correspond to an existing path in the local working copy.
 
@@ -510,6 +539,8 @@ class CvsSandBoxAdmin(CvsWrapperBase):
                 "\n+CvsSandBoxAdmin(commit) Commit changes to %s in project %s in CVS repository working path %s\n"
                 % (relProjectPath, projectDir, self.__sandBoxTopPath)
             )
+        if self.__sandBoxTopPath is None:
+            raise ValueError
         targetPath = os.path.join(self.__sandBoxTopPath, projectDir, relProjectPath)
         text = ""
         ok = False
@@ -526,13 +557,16 @@ class CvsSandBoxAdmin(CvsWrapperBase):
 
         return (ok, text)
 
-    def remove(self, projectDir, relProjectPath, saveCopy=True):
+    def remove(self, projectDir: str, relProjectPath: str, saveCopy: bool = True) -> tuple[bool, str]:
         """Remove from the CVS sandbox working copy the input project path.   The project path must
         correspond to an existing path in the local working copy.
 
         if saveCopy=True then preserve a copy of the remove target in the reserved REMOVED path
         of the repository.
         """
+        if self.__sandBoxTopPath is None:
+            raise ValueError
+
         if self.__verbose:
             self.__lfh.write(
                 "\n+CvsSandBoxAdmin(remove) Remove %s from project %s in CVS repository working path %s\n" % (relProjectPath, projectDir, self.__sandBoxTopPath)
@@ -574,8 +608,10 @@ class CvsSandBoxAdmin(CvsWrapperBase):
 
         return (ok, text)
 
-    def removeDir(self, projectDir, relProjectPath):
+    def removeDir(self, projectDir: str, relProjectPath: str) -> tuple[bool, str]:
         """Remove from the CVS sandbox working directory the input empty directory."""
+        if self.__sandBoxTopPath is None:
+            raise ValueError
         if self.__verbose:
             self.__lfh.write(
                 "\n+CvsSandBoxAdmin(removeDir) Remove %s from project %s in CVS repository working path %s\n"
@@ -603,13 +639,17 @@ class CvsSandBoxAdmin(CvsWrapperBase):
 
         return (ok, text)
 
-    def __getCheckOutProjectCmd(self, relProjectPath, revId=None):
+    def __getCheckOutProjectCmd(self, relProjectPath: str, revId: str | None = None) -> str | None:
         """Return CVS command for checkout of a complete project from the current repository."""
         if self._wrkPath is None:
             self._makeTempWorkingDir()
         errPath = self._getErrorFilePath()
         if self._setCvsRoot():
+            if self.__sandBoxTopPath is None:
+                raise ValueError
             cmd = " cd " + self.__sandBoxTopPath + " ; "
+            if self._cvsRoot is None:
+                raise ValueError
             if revId is None:
                 cmd += "cvs -d " + self._cvsRoot + " co " + relProjectPath + self._getRedirect(fileNameOut=errPath, fileNameErr=errPath) + " ; "
             else:
@@ -636,7 +676,7 @@ class CvsSandBoxAdmin(CvsWrapperBase):
     #         cmd = None
     #     return cmd
 
-    def __getUpdateCmd(self, projectDir, relProjectPath, prune=False, appendErrors=False):
+    def __getUpdateCmd(self, projectDir: str, relProjectPath: str, prune: bool = False, appendErrors: bool = False) -> str | None:
         """Return CVS command for updating the input relative path within project working
         directory from current repository.
         """
@@ -648,7 +688,11 @@ class CvsSandBoxAdmin(CvsWrapperBase):
                 pF = " -P "
             else:
                 pF = " "
+            if self.__sandBoxTopPath is None:
+                raise ValueError
             targetPath = os.path.join(self.__sandBoxTopPath, projectDir)
+            if self._cvsRoot is None:
+                raise ValueError
             cmd = " cd " + targetPath + "; "
             cmd += (
                 "cvs -q -d "
@@ -663,16 +707,20 @@ class CvsSandBoxAdmin(CvsWrapperBase):
             cmd = None
         return cmd
 
-    def __getAddCommitCmd(self, projectDir, relProjectPath, message="Initial version"):
+    def __getAddCommitCmd(self, projectDir: str, relProjectPath: str, message: str = "Initial version") -> str | None:
         if self._wrkPath is None:
             self._makeTempWorkingDir()
         errPath = self._getErrorFilePath()
         if self._setCvsRoot():
+            if self.__sandBoxTopPath is None:
+                raise ValueError
             cmd = " cd " + os.path.join(self.__sandBoxTopPath, projectDir) + " ; "
             if message is not None and len(message) > 0:
                 qm = ' -m "' + message + '" '
             else:
                 qm = ""
+            if self._cvsRoot is None:
+                raise ValueError
             cmd += "cvs -d " + self._cvsRoot + " add " + relProjectPath + self._getRedirect(fileNameOut=errPath, fileNameErr=errPath) + " ; "
             cmd += (
                 "cvs -d " + self._cvsRoot + " commit " + qm + relProjectPath + self._getRedirect(fileNameOut=errPath, fileNameErr=errPath, append=True) + " ; "
@@ -681,16 +729,20 @@ class CvsSandBoxAdmin(CvsWrapperBase):
             cmd = None
         return cmd
 
-    def __getCommitCmd(self, projectDir, relProjectPath, message="Automated update"):
+    def __getCommitCmd(self, projectDir: str, relProjectPath: str, message: str = "Automated update") -> str | None:
         if self._wrkPath is None:
             self._makeTempWorkingDir()
         errPath = self._getErrorFilePath()
         if self._setCvsRoot():
+            if self.__sandBoxTopPath is None:
+                raise ValueError
             cmd = " cd " + os.path.join(self.__sandBoxTopPath, projectDir) + " ; "
             if message is not None and len(message) > 0:
                 qm = ' -m "' + message + '" '
             else:
                 qm = ""
+            if self._cvsRoot is None:
+                raise ValueError
             cmd += (
                 "cvs -d " + self._cvsRoot + " commit " + qm + relProjectPath + self._getRedirect(fileNameOut=errPath, fileNameErr=errPath, append=True) + " ; "
             )
@@ -698,16 +750,20 @@ class CvsSandBoxAdmin(CvsWrapperBase):
             cmd = None
         return cmd
 
-    def __getRemoveCommitCmd(self, projectDir, relProjectPath, message="File removed"):
+    def __getRemoveCommitCmd(self, projectDir: str, relProjectPath: str, message: str = "File removed") -> str | None:
         if self._wrkPath is None:
             self._makeTempWorkingDir()
         errPath = self._getErrorFilePath()
         if self._setCvsRoot():
+            if self.__sandBoxTopPath is None:
+                raise ValueError
             cmd = " cd " + os.path.join(self.__sandBoxTopPath, projectDir) + " ; "
             if message is not None and len(message) > 0:
                 qm = ' -m "' + message + '" '
             else:
                 qm = ""
+            if self._cvsRoot is None:
+                raise ValueError
             cmd += "cvs -d " + self._cvsRoot + " remove -f " + relProjectPath + self._getRedirect(fileNameOut=errPath, fileNameErr=errPath) + " ; "
             cmd += (
                 "cvs -d " + self._cvsRoot + " commit " + qm + relProjectPath + self._getRedirect(fileNameOut=errPath, fileNameErr=errPath, append=True) + " ; "
@@ -716,16 +772,20 @@ class CvsSandBoxAdmin(CvsWrapperBase):
             cmd = None
         return cmd
 
-    def __getRemoveDirCommitCmd(self, projectDir, relProjectPath, message="Directory removed"):
+    def __getRemoveDirCommitCmd(self, projectDir: str, relProjectPath: str, message: str = "Directory removed") -> str | None:
         if self._wrkPath is None:
             self._makeTempWorkingDir()
         errPath = self._getErrorFilePath()
         if self._setCvsRoot():
+            if self.__sandBoxTopPath is None:
+                raise ValueError
             cmd = " cd " + os.path.join(self.__sandBoxTopPath, projectDir) + " ; "
             if message is not None and len(message) > 0:
                 qm = ' -m "' + message + '" '
             else:
                 qm = ""
+            if self._cvsRoot is None:
+                raise ValueError
             cmd += "cvs -d " + self._cvsRoot + " remove " + relProjectPath + self._getRedirect(fileNameOut=errPath, fileNameErr=errPath) + " ; "
             cmd += (
                 "cvs -d " + self._cvsRoot + " commit " + qm + relProjectPath + self._getRedirect(fileNameOut=errPath, fileNameErr=errPath, append=True) + " ; "

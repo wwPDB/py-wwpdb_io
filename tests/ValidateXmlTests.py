@@ -24,7 +24,7 @@ import os
 from wwpdb.io.file.ValidateXml import ValidateXml
 
 HERE = os.path.abspath(os.path.dirname(__file__))
-TOPDIR = os.path.dirname(os.path.dirname(os.path.dirname(HERE)))
+TOPDIR = os.path.dirname(HERE)
 mockTopPath = os.path.join(TOPDIR, "wwpdb", "mock-data")
 
 

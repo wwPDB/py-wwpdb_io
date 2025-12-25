@@ -108,8 +108,8 @@ venv.bak/
 .mypy_cache/
 
 # Test output
-wwpdb/io/tests-io/test-output
-wwpdb/io/tests-io-config/test-output
+tests/test-output
+tests-config/test-output
 
 # Emacs
 *~

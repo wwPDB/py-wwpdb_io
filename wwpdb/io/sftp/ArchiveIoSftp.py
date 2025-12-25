@@ -12,6 +12,9 @@ Archive data transfer operation utilities using SFTP protocol
 
 """
 
+# ruff: noqa: EM101,TRY003
+from __future__ import annotations
+
 __docformat__ = "restructuredtext en"
 __author__ = "John Westbrook"
 __email__ = "john.westbrook@rcsb.org"
@@ -19,8 +22,10 @@ __license__ = "Apache 2.0"
 __version__ = "V0.001"
 
 #
-import paramiko
 import logging
+from typing import Any
+
+import paramiko
 
 from wwpdb.io.sftp.ArchiveIoBase import ArchiveIoBase
 
@@ -33,30 +38,31 @@ class ArchiveIoSftp(ArchiveIoBase):
     data transfer operations for SFTP protocol
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         super(ArchiveIoSftp, self).__init__(*args, **kwargs)
-        self.__sftpClient = None
-        self.__transport = None
+        self.__sftpClient: paramiko.sftp_client.SFTPClient | None = None
+        self.__transport: paramiko.Transport | None = None
 
-    def getRootPath(self):
+    def getRootPath(self) -> str | None:
         return self._rootPath
 
-    def connectToServer(self):
+    def connectToServer(self) -> bool:
         try:
             if self._password is not None:
                 self.__sftpClient = self.__makeSftpClient(self._hostName, self._hostPort, self._userName, pw=self._password)
             elif self._keyFilePath is not None:
-                self.__sftpClient = self.__makeSftpClient(self._hostName, self._hostPort, self._userName, keyFilePath=self._keyFilePath, keyFileType=self._keyFileType)
+                self.__sftpClient = self.__makeSftpClient(
+                    self._hostName, self._hostPort, self._userName, keyFilePath=self._keyFilePath, keyFileType=self._keyFileType
+                )
             else:
                 logger.error("Failing connect for server %s with missing configuration information", self._serverId)
                 return False
             return True
         except Exception as e:
             if self._raiseExceptions:
-                raise e
-            else:
-                logger.error("Failing connect for server %s with %s", self._serverId, str(e))
-                return False
+                raise  # reraises e
+            logger.error("Failing connect for server %s with %s", self._serverId, str(e))
+            return False
 
     def connect(self, hostName, userName, port=22, pw=None, keyFilePath=None, keyFileType="RSA"):  # pylint: disable=arguments-differ
         try:
@@ -64,12 +70,13 @@ class ArchiveIoSftp(ArchiveIoBase):
             return True
         except Exception as e:
             if self._raiseExceptions:
-                raise e
-            else:
-                logger.error("Failing connect for hostname %s with %s", hostName, str(e))
-                return False
+                raise  # reraises e
+            logger.error("Failing connect for hostname %s with %s", hostName, str(e))
+            return False
 
-    def __makeSftpClient(self, hostName, port, userName, pw=None, keyFilePath=None, keyFileType="RSA"):
+    def __makeSftpClient(
+        self, hostName: str, port: int, userName: str, pw: str | None = None, keyFilePath: str | None = None, keyFileType: str = "RSA"
+    ) -> paramiko.sftp_client.SFTPClient | None:
         """
         Make SFTP client connected to the supplied host on the supplied port authenticating as the user with
         supplied username and supplied password or with the private key in a file with the supplied path.
@@ -78,7 +85,12 @@ class ArchiveIoSftp(ArchiveIoBase):
         :rtype: Paramiko SFTPClient object.
 
         """
-        sftp = None
+
+        def raise_no_support() -> None:
+            err = "DSA keys no longer supported"
+            raise ValueError(err)
+
+        sftp: paramiko.sftp_client.SFTPClient | None = None
         key = None
         self.__transport = None
         try:
@@ -88,11 +100,9 @@ class ArchiveIoSftp(ArchiveIoBase):
                     # The private key is a DSA type key.
                     # key = paramiko.DSSKey.from_private_key_file(keyFilePath)
                     # No longer supported key type by library
-                    err = "DSA keys no longer supported"
-                    raise ValueError(err)
-                else:
-                    # The private key is a RSA type key.
-                    key = paramiko.RSAKey.from_private_key_file(keyFilePath)
+                    raise_no_support()
+                # The private key is a RSA type key.
+                key = paramiko.RSAKey.from_private_key_file(keyFilePath)
 
             # Create Transport object using supplied method of authentication.
             self.__transport = paramiko.Transport((hostName, port))
@@ -111,87 +121,96 @@ class ArchiveIoSftp(ArchiveIoBase):
             if self.__transport is not None:
                 self.__transport.close()
             if self._raiseExceptions:
-                raise e
+                raise  # reraises e
 
-    def mkdir(self, path, mode=511):  # pylint: disable=arguments-differ
+        return None
+
+    def mkdir(self, path: str, mode: int = 511) -> bool:  # pylint: disable=arguments-differ
+        if not self.__sftpClient:
+            raise RuntimeError("sftpClient not initialized")
         try:
             self.__sftpClient.mkdir(path, mode)
             return True
         except Exception as e:
             if self._raiseExceptions:
-                raise e
-            else:
-                logger.error("mkdir failing for path %s with %s", path, str(e))
-                return False
+                raise  # reraises e
+            logger.error("mkdir failing for path %s with %s", path, str(e))
+            return False
 
-    def stat(self, path):
+    def stat(self, path: str) -> dict[str, Any]:
         """sftp  stat attributes  = [ size=17 uid=0 gid=0 mode=040755 atime=1507723473 mtime=1506956503 ]"""
+        if not self.__sftpClient:
+            raise RuntimeError("sftpClient not initialized")
         try:
             s = self.__sftpClient.stat(path)
             d = {"mtime": s.st_mtime, "size": s.st_size, "mode": s.st_mode, "uid": s.st_uid, "gid": s.st_gid, "atime": s.st_atime}
             return d
         except Exception as e:
             if self._raiseExceptions:
-                raise e
-            else:
-                logger.error("stat failing for path %s with %s", path, str(e))
-                return {}
+                raise  # reraises e
+            logger.error("stat failing for path %s with %s", path, str(e))
+            return {}
 
-    def put(self, localPath, remotePath):
+    def put(self, localPath: str, remotePath: str) -> bool:
+        if not self.__sftpClient:
+            raise RuntimeError("sftpClient not initialized")
         try:
             self.__sftpClient.put(localPath, remotePath)
             return True
         except Exception as e:
             if self._raiseExceptions:
-                raise e
-            else:
-                logger.error("put failing for localPath %s  remotePath %s with %s", localPath, remotePath, str(e))
-                return False
+                raise  # reraises e
+            logger.error("put failing for localPath %s  remotePath %s with %s", localPath, remotePath, str(e))
+            return False
 
-    def get(self, remotePath, localPath):
+    def get(self, remotePath: str, localPath: str) -> bool:
+        if not self.__sftpClient:
+            raise RuntimeError("sftpClient not initialized")
         try:
             self.__sftpClient.get(remotePath, localPath)
             return True
         except Exception as e:
             if self._raiseExceptions:
-                raise e
-            else:
-                logger.error("get failing for remotePath %s localPath %s with %s", remotePath, localPath, str(e))
-                return False
+                raise  # reraises e
+            logger.error("get failing for remotePath %s localPath %s with %s", remotePath, localPath, str(e))
+            return False
 
-    def listdir(self, path):
+    def listdir(self, path: str) -> list[str] | bool:
+        if not self.__sftpClient:
+            raise RuntimeError("sftpClient not initialized")
         try:
             return self.__sftpClient.listdir(path)
         except Exception as e:
             if self._raiseExceptions:
-                raise e
-            else:
-                logger.error("listdir failing for path %s with %s", path, str(e))
-                return False
+                raise  # reraises e
+            logger.error("listdir failing for path %s with %s", path, str(e))
+            return False
 
-    def rmdir(self, dirPath):  # pylint: disable=arguments-differ,arguments-renamed
+    def rmdir(self, dirPath: str) -> bool:  # pylint: disable=arguments-differ,arguments-renamed
+        if not self.__sftpClient:
+            raise RuntimeError("sftpClient not initialized")
         try:
             self.__sftpClient.rmdir(dirPath)
             return True
         except Exception as e:
             if self._raiseExceptions:
-                raise e
-            else:
-                logger.error("rmdir failing for path %s with %s", dirPath, str(e))
-                return False
+                raise  # reraises e
+            logger.error("rmdir failing for path %s with %s", dirPath, str(e))
+            return False
 
-    def remove(self, filePath):  # pylint: disable=arguments-differ,arguments-renamed
+    def remove(self, filePath: str) -> bool:  # pylint: disable=arguments-differ
+        if not self.__sftpClient:
+            raise RuntimeError("sftpClient not initialized")
         try:
             self.__sftpClient.remove(filePath)
             return True
         except Exception as e:
             if self._raiseExceptions:
-                raise e
-            else:
-                logger.error("remove failing for path %s with %s", filePath, str(e))
-                return False
+                raise  # reraises e
+            logger.error("remove failing for path %s with %s", filePath, str(e))
+            return False
 
-    def close(self):
+    def close(self) -> bool:
         try:
             if self.__sftpClient is not None:
                 self.__sftpClient.close()
@@ -201,6 +220,7 @@ class ArchiveIoSftp(ArchiveIoBase):
             return True
         except Exception as e:
             if self._raiseExceptions:
-                raise e
-            else:
-                logger.error("Close failing with %s", str(e))
+                raise  # reraises e
+            logger.error("Close failing with %s", str(e))
+
+        return False

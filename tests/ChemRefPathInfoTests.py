@@ -12,10 +12,11 @@ __docformat__ = "restructuredtext en"
 __author__ = "Ezra Peisach"
 __email__ = "peisach@rcsb.rutgers.edu"
 
-import unittest
 import os
-from wwpdb.io.locator.ChemRefPathInfo import ChemRefPathInfo  # noqa: E402
 import platform
+import unittest
+
+from wwpdb.io.locator.ChemRefPathInfo import ChemRefPathInfo  # noqa: E402
 
 HERE = os.path.abspath(os.path.dirname(__file__))
 TOPDIR = os.path.dirname(HERE)
@@ -26,10 +27,10 @@ mockTopPath = os.path.join(TOPDIR, "wwpdb", "mock-data")
 
 
 class ChemRefPathInfoTests(unittest.TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         self.crpi = ChemRefPathInfo()
 
-    def testCCDHash(self):
+    def testCCDHash(self) -> None:
         """Test return of CCD hash"""
         self.assertEqual(self.crpi.getCcdHash("ABC"), "A")
         self.assertEqual(self.crpi.getCcdHash("abc"), "A")
@@ -39,7 +40,7 @@ class ChemRefPathInfoTests(unittest.TestCase):
         self.assertEqual(self.crpi.getCcdHash(None), None)
         self.assertEqual(self.crpi.getCcdHash("aapt"), "PT")
 
-    def testGetIdType(self):
+    def testGetIdType(self) -> None:
         """Test identifier based on idCode"""
         self.assertEqual(self.crpi.getIdType("A"), "CC")
         self.assertEqual(self.crpi.getIdType("ABC"), "CC")
@@ -50,7 +51,7 @@ class ChemRefPathInfoTests(unittest.TestCase):
         self.assertEqual(self.crpi.getIdType("FAM_1234"), "PRD_FAMILY")
 
 
-def chemRefStandardTests():  # pragma: no cover
+def chemRefStandardTests() -> unittest.TestSuite:  # pragma: no cover
     suiteSelect = unittest.TestSuite()
     suiteSelect.addTest(ChemRefPathInfoTests("testCCDHash"))
     suiteSelect.addTest(ChemRefPathInfoTests("testGetIdType"))

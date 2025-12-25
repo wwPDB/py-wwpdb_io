@@ -18,10 +18,10 @@ from wwpdb.io.sftp.ArchiveIoSftp import ArchiveIoSftp
 
 
 class ImportTests(unittest.TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         pass
 
-    def testInstantiate(self):
+    def testInstantiate(self) -> None:
         aio = ArchiveIoSftp()  # noqa: F841 pylint: disable=unused-variable
 
 

@@ -12,15 +12,16 @@
 Test cases for FormatOut()
 
 """
+
 __docformat__ = "restructuredtext en"
 __author__ = "Ezra Peisach"
 __email__ = "peisach@rcsb.rutgers.edu"
 __license__ = "Creative Commons Attribution 3.0 Unported"
 __version__ = "V0.01"
 
-import unittest
-import sys
 import os
+import sys
+import unittest
 
 from wwpdb.io.misc.FormatOut import FormatOut
 

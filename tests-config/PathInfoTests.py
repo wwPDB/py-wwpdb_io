@@ -1,3 +1,4 @@
+# pylint: disable=logging-not-lazy
 ##
 # File:    PathInfoTests.py
 # Date:    26-Feb-2013
@@ -13,17 +14,18 @@ Skeleton examples for creating standard file names for sequence resources and da
  **** A file source must be created to support these examples  ****
 
 """
+
 __docformat__ = "restructuredtext en"
 __author__ = "John Westbrook"
 __email__ = "jwest@rcsb.rutgers.edu"
 __license__ = "Creative Commons Attribution 3.0 Unported"
 __version__ = "V0.07"
 
-import time
-import unittest
+import logging
 import os
 import platform
-import logging
+import time
+import unittest
 
 HERE = os.path.abspath(os.path.dirname(__file__))
 TOPDIR = os.path.dirname(HERE)
@@ -38,8 +40,8 @@ from wwpdb.utils.testing.SiteConfigSetup import SiteConfigSetup  # noqa: E402
 SiteConfigSetup().setupEnvironment(TESTOUTPUT, mockTopPath)
 
 from wwpdb.utils.config.ConfigInfo import getSiteId  # noqa: E402
-from wwpdb.io.locator.PathInfo import PathInfo  # noqa: E402
 
+from wwpdb.io.locator.PathInfo import PathInfo  # noqa: E402
 
 FORMAT = "[%(levelname)s]-%(module)s.%(funcName)s: %(message)s"
 logging.basicConfig(format=FORMAT, level=logging.DEBUG)
@@ -49,15 +51,15 @@ logger = logging.getLogger()
 class PathInfoTests(unittest.TestCase):
     def setUp(self):
         #
-        self.__verbose = True
+        # self.__verbose = True
         self.__siteId = getSiteId(defaultSiteId=None)
 
         self.__startTime = time.time()
-        logger.debug("Starting %s at %s" % (self.id(), time.strftime("%Y %m %d %H:%M:%S", time.localtime())))
+        logger.debug("Starting %s at %s", self.id(), time.strftime("%Y %m %d %H:%M:%S", time.localtime()))
 
     def tearDown(self):
         endTime = time.time()
-        logger.debug("Completed %s at %s (%.4f seconds)\n" % (self.id(), time.strftime("%Y %m %d %H:%M:%S", time.localtime()), endTime - self.__startTime))
+        logger.debug("Completed %s at %s (%.4f seconds)\n", self.id(), time.strftime("%Y %m %d %H:%M:%S", time.localtime()), endTime - self.__startTime)
 
     def testGetStandardPaths(self):
         """Test getting standard file names within session paths."""
@@ -73,101 +75,107 @@ class PathInfoTests(unittest.TestCase):
         ]
         eId = "1"
         for fs, dataSetId, wfInst, pId, vId in tests:
-            logger.debug("File source %s dataSetId %s  partno  %s wfInst %s version %s" % (fs, dataSetId, pId, wfInst, vId))
+            logger.debug("File source %s dataSetId %s  partno  %s wfInst %s version %s", fs, dataSetId, pId, wfInst, vId)
 
             pI = PathInfo(siteId=self.__siteId)
             pI.setDebugFlag(False)
             #
             fp = pI.getModelPdbxFilePath(dataSetId, wfInstanceId=wfInst, fileSource=fs, versionId=vId)
-            logger.debug("Model path (PDBx):   %s" % fp)
+            logger.debug("Model path (PDBx):   %s", fp)
             self.assertIsNotNone(fp, "Failed to find model file - default")
 
             fp = pI.getModelPdbxFilePath(dataSetId, wfInstanceId=wfInst, fileSource=fs, versionId=vId, mileStone="deposit")
-            logger.debug("Model path (deposit) (PDBx):   %s" % fp)
+            logger.debug("Model path (deposit) (PDBx):   %s", fp)
             self.assertIsNotNone(fp, "Failed to find model file - deposit")
 
             fp = pI.getModelPdbxFilePath(dataSetId, wfInstanceId=wfInst, fileSource=fs, versionId=vId, mileStone="upload")
-            logger.debug("Model path (upload) (PDBx):   %s" % fp)
+            logger.debug("Model path (upload) (PDBx):   %s", fp)
             self.assertIsNotNone(fp, "Failed to find model file - upload")
 
             fp = pI.getModelPdbFilePath(dataSetId, wfInstanceId=wfInst, fileSource=fs, versionId=vId)
-            logger.debug("Model path (PDB):    %s" % fp)
+            logger.debug("Model path (PDB):    %s", fp)
             self.assertIsNotNone(fp, "Failed to find PDB model file")
 
             fp = pI.getStructureFactorsPdbxFilePath(dataSetId, wfInstanceId=wfInst, fileSource=fs, versionId=vId)
-            logger.debug("SF path (pdbx):    %s" % fp)
+            logger.debug("SF path (pdbx):    %s", fp)
             self.assertIsNotNone(fp, "Failed to find SF file")
 
             fp = pI.getPolyLinkFilePath(dataSetId, wfInstanceId=wfInst, fileSource=fs, versionId=vId)
-            logger.debug("Link dist  (PDBx):   %s" % fp)
+            logger.debug("Link dist  (PDBx):   %s", fp)
             self.assertIsNotNone(fp, "Failed to find PDBx model file")
 
             fp = pI.getPolyLinkReportFilePath(dataSetId, wfInstanceId=wfInst, fileSource=fs, versionId=vId)
-            logger.debug("Link Report dist  (PDBx):   %s" % fp)
+            logger.debug("Link Report dist  (PDBx):   %s", fp)
             self.assertIsNotNone(fp, "Failed to find link report file")
 
             fp = pI.getSequenceStatsFilePath(dataSetId, wfInstanceId=wfInst, fileSource=fs, versionId=vId)
-            logger.debug("Sequence stats (PIC):   %s" % fp)
+            logger.debug("Sequence stats (PIC):   %s", fp)
             self.assertIsNotNone(fp, "Failed to find sequence stats file")
 
             fp = pI.getSequenceAlignFilePath(dataSetId, wfInstanceId=wfInst, fileSource=fs, versionId=vId)
-            logger.debug("Sequence align (PIC):   %s" % fp)
+            logger.debug("Sequence align (PIC):   %s", fp)
             self.assertIsNotNone(fp, "Failed to find sequence align file")
 
             fp = pI.getReferenceSequenceFilePath(dataSetId, entityId=eId, wfInstanceId=wfInst, fileSource=fs, versionId=vId)
-            logger.debug("Reference match entity %s (PDBx):   %s" % (eId, fp))
+            logger.debug("Reference match entity %s (PDBx):   %s", eId, fp)
             self.assertIsNotNone(fp, "Failed to find reference sequence file")
 
             fp = pI.getSequenceAssignmentFilePath(dataSetId, wfInstanceId=wfInst, fileSource=fs, versionId=vId)
-            logger.debug("Sequence assignment (PDBx):   %s" % fp)
+            logger.debug("Sequence assignment (PDBx):   %s", fp)
             self.assertIsNotNone(fp, "Failed to find sequence assignment")
 
             fp = pI.getAssemblyAssignmentFilePath(dataSetId, wfInstanceId=wfInst, fileSource=fs, versionId=vId)
-            logger.debug("Assembly assignment (PDBx):   %s" % fp)
+            logger.debug("Assembly assignment (PDBx):   %s", fp)
             self.assertIsNotNone(fp, "Failed to find assembly assignment")
 
             fp = pI.getBlastMatchFilePath(dataSetId, wfInstanceId=wfInst, fileSource=fs, versionId=vId)
-            logger.debug("Blast match (xml):   %s" % fp)
+            logger.debug("Blast match (xml):   %s", fp)
             self.assertIsNotNone(fp, "Failed to find blast match file")
 
-            fp = pI.getFilePath(dataSetId, wfInstanceId=wfInst, contentType="seqdb-match", formatType="pdbx", fileSource=fs, versionId=vId, partNumber=pId, mileStone=None)
-            logger.debug("Sequence match (getFilePath) (PDBx):   %s" % fp)
+            fp = pI.getFilePath(
+                dataSetId, wfInstanceId=wfInst, contentType="seqdb-match", formatType="pdbx", fileSource=fs, versionId=vId, partNumber=pId, mileStone=None
+            )
+            logger.debug("Sequence match (getFilePath) (PDBx):   %s", fp)
             self.assertIsNotNone(fp, "Failed to find seq-db match")
             #
             fp = pI.getFilePathContentTypeTemplate(dataSetId, wfInstanceId=wfInst, contentType="model", fileSource=fs)
-            logger.debug("Model template:   %s" % fp)
+            logger.debug("Model template:   %s", fp)
             self.assertIsNotNone(fp, "Failed to find model template")
 
             fp = pI.getArchivePath(dataSetId)
-            logger.debug("getArchivePath (PDBx):   %s" % fp)
+            logger.debug("getArchivePath (PDBx):   %s", fp)
             self.assertIsNotNone(fp, "Failed to find dir path")
 
             fp = pI.getDepositPath(dataSetId)
-            logger.debug("getDepositPath (PDBx):   %s" % fp)
+            logger.debug("getDepositPath (PDBx):   %s", fp)
             self.assertIsNotNone(fp, "Failed to find deposit path")
 
             fp = pI.getInstancePath(dataSetId, wfInstanceId="W_099")
-            logger.debug("getWfInstancePath (PDBx):   %s" % fp)
+            logger.debug("getWfInstancePath (PDBx):   %s", fp)
             self.assertIsNotNone(fp, "Failed to find wf instance path")
 
             fp = pI.getInstanceTopPath(
                 dataSetId,
             )
-            logger.debug("getWfInstanceTopPath (PDBx):   %s" % fp)
+            logger.debug("getWfInstanceTopPath (PDBx):   %s", fp)
             self.assertIsNotNone(fp, "Failed to find wf Top instance path")
 
             fp = pI.getTempDepPath(dataSetId)
-            logger.debug("getTempDepPath):   %s" % fp)
+            logger.debug("getTempDepPath):   %s", fp)
             self.assertIsNotNone(fp, "Failed to find TempDep path")
             #
             fp = pI.getDirPath(dataSetId, wfInstanceId=wfInst, fileSource=fs, versionId=vId, partNumber=pId, mileStone=None)
-            logger.debug("Sequence match (getDirPath) (PDBx):   %s" % fp)
+            logger.debug("Sequence match (getDirPath) (PDBx):   %s", fp)
             self.assertIsNotNone(fp, "Failed to find dir path")
 
-            ft = pI.getFilePathVersionTemplate(dataSetId, wfInstanceId=wfInst, contentType="em-volume", formatType="map", fileSource="archive", partNumber=pId, mileStone=None)
-            logger.debug("EM volume version template:   %r" % ft)
-            ft = pI.getFilePathPartitionTemplate(dataSetId, wfInstanceId=wfInst, contentType="em-mask-volume", formatType="map", fileSource="archive", mileStone=None)
-            logger.debug("EM mask partition template:   %r" % ft)
+            ft = pI.getFilePathVersionTemplate(
+                dataSetId, wfInstanceId=wfInst, contentType="em-volume", formatType="map", fileSource="archive", partNumber=pId, mileStone=None
+            )
+            logger.debug("EM volume version template:   %r", ft)
+            ft = pI.getFilePathPartitionTemplate(
+                dataSetId, wfInstanceId=wfInst, contentType="em-mask-volume", formatType="map", fileSource="archive", mileStone=None
+            )
+            logger.debug("EM mask partition template:   %r", ft)
             self.assertIsNotNone(ft, "Failed to mask model file")
 
         self.assertEqual(ok, True)
@@ -175,13 +183,13 @@ class PathInfoTests(unittest.TestCase):
     def testSessionPath(self):
         tests = [("archive", "D_1000000000", "session_test/12345")]
         for fs, dataSetId, session_dir in tests:
-            logger.debug("File source %s dataSetId %s  session dir %s" % (fs, dataSetId, session_dir))
+            logger.debug("File source %s dataSetId %s  session dir %s", fs, dataSetId, session_dir)
 
             fileSource = ("session", "wf-session", "session-download", "uploads", "pickles")
-            for fs in fileSource:
+            for fsi in fileSource:
                 pI = PathInfo(siteId=self.__siteId, sessionPath=session_dir)
-                fp = pI.getDirPath(dataSetId=dataSetId, fileSource=fs)
-                logger.debug("%s path %s" % (fs, fp))
+                fp = pI.getDirPath(dataSetId=dataSetId, fileSource=fsi)
+                logger.debug("%s path %s", fsi, fp)
                 self.assertIsNotNone(fp, "Failed to get session path")
 
             # fp = pI.getWebDownloadPath(dataSetId=dataSetId)
@@ -190,9 +198,21 @@ class PathInfoTests(unittest.TestCase):
 
     def testFileNames(self):
         """Tests parsing and validity functions"""
-        tests = [("D_000001_model_P1.cif.V1", True), ("D_000001_model_P1.cif", False), ("D_000001_P1.cif.V1", False), ("D_000001_model.cif.V1", False), ("D_000001.cif", False)]
+        tests = [
+            ("D_000001_model_P1.cif.V1", True),
+            ("D_000001_model_P1.cif", False),
+            ("D_000001_P1.cif.V1", False),
+            ("D_000001_model.cif.V1", False),
+            ("D_000001.cif", False),
+        ]
         # Matches w/o version number
-        tests2 = [("D_000001_model_P1.cif.V1", True), ("D_000001_model_P1.cif", True), ("D_000001_P1.cif.V1", False), ("D_000001_model.cif.V1", False), ("D_000001.cif", False)]
+        tests2 = [
+            ("D_000001_model_P1.cif.V1", True),
+            ("D_000001_model_P1.cif", True),
+            ("D_000001_P1.cif.V1", False),
+            ("D_000001_model.cif.V1", False),
+            ("D_000001.cif", False),
+        ]
 
         for t in tests:
             pI = PathInfo(siteId=self.__siteId)
@@ -229,6 +249,6 @@ def suiteStandardPathTests():  # pragma: no cover
 
 
 if __name__ == "__main__":  # pragma: no cover
-    if True:
+    if True:  # pylint: disable=using-constant-test
         mySuite = suiteStandardPathTests()
         unittest.TextTestRunner(verbosity=2).run(mySuite)

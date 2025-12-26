@@ -1,3 +1,9 @@
+# For azure pipeline to cache dependencies.
+click
+mmcif
+mmcif.utils
+paramiko
+wwpdb.utils.config
 # For testing
 wwpdb.utils.testing
 pytest

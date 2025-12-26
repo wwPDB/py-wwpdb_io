@@ -1,3 +1,4 @@
+# ruff: noqa: T201,S408
 ##
 # File:  ValidateXml.py
 # Date:  14-Aug-2014
@@ -15,27 +16,28 @@ This software is provided under a Creative Commons Attribution 3.0 Unported
 License described at http://creativecommons.org/licenses/by/3.0/.
 
 """
+
 __docformat__ = "restructuredtext en"
 __author__ = "Zukang Feng"
 __email__ = "zfeng@rcsb.rutgers.edu"
 __license__ = "Creative Commons Attribution 3.0 Unported"
 __version__ = "V0.07"
 
-from xml.dom import minidom
 import sys
 import traceback
+from xml.dom import minidom
 
 
-class ValidateXml(object):
+class ValidateXml:
     """Class responsible for parsing validation XML report"""
 
-    def __init__(self, FileName=None, verbose=False, log=sys.stderr):  # pylint: disable=unused-argument
+    def __init__(self, FileName=None, verbose=False, log=sys.stderr):  # noqa: ARG002 pylint: disable=unused-argument
         self.__xmlFile = FileName
-        self.__doc = minidom.parse(self.__xmlFile)
+        self.__doc = minidom.parse(self.__xmlFile)  # noqa: S318
         #
         self.clashMap = {}
         self.clashOutliers = []
-        self.summaryValues = dict()
+        self.summaryValues = {}
         self.__outlierMap = {}
         self.__outlierResult = {}
         self.__calculated_completeness = ""
@@ -287,7 +289,7 @@ class ValidateXml(object):
         Entry = self.__doc.getElementsByTagName("Entry")[0]
         for item in summaryList:
             if Entry.getAttribute(item) and Entry.getAttribute(item) != "NotAvailable":
-                try:
+                try:  # noqa: SIM105
                     self.summaryValues[item] = float(Entry.getAttribute(item))
                 except:  # noqa: E722 pylint: disable=bare-except
                     pass

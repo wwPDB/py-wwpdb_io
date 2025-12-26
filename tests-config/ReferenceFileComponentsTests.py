@@ -81,8 +81,7 @@ class ReferenceFileComponentsTests(unittest.TestCase):
                 rfc.set(fileName)
                 idCode, contentType, contentFormat, partNo, versionNo = rfc.get()
                 self.__lfh.write(
-                    "RFC- fileName %s idcode %s contentType %s contentFormat %s partNo %d versionId %s\n"
-                    % (fileName, idCode, contentType, contentFormat, partNo, versionNo)
+                    "RFC- fileName %s idcode %s contentType %s contentFormat %s partNo %d versionId %s\n" % (fileName, idCode, contentType, contentFormat, partNo, versionNo)
                 )
                 self.assertEqual(valid[fileName], [idCode, contentType, contentFormat, partNo, versionNo])
         except:  # noqa: E722  # pragma: no cover  # pylint: disable=bare-except

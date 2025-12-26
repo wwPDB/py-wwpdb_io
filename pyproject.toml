@@ -51,8 +51,10 @@ exclude = ["/wwpdb/mock-data", "/wwpdb/io/Archive"]
 
 #=================================== Ruff basics =============================#
 [tool.ruff]
+target-version = "py38"
+output-format = "concise"
 
-line-length = 160 # 120 is hatch's default via 'hatch init'
+line-length = 185 # 120 is hatch's default via 'hatch init'
 include = [
   "*.py",           # Source
   "pyproject.toml", # This file (RUF rules only)
@@ -64,6 +66,10 @@ exclude = [
   "fixtures",
   "OldTests",
 ]
+
+[tool.ruff.format]
+quote-style = "double"
+
 #
 #=================================== Ruff lint ==============================#
 
@@ -71,7 +77,7 @@ exclude = [
 
 #
 # ------------------------- Ruff misc. options ----------------------
-preview = true
+preview = false
 explicit-preview-rules = true
 
 ignore = [
@@ -163,7 +169,7 @@ ignore_missing_imports = true
 exclude = [
 	"test-output",
 	"wwpdb/io/Archive",
-	"tests-io/OldTests"
+	"tests/OldTests"
 ]
 
 # ------------------------ ruff disable per file

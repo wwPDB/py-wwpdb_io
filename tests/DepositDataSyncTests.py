@@ -34,7 +34,7 @@ def temp_directories() -> Iterator[tuple[str, str]]:
 
 
 @pytest.fixture
-def sample_files(temp_directories) -> tuple[str, str, str, str]:
+def sample_files(temp_directories) -> tuple[str, str, dict[str, str], dict[str, str]]:
     """Create sample files with different timestamps for testing.
 
     Returns:
@@ -363,7 +363,7 @@ class TestRsyncDataMover:
         # Mock rsync output showing new file transfer
         mock_result = MagicMock()
         mock_result.returncode = 0
-        mock_result.stdout = "sending incremental file list\n" + ">f+++++++++ new_file.txt\n" "sent 123 bytes  received 45 bytes  336.00 bytes/sec\n"
+        mock_result.stdout = "sending incremental file list\n" + ">f+++++++++ new_file.txt\nsent 123 bytes  received 45 bytes  336.00 bytes/sec\n"
         mock_result.stderr = ""
         mock_subprocess.return_value = mock_result
 

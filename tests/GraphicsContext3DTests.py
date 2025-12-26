@@ -87,9 +87,7 @@ class GraphicsContext3DTests(unittest.TestCase):
 
     def testSimpleContexts(self) -> None:
         """Test case -  create simple graphics contexts."""
-        self.__lfh.write(
-            "\nStarting %s %s at %s\n" % (self.__class__.__name__, sys._getframe().f_code.co_name, time.strftime("%Y %m %d %H:%M:%S", time.localtime()))
-        )
+        self.__lfh.write("\nStarting %s %s at %s\n" % (self.__class__.__name__, sys._getframe().f_code.co_name, time.strftime("%Y %m %d %H:%M:%S", time.localtime())))
 
         try:
             gC = GraphicsContext3D(app3D="JMol", verbose=self.__verbose, log=self.__lfh)
@@ -138,9 +136,7 @@ class GraphicsContext3DTests(unittest.TestCase):
 
     def testSiteContexts(self) -> None:
         """Test case -  create graphics contexts for a full site"""
-        self.__lfh.write(
-            "\nStarting %s %s at %s\n" % (self.__class__.__name__, sys._getframe().f_code.co_name, time.strftime("%Y %m %d %H:%M:%S", time.localtime()))
-        )
+        self.__lfh.write("\nStarting %s %s at %s\n" % (self.__class__.__name__, sys._getframe().f_code.co_name, time.strftime("%Y %m %d %H:%M:%S", time.localtime())))
         try:
             #
             #  Create a persistent store for the test file --
@@ -177,9 +173,7 @@ class GraphicsContext3DTests(unittest.TestCase):
 
     def testSiteContextsOld(self) -> None:
         """Test case -  create graphics contexts for a full site"""
-        self.__lfh.write(
-            "\nStarting %s %s at %s\n" % (self.__class__.__name__, sys._getframe().f_code.co_name, time.strftime("%Y %m %d %H:%M:%S", time.localtime()))
-        )
+        self.__lfh.write("\nStarting %s %s at %s\n" % (self.__class__.__name__, sys._getframe().f_code.co_name, time.strftime("%Y %m %d %H:%M:%S", time.localtime())))
         try:
             #
             #  Create a persistent store for the test file --

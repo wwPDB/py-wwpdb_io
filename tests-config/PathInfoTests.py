@@ -132,9 +132,7 @@ class PathInfoTests(unittest.TestCase):
             logger.debug("Blast match (xml):   %s", fp)
             self.assertIsNotNone(fp, "Failed to find blast match file")
 
-            fp = pI.getFilePath(
-                dataSetId, wfInstanceId=wfInst, contentType="seqdb-match", formatType="pdbx", fileSource=fs, versionId=vId, partNumber=pId, mileStone=None
-            )
+            fp = pI.getFilePath(dataSetId, wfInstanceId=wfInst, contentType="seqdb-match", formatType="pdbx", fileSource=fs, versionId=vId, partNumber=pId, mileStone=None)
             logger.debug("Sequence match (getFilePath) (PDBx):   %s", fp)
             self.assertIsNotNone(fp, "Failed to find seq-db match")
             #
@@ -168,13 +166,9 @@ class PathInfoTests(unittest.TestCase):
             logger.debug("Sequence match (getDirPath) (PDBx):   %s", fp)
             self.assertIsNotNone(fp, "Failed to find dir path")
 
-            ft = pI.getFilePathVersionTemplate(
-                dataSetId, wfInstanceId=wfInst, contentType="em-volume", formatType="map", fileSource="archive", partNumber=pId, mileStone=None
-            )
+            ft = pI.getFilePathVersionTemplate(dataSetId, wfInstanceId=wfInst, contentType="em-volume", formatType="map", fileSource="archive", partNumber=pId, mileStone=None)
             logger.debug("EM volume version template:   %r", ft)
-            ft = pI.getFilePathPartitionTemplate(
-                dataSetId, wfInstanceId=wfInst, contentType="em-mask-volume", formatType="map", fileSource="archive", mileStone=None
-            )
+            ft = pI.getFilePathPartitionTemplate(dataSetId, wfInstanceId=wfInst, contentType="em-mask-volume", formatType="map", fileSource="archive", mileStone=None)
             logger.debug("EM mask partition template:   %r", ft)
             self.assertIsNotNone(ft, "Failed to mask model file")
 

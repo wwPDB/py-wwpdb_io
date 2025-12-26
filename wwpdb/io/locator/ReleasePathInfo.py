@@ -8,22 +8,23 @@
 Common methods for finding path information for release directories used in the system.
 
 """
+
 __docformat__ = "restructuredtext en"
 __author__ = "Ezra Peisach"
 __email__ = "peisach@rcsb.rutgers.edu"
 __license__ = "Apache 2.0"
 __version__ = "V0.07"
 
+import logging
 import os
 import os.path
-import logging
 
 from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCommon
 
 logger = logging.getLogger(__name__)
 
 
-class ReleasePathInfo(object):
+class ReleasePathInfo:
     def __init__(self, siteId=None):
         self.__siteId = siteId
         self.__cICommon = ConfigInfoAppCommon(self.__siteId)

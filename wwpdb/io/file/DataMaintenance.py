@@ -12,25 +12,26 @@ Collection of data maintenance utilities to support
 purging data files for released entries.
 
 """
+
 __docformat__ = "restructuredtext en"
 __author__ = "John Westbrook"
 __email__ = "jwest@rcsb.rutgers.edu"
 __license__ = "Creative Commons Attribution 3.0 Unported"
 __version__ = "V0.09"
 
-import sys
+import glob
 import os
 import shutil
+import sys
 import traceback
-import glob
 from datetime import datetime
 
 from wwpdb.utils.config.ConfigInfo import ConfigInfo
+
 from wwpdb.io.locator.PathInfo import PathInfo
 
 
-class DataMaintenance(object):
-
+class DataMaintenance:
     """Collection of data maintenance utilities supporting
     purge and recovery of data files post release.
 
@@ -130,10 +131,8 @@ class DataMaintenance(object):
                 else:
                     shutil.rmtree(dirPath)
                 return True
-            else:
-                return False
-        else:
             return False
+        return False
 
     def getLogFiles(self, dataSetId, fileSource="archive"):
         pL = []
@@ -166,7 +165,7 @@ class DataMaintenance(object):
         if purgeType in ["exp"]:
             if n < 2:
                 return latestV, rmL, gzL
-            elif n == 2:
+            if n == 2:
                 gzL.append(vtL[1][0])
             elif n == 3:
                 gzL.append(vtL[1][0])
@@ -176,19 +175,15 @@ class DataMaintenance(object):
                 gzL.append(vtL[n - 1][0])
                 for i in range(1, n - 2):
                     rmL.append(vtL[i][0])
-            else:
-                pass
         elif purgeType in ["report", "other"]:
             if n < 2:
                 return latestV, rmL, gzL
-            elif n == 2:
+            if n == 2:
                 gzL.append(vtL[1][0])
             elif n > 2:
                 gzL.append(vtL[n - 1][0])
                 for i in range(1, n - 1):
                     rmL.append(vtL[i][0])
-            else:
-                pass
 
         return latestV, rmL, gzL
 
@@ -233,11 +228,9 @@ class DataMaintenance(object):
 
             return pairL
 
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             if self.__verbose:
-                self.__lfh.write(
-                    "+DataMaintenance.getVersionFileList() failing for data set %s instance %s file source %s err %s\n" % (dataSetId, wfInstanceId, fileSource, str(e))
-                )
+                self.__lfh.write("+DataMaintenance.getVersionFileList() failing for data set %s instance %s file source %s err %s\n" % (dataSetId, wfInstanceId, fileSource, str(e)))
                 traceback.print_exc(file=self.__lfh)
             return []
 
@@ -265,11 +258,9 @@ class DataMaintenance(object):
                 mileStone=mileStone,
             )
             return self.__getFileListWithVersion([fPattern], sortFlag=True)
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             if self.__verbose:
-                self.__lfh.write(
-                    "+DataMaintenance.getVersionFileList() failing for data set %s instance %s file source %s err %r\n" % (dataSetId, wfInstanceId, fileSource, str(e))
-                )
+                self.__lfh.write("+DataMaintenance.getVersionFileList() failing for data set %s instance %s file source %s err %r\n" % (dataSetId, wfInstanceId, fileSource, str(e)))
                 traceback.print_exc(file=self.__lfh)
             return []
 
@@ -294,11 +285,9 @@ class DataMaintenance(object):
             if self.__debug:
                 self.__lfh.write("+DataMaintenance.getContentTypeFileList() patterns %r\n" % fPatternList)
             return self.__getFileListWithVersion(fPatternList, sortFlag=True)
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             if self.__verbose:
-                self.__lfh.write(
-                    "+DataMaintenance.getVersionFileList() failing for data set %s instance %s file source %s error %r\n" % (dataSetId, wfInstanceId, fileSource, str(e))
-                )
+                self.__lfh.write("+DataMaintenance.getVersionFileList() failing for data set %s instance %s file source %s error %r\n" % (dataSetId, wfInstanceId, fileSource, str(e)))
                 traceback.print_exc(file=self.__lfh)
             return []
 
@@ -356,7 +345,7 @@ class DataMaintenance(object):
                 file_ver_tuple_list.sort(key=lambda x: x[1], reverse=True)
 
             return file_ver_tuple_list
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             if self.__verbose:
                 self.__lfh.write("+DataMaintenance.getVersionFileList() failing for pattern %r error %r\n" % (fPatternList, str(e)))
                 traceback.print_exc(file=self.__lfh)
@@ -392,10 +381,10 @@ class DataMaintenance(object):
                 file_date_tuple_list.sort(key=lambda x: x[1], reverse=True)
             rTup = []
             for fP, mT, sZ in file_date_tuple_list:
-                tS = datetime.fromtimestamp(mT).strftime("%Y-%b-%d %H:%M:%S")
+                tS = datetime.fromtimestamp(mT).strftime("%Y-%b-%d %H:%M:%S")  # noqa: DTZ006
                 rTup.append((fP, tS, sZ))
             return rTup
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             if self.__verbose:
                 self.__lfh.write("+DataMaintenance.getVersionFileList() failing for patter %r error %r\n" % (fPatternList, str(e)))
                 traceback.print_exc(file=self.__lfh)
@@ -461,11 +450,9 @@ class DataMaintenance(object):
             )
             dN, fN = os.path.split(fP)
             return fP, dN, fN
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             if self.__debug:
-                self.__lfh.write(
-                    "+DataMaintenance.__targetFilePath() failing for data set %s instance %s file source %s error %r\n" % (dataSetId, wfInstanceId, fileSource, str(e))
-                )
+                self.__lfh.write("+DataMaintenance.__targetFilePath() failing for data set %s instance %s file source %s error %r\n" % (dataSetId, wfInstanceId, fileSource, str(e)))
                 traceback.print_exc(file=self.__lfh)
 
             return (None, None, None)

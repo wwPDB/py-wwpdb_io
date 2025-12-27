@@ -12,6 +12,7 @@ Construct a 3D graphics context from selected rows in PDBx/mmCIF data catagories
 
 
 """
+
 __docformat__ = "restructuredtext en"
 __author__ = "John Westbrook"
 __email__ = "jwest@rcsb.rutgers.edu"
@@ -25,7 +26,7 @@ import traceback
 from mmcif_utils.persist.PdbxPersist import PdbxPersist
 
 
-class GraphicsContext3D(object):
+class GraphicsContext3D:
     """Construct a 3D graphics context from selected rows in PDBx/mmCIF data catagories.
 
     Only app3D='JMol' is currently supported.
@@ -277,10 +278,8 @@ class GraphicsContext3D(object):
 
         if categoryName in self.__rangeTypeCategoryList:
             contextL = self.__createComponentRangeContext(categoryName=categoryName, rowDict=rowDict)
-        elif categoryName in self.__d.keys():
+        elif categoryName in self.__d:
             contextL = self.__createContextSimple(categoryName=categoryName, rowDict=rowDict)
-        else:
-            pass
 
         return contextL
 
@@ -312,8 +311,6 @@ class GraphicsContext3D(object):
             #
             #
             gcS = self.getGraphicsContext(categoryName=searchCategoryName, rowDictList=rDL)
-        else:
-            pass
 
         return gcS
 
@@ -337,8 +334,6 @@ class GraphicsContext3D(object):
 
                 if fS is not None and len(fS) > 0:
                     contextL.append(fS)
-        else:
-            pass
         #
         return contextL
 
@@ -384,8 +379,6 @@ class GraphicsContext3D(object):
                 fS = self.__assignFeatureContext(self.__app3D, fI2)
                 if fS is not None and len(fS) > 0:
                     contextL.append(fS)
-        else:
-            pass
         #
         return contextL
 
@@ -446,7 +439,7 @@ class GraphicsContext3D(object):
 
             myObj = myPersist.fetchOneObject(dbFileName=persistFilePath, containerName=firstContainerName, objectName=objectName)
             return myObj
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             if self.__verbose:
                 self.__lfh.write("+ERROR- GraphicsContext3D.getFirstObject() Read failed for file %s %s\n" % (persistFilePath, str(e)))
                 traceback.print_exc(file=self.__lfh)
@@ -455,8 +448,7 @@ class GraphicsContext3D(object):
     def __getStringValue(self, rowDict):
         if "id" in rowDict and len(rowDict["id"]) > 0 and rowDict["id"] != "?" and rowDict["id"] != ".":
             return rowDict["id"]
-        else:
-            return None
+        return None
 
     def __searchAttribute(self, keyValue=None, searchKeyName=None, searchCategoryName=None):
         """Search input category for rows where the attribue searchKeyName equals
@@ -488,12 +480,11 @@ class GraphicsContext3D(object):
     def __assignLabelStyle(self, categoryName=None):
         if categoryName in self.__atomContextCategoryList:
             return "label '%c:%n:%r:%a' ; "
-        elif categoryName in self.__componentContextCategoryList:
+        if categoryName in self.__componentContextCategoryList:
             return "label '%c:%n:%r' ; "
-        elif categoryName in self.__polymerContextCategoryList:
+        if categoryName in self.__polymerContextCategoryList:
             return "label '%c' ; "
-        else:
-            return "label '%c:%n:%r' ; "
+        return "label '%c:%n:%r' ; "
 
     def __extractValues(self, attribDict, rowDict):
         """Return a value dictionary"""

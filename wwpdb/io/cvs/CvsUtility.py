@@ -11,6 +11,7 @@ Wrapper class for opertations on cvs repositories.
 Methods are provided to manage archiving of chemical component data files.
 
 """
+
 __docformat__ = "restructuredtext en"
 __author__ = "John Westbrook"
 __email__ = "jwest@rcsb.rutgers.edu"
@@ -18,14 +19,14 @@ __license__ = "Creative Commons Attribution 3.0 Unported"
 __version__ = "V0.001"
 
 
+import logging
 import os
+import shutil
 import subprocess
 import tempfile
-import shutil
-import logging
 
 
-class CvsWrapper(object):
+class CvsWrapper:
     """Wrapper class for opertations on cvs repositories."""
 
     def __init__(self, tmpPath="./"):
@@ -86,8 +87,6 @@ class CvsWrapper(object):
             if cmd is not None:
                 _ok = self.__runCvsCommand(myCommand=cmd)  # noqa: F841
                 text = self.__getErrorText()
-        else:
-            pass
         return text
 
     def __getHistoryCmd(self, cvsPath):
@@ -158,11 +157,10 @@ class CvsWrapper(object):
                 oReDir = " >> " + fileNameOut + " 2>&1 "
             else:
                 oReDir = " >> " + fileNameOut + " 2>> " + fileNameErr
+        elif fileNameOut == fileNameErr:
+            oReDir = " > " + fileNameOut + " 2>&1 "
         else:
-            if fileNameOut == fileNameErr:
-                oReDir = " > " + fileNameOut + " 2>&1 "
-            else:
-                oReDir = " > " + fileNameOut + " 2> " + fileNameErr
+            oReDir = " > " + fileNameOut + " 2> " + fileNameErr
 
         return oReDir
 
@@ -174,17 +172,16 @@ class CvsWrapper(object):
             # if (self.__debug):
             #    self.__lfh.write("+CvsWrapper(__runCvsCommand) command: %s\n" % myCommand)
 
-            retcode = subprocess.call(myCommand, shell=True)
+            retcode = subprocess.call(myCommand, shell=True)  # noqa: S602
             if retcode < 0:
                 self.__logger.debug("Child was terminated by signal %r", retcode)
                 # if self.__verbose:
                 #    self.__lfh.write("+CvsWrapper(__runCvsCommand) Child was terminated by signal %r\n" % retcode)
                 return False
-            else:
-                self.__logger.debug("Child was terminated by signal %r", retcode)
-                # if self.__verbose:
-                #    self.__lfh.write("+CvsWrapper(__runCvsCommand) Child was terminated by signal %r\n" % retcode)
-                return True
+            self.__logger.debug("Child was terminated by signal %r", retcode)
+            # if self.__verbose:
+            #    self.__lfh.write("+CvsWrapper(__runCvsCommand) Child was terminated by signal %r\n" % retcode)
+            return True
         except OSError as e:
             self.__logger.exception("cvs command exception: %r %r", retcode, str(e))
             # if self.__verbose:
@@ -204,8 +201,8 @@ class CvsWrapper(object):
         try:
             fName = os.path.join(self.__wrkPath, self.__cvsInfoFileName)
             self.__logger.debug("Reading revisions from %r", fName)
-            ifh = open(fName, "r")
-            for line in ifh.readlines():
+            ifh = open(fName)
+            for line in ifh:
                 fields = line[:-1].split()
                 typeCode = str(fields[0])
                 revId = str(fields[5])
@@ -223,7 +220,7 @@ class CvsWrapper(object):
         text = ""
         try:
             fPath = os.path.join(self.__wrkPath, self.__cvsInfoFileName)
-            ifh = open(fPath, "r")
+            ifh = open(fPath)
             text = ifh.read()
         except:  # noqa: E722 pylint: disable=bare-except
             self.__logger.exception("Execption reading cvs output file: %s", fPath)
@@ -234,7 +231,7 @@ class CvsWrapper(object):
         text = ""
         try:
             fName = os.path.join(self.__wrkPath, self.__cvsErrorFileName)
-            ifh = open(fName, "r")
+            ifh = open(fName)
             text = ifh.read()
         except:  # noqa: E722 pylint: disable=bare-except
             pass

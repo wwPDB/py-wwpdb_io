@@ -32,24 +32,25 @@ Common methods for finding path information for resource and data files in the w
 and annotation system.
 
 """
+
 __docformat__ = "restructuredtext en"
 __author__ = "John Westbrook"
 __email__ = "jwest@rcsb.rutgers.edu"
 __license__ = "Apache 2.0"
 __version__ = "V0.07"
 
+import logging
 import os
 import os.path
-import logging
 
 from wwpdb.utils.config.ConfigInfo import ConfigInfo, getSiteId
+
 from wwpdb.io.locator.DataReference import DataFileReference, ReferenceFileComponents
 
 logger = logging.getLogger(__name__)
 
 
-class PathInfo(object):
-
+class PathInfo:
     """Common methods for finding path information for sequence resources and data files.
 
     In these methods the parameter contentType refers to a base content type.
@@ -80,8 +81,7 @@ class PathInfo(object):
         rfc = ReferenceFileComponents(verbose=self.__verbose, log=self.__lfh)
         if rfc.set(fileName=fileName):
             return rfc.get()
-        else:
-            return None, None, None, None, None
+        return None, None, None, None, None
 
     def isValidFileName(self, fileName, requireVersion=True):
         """Is the input file name project compliant ?"""
@@ -91,21 +91,17 @@ class PathInfo(object):
             if requireVersion:
                 if (dId is None) or (cT is None) or (cF is None) or (pN is None) or (vN is None):
                     return False
-                else:
-                    return True
-            else:
-                if (dId is None) or (cT is None) or (cF is None) or (pN is None):
-                    return False
-                else:
-                    return True
-        else:
-            return False
+                return True
+            if (dId is None) or (cT is None) or (cF is None) or (pN is None):
+                return False
+            return True
+        return False
 
     def getFileExtension(self, formatType):
         eD = self.__cI.get("FILE_FORMAT_EXTENSION_DICTIONARY")
         try:
             return eD[formatType]
-        except Exception as _e:  # noqa: F841
+        except Exception as _e:  # noqa: F841,BLE001
             return None
 
     def splitFileName(self, fileName):
@@ -116,7 +112,7 @@ class PathInfo(object):
             rfc = ReferenceFileComponents(verbose=self.__verbose, log=self.__lfh)
             rfc.set(fileName=fileName)
             return rfc.get()
-        except Exception as _e:  # noqa: F841
+        except Exception as _e:  # noqa: F841,BLE001
             return (None, None, None, None, None)
 
     #
@@ -130,45 +126,42 @@ class PathInfo(object):
         try:
             if dataSetId.startswith("G_"):
                 return self.getDirPath(dataSetId=dataSetId, fileSource="autogroup")
-                # return os.path.join(self.__cI.get('SITE_ARCHIVE_STORAGE_PATH'), 'autogroup', dataSetId)
-            else:
-                return self.getDirPath(dataSetId=dataSetId, fileSource="archive")
-                # return os.path.join(self.__cI.get('SITE_ARCHIVE_STORAGE_PATH'), 'archive', dataSetId)
+            return self.getDirPath(dataSetId=dataSetId, fileSource="archive")
             #
-        except Exception as _e:  # noqa: F841
+        except Exception as _e:  # noqa: F841,BLE001
             return None
 
     def getInstancePath(self, dataSetId, wfInstanceId):
         try:
             return self.getDirPath(dataSetId=dataSetId, fileSource="wf-instance", wfInstanceId=wfInstanceId)
             # return os.path.join(self.__cI.get('SITE_ARCHIVE_STORAGE_PATH'), 'workflow', dataSetId, 'instance', wfInstanceId)
-        except Exception as _e:  # noqa: F841
+        except Exception as _e:  # noqa: F841,BLE001
             return None
 
     def getInstanceTopPath(self, dataSetId):
         try:
             return os.path.dirname(self.getDirPath(dataSetId=dataSetId, fileSource="wf-instance", wfInstanceId="W_001"))
             # return os.path.join(self.__cI.get('SITE_ARCHIVE_STORAGE_PATH'), 'workflow', dataSetId, 'instance')
-        except Exception as _e:  # noqa: F841
+        except Exception as _e:  # noqa: F841,BLE001
             return None
 
     def getDepositPath(self, dataSetId):
         try:
             return self.getDirPath(dataSetId=dataSetId, fileSource="deposit")
             # return os.path.join(self.__cI.get('SITE_ARCHIVE_STORAGE_PATH'), 'deposit', dataSetId)
-        except Exception as _e:  # noqa: F841
+        except Exception as _e:  # noqa: F841,BLE001
             return None
 
     def getDepositUIPath(self, dataSetId):
         try:
             return self.getDirPath(dataSetId=dataSetId, fileSource="deposit-ui")
-        except Exception as _e:  # noqa: F841
+        except Exception as _e:  # noqa: F841,BLE001
             return None
 
     def getTempDepPath(self, dataSetId):
         try:
             return self.getDirPath(dataSetId=dataSetId, fileSource="tempdep")
-        except Exception as _e:  # noqa: F841
+        except Exception as _e:  # noqa: F841,BLE001
             return None
 
     def getModelPdbxFilePath(self, dataSetId, wfInstanceId=None, fileSource="archive", versionId="latest", mileStone=None):
@@ -395,13 +388,7 @@ class PathInfo(object):
 
     def getNMRifFilePath(self, dataSetId, wfInstanceId=None, fileSource="deposit", versionId="latest", mileStone=None):
         return self.__getStandardPath(
-            dataSetId=dataSetId,
-            wfInstanceId=wfInstanceId,
-            fileSource=fileSource,
-            versionId=versionId,
-            contentTypeBase="nmrif",
-            formatType="pdbx",
-            mileStone=mileStone
+            dataSetId=dataSetId, wfInstanceId=wfInstanceId, fileSource=fileSource, versionId=versionId, contentTypeBase="nmrif", formatType="pdbx", mileStone=mileStone
         )
 
     def getAssemblyModelFilePath(self, dataSetId, wfInstanceId=None, fileSource="deposit", versionId="latest", mileStone=None):
@@ -448,8 +435,16 @@ class PathInfo(object):
         )
 
     def getDirPath(
-        self, dataSetId, wfInstanceId=None, contentType=None, formatType=None, fileSource="archive", versionId="latest", partNumber="1", mileStone=None
-    ):  # noqa: E501 pylint: disable=unused-argument
+        self,
+        dataSetId,
+        wfInstanceId=None,
+        contentType=None,  # noqa: ARG002  pylint: disable=unused-argument
+        formatType=None,
+        fileSource="archive",
+        versionId="latest",
+        partNumber="1",
+        mileStone=None,
+    ):  # noqa: E501,ARG002 pylint: disable=unused-argument
         dfRef = DataFileReference(siteId=self.__siteId, verbose=self.__verbose, log=self.__lfh)
         dfRef.setDepositionDataSetId(dataSetId)
         dfRef.setStorageType(fileSource)

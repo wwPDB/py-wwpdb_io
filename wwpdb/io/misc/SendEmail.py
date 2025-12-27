@@ -3,11 +3,11 @@ Some functions to allow sending of email messages using the configuration
 """
 
 import smtplib
-from email.mime.text import MIMEText
 import sys
+from email.mime.text import MIMEText
 
-from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCommunication
 from wwpdb.utils.config.ConfigInfo import getSiteId
+from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCommunication
 
 
 class SendEmail:
@@ -28,9 +28,9 @@ class SendEmail:
         """
         try:
             msg = MIMEText(body)
-            msg['Subject'] = subject
-            msg['From'] = from_email
-            msg['To'] = to_email
+            msg["Subject"] = subject
+            msg["From"] = from_email
+            msg["To"] = to_email
 
             # Send the message via our own SMTP server, but don't include the envelope header.
             s = smtplib.SMTP(relayhost)
@@ -39,7 +39,7 @@ class SendEmail:
 
             if not send_errors:
                 return True
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             self.__lfh.write("Failure to send message %s\n" % e)
 
         return False

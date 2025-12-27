@@ -1,3 +1,5 @@
+# pylint: disable=protected-access
+# ruff: noqa: SLF001
 """
 
 File:    DataFileTests.py
@@ -6,13 +8,14 @@ Date:    21-Aug-2009
 Version: 0.001
 
 """
-import sys
-import unittest
-import time
+
 import os
 import os.path
-import traceback
 import platform
+import sys
+import time
+import traceback
+import unittest
 
 HERE = os.path.abspath(os.path.dirname(__file__))
 TOPDIR = os.path.dirname(HERE)
@@ -27,6 +30,7 @@ from wwpdb.utils.testing.SiteConfigSetup import SiteConfigSetup  # noqa: E402
 SiteConfigSetup().setupEnvironment(TESTOUTPUT, mockTopPath)
 
 from wwpdb.utils.config.ConfigInfo import ConfigInfo  # noqa: E402
+
 from wwpdb.io.file.DataFile import DataFile  # noqa: E402
 
 
@@ -52,7 +56,7 @@ class DataFileTests(unittest.TestCase):
             fPath = os.path.join(self.__testFilePath, self.__testFile)
             f1 = DataFile(fPath)
             f1.pr(self.lfh)
-        except:  # noqa: E722  # pragma: no cover
+        except:  # noqa: E722  # pragma: no cover  # pylint: disable=bare-except
             traceback.print_exc(file=sys.stdout)
             self.fail()
 
@@ -73,7 +77,7 @@ class DataFileTests(unittest.TestCase):
                 f2 = DataFile(fp)
                 if f2.srcFileExists():
                     f2.remove()
-        except:  # noqa: E722  # pragma: no cover
+        except:  # noqa: E722  # pragma: no cover  # pylint: disable=bare-except
             traceback.print_exc(file=sys.stdout)
             self.fail()
 
@@ -94,7 +98,7 @@ class DataFileTests(unittest.TestCase):
                 f2 = DataFile(fp)
                 if f2.srcFileExists():
                     f2.remove()
-        except:  # noqa: E722  # pragma: no cover
+        except:  # noqa: E722  # pragma: no cover  # pylint: disable=bare-except
             traceback.print_exc(file=sys.stdout)
             self.fail()
 
@@ -115,7 +119,7 @@ class DataFileTests(unittest.TestCase):
                 f2 = DataFile(fp)
                 if f2.srcFileExists():
                     f2.remove()
-        except:  # noqa: E722  # pragma: no cover
+        except:  # noqa: E722  # pragma: no cover  # pylint: disable=bare-except
             traceback.print_exc(file=sys.stdout)
             self.fail()
 
@@ -134,7 +138,7 @@ class DataFileTests(unittest.TestCase):
                 f2 = DataFile(fp)
                 if f2.srcFileExists():
                     f2.remove()
-        except:  # noqa: E722  # pragma: no cover
+        except:  # noqa: E722  # pragma: no cover  # pylint: disable=bare-except
             traceback.print_exc(file=sys.stdout)
             self.fail()
 
@@ -145,7 +149,7 @@ class DataFileTests(unittest.TestCase):
             fPath = os.path.join(self.__testFilePath, self.__testFile)
             f1 = DataFile(fPath)
             f1.eMail("jwest@rcsb.rutgers.edu", "jwest@rcsb.rutgers.edu", "IGNORE THIS TEST MESSAGE")
-        except:  # noqa: E722
+        except:  # noqa: E722  # pylint: disable=bare-except
             traceback.print_exc(file=sys.stdout)
             self.fail()
 
@@ -169,7 +173,7 @@ class DataFileTests(unittest.TestCase):
             if os.path.exists(f):
                 os.remove(f)
             # touch file
-            with open(f, "w") as f:
+            with open(f, "w"):
                 pass
             # So timestamp not same
             time.sleep(1.2)
@@ -227,7 +231,6 @@ class DataFileTests(unittest.TestCase):
 
             with open(f1path, "w") as f:
                 f.write(tmode)
-                pass
 
             d1 = DataFile(f1path)
             d1.timeMode(tmode)

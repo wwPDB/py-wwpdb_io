@@ -12,14 +12,15 @@
 Test cases for ValidateXml
 
 """
+
 __docformat__ = "restructuredtext en"
 __author__ = "Ezra Peisach"
 __email__ = "peisach@rcsb.rutgers.edu"
 __license__ = "Creative Commons Attribution 3.0 Unported"
 __version__ = "V0.01"
 
-import unittest
 import os
+import unittest
 
 from wwpdb.io.file.ValidateXml import ValidateXml
 

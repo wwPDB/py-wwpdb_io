@@ -12,6 +12,7 @@ Update:  5-Feb-2010 jdw     Add stream method -
         17-Aug-2014 jdw     Fix bool type stream formatting
 
 """
+
 import sys
 import traceback
 
@@ -19,7 +20,7 @@ MAX_INDENT = 100
 SPACE = " " * MAX_INDENT
 
 
-class FormatOut(object):
+class FormatOut:
     """"""
 
     def __init__(self):
@@ -70,10 +71,8 @@ class FormatOut(object):
                     self.indent("\n", ind)
                     str1 = "CONTENTS OF LIST: %s\n" % name
                     self.indent(str1, ind)
-                iEl = 0
-                for el in thing:
+                for iEl, el in enumerate(thing):
                     lab = name + " list index [" + str(iEl) + "]"
-                    iEl += 1
                     self.autoFormat(lab, el, ind + indInc)
         elif inOt.find("dict") > 0:
             if len(thing) > 0:

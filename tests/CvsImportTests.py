@@ -19,14 +19,14 @@ from wwpdb.io.cvs.CvsUtility import CvsWrapper
 
 
 class ImportTests(unittest.TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         pass
 
-    def testInstantiate(self):
+    def testInstantiate(self) -> None:
         # pylint: disable=unused-variable
-        vc = CvsAdmin(tmpPath="./")  # noqa: F841
-        vc = CvsSandBoxAdmin(tmpPath="./")  # noqa: F841
-        vc = CvsWrapper(tmpPath="./")  # noqa: F841
+        vc1 = CvsAdmin(tmpPath="./")  # noqa: F841
+        vc2 = CvsSandBoxAdmin(tmpPath="./")  # noqa: F841
+        vc3 = CvsWrapper(tmpPath="./")  # noqa: F841
 
 
 if __name__ == "__main__":

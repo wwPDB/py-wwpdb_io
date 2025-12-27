@@ -1,3 +1,4 @@
+# ruff: noqa: RUF005
 """
 Utility class of generic data file methods.
 
@@ -25,16 +26,16 @@ __email__ = "jwest@rcsb.rutgers.edu"
 __version__ = "V0.002"
 
 
-import sys
-import os
-import os.path
-import time
 import datetime
 import filecmp
-import stat
+import os
+import os.path
 import shutil
 import smtplib
+import stat
+import sys
 import tempfile
+import time
 from email.mime.text import MIMEText
 
 ##
@@ -42,7 +43,6 @@ from email.mime.text import MIMEText
 
 
 class DataFile:
-
     """Class of utilities for managing data files."""
 
     def __init__(self, fPath=None, tMode=None, verbose=False):
@@ -104,10 +104,8 @@ class DataFile:
         if fPath is not None:
             if os.access(fPath, os.F_OK):
                 return True
-            else:
-                return False
-        else:
             return False
+        return False
 
     def __stat(self, fPath):
         if fPath is not None:
@@ -177,9 +175,8 @@ class DataFile:
             if os.path.islink(self.dstPath):
                 os.unlink(self.dstPath)
             return os.symlink(rPath, self.dstPath)
-        else:
-            self.vout.write("++ERROR - relative pathname creation failed %s\n" % rPath)
-            return -1
+        self.vout.write("++ERROR - relative pathname creation failed %s\n" % rPath)
+        return -1
 
     def __symLink(self):
         """Internal method that creates a symbolic link to srcPath named dstPath.
@@ -207,38 +204,37 @@ class DataFile:
 
         if self.srcType == self.dstType and op == "copy":
             return shutil.copy2(self.srcPath, self.dstPath)
+        if (self.srcType == "zlib") or (self.srcType == "gzip"):
+            cmdP1 = "zcat " + self.srcPath
+        elif self.srcType == "bzip":
+            cmdP1 = "bzcat " + self.srcPath
+        elif self.srcType is None:
+            cmdP1 = "cat " + self.srcPath
         else:
-            if (self.srcType == "zlib") or (self.srcType == "gzip"):
-                cmdP1 = "zcat " + self.srcPath
-            elif self.srcType == "bzip":
-                cmdP1 = "bzcat " + self.srcPath
-            elif self.srcType is None:
-                cmdP1 = "cat " + self.srcPath
-            else:
-                # Should provide an error
-                cmdP1 = "cat " + self.srcPath
+            # Should provide an error
+            cmdP1 = "cat " + self.srcPath
 
-            if op == "copy":
-                redir = " > "
-            elif op == "append":
-                redir = " >> "
-            else:
-                redir = " > "
+        if op == "copy":
+            redir = " > "
+        elif op == "append":
+            redir = " >> "
+        else:
+            redir = " > "
 
-            if self.dstType == "zlib":
-                cmdP2 = " |  compress -cf - " + redir + self.dstPath
-            elif self.dstType == "gzip":
-                cmdP2 = " |  gzip " + redir + self.dstPath
-            elif self.dstType == "bzip":
-                cmdP2 = " | bzip2 " + redir + self.dstPath
-            elif self.dstType is None:
-                cmdP2 = redir + self.dstPath
-            else:
-                # Should log an error somehow
-                cmdP2 = redir + self.dstPath
+        if self.dstType == "zlib":
+            cmdP2 = " |  compress -cf - " + redir + self.dstPath
+        elif self.dstType == "gzip":
+            cmdP2 = " |  gzip " + redir + self.dstPath
+        elif self.dstType == "bzip":
+            cmdP2 = " | bzip2 " + redir + self.dstPath
+        elif self.dstType is None:
+            cmdP2 = redir + self.dstPath
+        else:
+            # Should log an error somehow
+            cmdP2 = redir + self.dstPath
 
-            cmd = cmdP1 + cmdP2
-            return os.system(cmd)
+        cmd = cmdP1 + cmdP2
+        return os.system(cmd)  # noqa: S605
 
     def __compare(self):
         """Compare srcPath to dstPath converting compression according to
@@ -261,29 +257,29 @@ class DataFile:
             if self.srcType is None:
                 f1 = self.srcPath
             elif (self.srcType == "zlib") or (self.srcType == "gzip"):
-                f1 = tempfile.mktemp()
+                f1 = tempfile.mktemp()  # noqa: S306
                 cmd = "zcat " + self.srcPath + "> " + f1
             elif self.srcType == "bzip":
-                f1 = tempfile.mktemp()
+                f1 = tempfile.mktemp()  # noqa: S306
                 cmd = "bzcat " + self.srcPath + "> " + f1
 
             if len(cmd) > 0:
-                print("src command: %s" % cmd)
-                os.system(cmd)
+                # print("src command: %s" % cmd)
+                os.system(cmd)  # noqa: S605
 
             cmd = ""
             if self.dstType is None:
                 f2 = self.dstPath
             elif (self.dstType == "zlib") or (self.dstType == "gzip"):
-                f2 = tempfile.mktemp()
+                f2 = tempfile.mktemp()  # noqa: S306
                 cmd = "zcat " + self.dstPath + "> " + f2
             elif self.dstType == "bzip":
-                f2 = tempfile.mktemp()
+                f2 = tempfile.mktemp()  # noqa: S306
                 cmd = "bzcat " + self.dstPath + "> " + f2
 
             if len(cmd) > 0:
-                print("dst command: %s" % cmd)
-                os.system(cmd)
+                # print("dst command: %s" % cmd)
+                os.system(cmd)  # noqa: S605
 
             if os.access(f1, os.F_OK) and os.access(f2, os.F_OK):
                 isSame = filecmp.cmp(f1, f2, False)
@@ -300,12 +296,11 @@ class DataFile:
         """Internal method that removes srcPath if it exists."""
         if not self.srcFileExists():
             return True
-        if os.path.islink(self.srcPath):
+        if os.path.islink(self.srcPath) or os.path.isfile(self.srcPath):
             return os.unlink(self.srcPath)
-        elif os.path.isfile(self.srcPath):
-            return os.unlink(self.srcPath)
-        elif os.path.isdir(self.srcPath):
+        if os.path.isdir(self.srcPath):
             return shutil.rmtree(self.srcPath, True)
+        return False  # Unknown file type
 
     def __move(self):
         """Internal method that moves srcPath to dstPath."""
@@ -315,6 +310,7 @@ class DataFile:
             self.__mkdir(self.dstDirName)
         if self.srcType == self.dstType:
             return shutil.move(self.srcPath, self.dstPath)
+        return
 
     def __timeStampCopy(self):
         """Reset the atime/mtimes of the destination using those of the
@@ -357,16 +353,16 @@ class DataFile:
             if self.tMode == "preserve":
                 self.__timeStampCopy()
             elif self.tMode == "today":
-                tObj = datetime.datetime.today()
+                tObj = datetime.datetime.today()  # noqa: DTZ002
                 self.__setTimeStamp(self.dstPath, tObj)
             elif self.tMode == "yesterday":
-                tObj = datetime.datetime.today() + datetime.timedelta(days=-1)
+                tObj = datetime.datetime.today() + datetime.timedelta(days=-1)  # noqa: DTZ002
                 self.__setTimeStamp(self.dstPath, tObj)
             elif self.tMode == "tomorrow":
-                tObj = datetime.datetime.today() + datetime.timedelta(days=1)
+                tObj = datetime.datetime.today() + datetime.timedelta(days=1)  # noqa: DTZ002
                 self.__setTimeStamp(self.dstPath, tObj)
             elif self.tMode == "lastweek":
-                tObj = datetime.datetime.today() + datetime.timedelta(days=-7)
+                tObj = datetime.datetime.today() + datetime.timedelta(days=-7)  # noqa: DTZ002
                 self.__setTimeStamp(self.dstPath, tObj)
 
     #
@@ -454,16 +450,14 @@ class DataFile:
             self.srcStat = self.__stat(self.srcPath)
         if self.srcStat is not None:
             return self.srcStat[stat.ST_SIZE]
-        else:
-            return 0
+        return 0
 
     def dstFileSize(self):
         if self.dstStat is None:
             self.dstStat = self.__stat(self.dstPath)
         if self.dstStat is not None:
             return self.dstStat[stat.ST_SIZE]
-        else:
-            return 0
+        return 0
 
     def move(self, dstPath=None):
         """Moves (renames) srcPath to dstPath."""
@@ -505,8 +499,7 @@ class DataFile:
             self.srcStat = self.__stat(self.srcPath)
         if self.srcStat is not None:
             return self.srcStat[stat.ST_MTIME]
-        else:
-            return None
+        return None
 
     def srcModTimeStamp(self):
         """Return modification time of the source file as the number of seconds
@@ -516,8 +509,7 @@ class DataFile:
             self.srcStat = self.__stat(self.srcPath)
         if self.srcStat is not None:
             return time.strftime(self.__formatTimeStamp, time.localtime(self.srcStat[stat.ST_MTIME]))
-        else:
-            return None
+        return None
 
     def newerThan(self, fPath):
         """Return True if srcPath has been modified more recently than fPath.
@@ -535,11 +527,9 @@ class DataFile:
         if modTime is not None:
             if modTime > modTimeF:
                 return True
-            else:
-                return False
-        else:
-            # no stat for srcPath
-            return None
+            return False
+        # no stat for srcPath
+        return None
 
     def eMail(self, toAddr, fromAddr, subject):  # pragma: no cover
         """Internal method to mail srcPath file as text."""
@@ -550,13 +540,13 @@ class DataFile:
         if self.srcType is None:
             f1 = self.srcPath
         elif (self.srcType == "zlib") or (self.srcType == "gzip"):
-            f1 = tempfile.mktemp()
+            f1 = tempfile.mktemp()  # noqa: S306
             cmd = "zcat " + self.srcPath + "> " + f1
         elif self.srcType == "bzip":
-            f1 = tempfile.mktemp()
+            f1 = tempfile.mktemp()  # noqa: S306
             cmd = "bzcat " + self.srcPath + "> " + f1
         if len(cmd) > 0:
-            os.system(cmd)
+            os.system(cmd)  # noqa: S605
 
         # Create a text/plain message
         fp = open(f1, "rb")

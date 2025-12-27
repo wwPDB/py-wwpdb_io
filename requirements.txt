@@ -1,8 +1,0 @@
-wwpdb.utils.config
-paramiko
-mmcif
-mmcif.utils
-# For testing
-wwpdb.utils.testing
-pytest
-#

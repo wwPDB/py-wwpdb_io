@@ -15,6 +15,7 @@
 Test cases for the CvsAdmin module.
 
 """
+
 __docformat__ = "restructuredtext en"
 __author__ = "John Westbrook"
 __email__ = "jwest@rcsb.rutgers.edu"
@@ -23,26 +24,28 @@ __version__ = "V0.001"
 
 # Disable checks for use of _getframe
 # pylint: disable=protected-access
+# ruff: noqa: SLF001,BLE001
 
-import sys
-import unittest
 import os
 import os.path
-import traceback
 import shutil
+import sys
+import traceback
+import unittest
+
+from wwpdb.utils.testing.Features import Features
 
 from wwpdb.io.cvs.CvsAdmin import CvsAdmin, CvsSandBoxAdmin
-from wwpdb.utils.testing.Features import Features
 
 
 @unittest.skipUnless(Features().haveCvsTestServer(), "Needs CVS server for testing")
 class CvsAdminTests(unittest.TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         self.__lfh = sys.stdout
         #
         self.__testFilePath = "ligand-dict-v3/A/ATP/ATP.cif"
         #
-        self.__cvsRepositoryPath = "/cvs-ligands"
+        self.__cvsRepositoryPath: str = "/cvs-ligands"
         self.__cvsRepositoryHost = os.getenv("CVS_TEST_SERVER")
 
         self.__testProjectName = "test-project-v1"
@@ -51,10 +54,10 @@ class CvsAdminTests(unittest.TestCase):
         self.__cvsUser = os.getenv("CVS_TEST_USER")
         self.__cvsPassword = os.getenv("CVS_TEST_PW")
 
-    def tearDown(self):
+    def tearDown(self) -> None:
         pass
 
-    def testCvsHistory(self):
+    def testCvsHistory(self) -> None:
         """"""
         self.__lfh.write("Starting %s %s\n" % (self.__class__.__name__, sys._getframe().f_code.co_name))
         try:
@@ -73,7 +76,7 @@ class CvsAdminTests(unittest.TestCase):
             traceback.print_exc(file=self.__lfh)
             self.fail()
 
-    def testCvsCheckOutFile(self):
+    def testCvsCheckOutFile(self) -> None:
         """"""
         self.__lfh.write("Starting %s %s\n" % (self.__class__.__name__, sys._getframe().f_code.co_name))
         try:
@@ -90,7 +93,7 @@ class CvsAdminTests(unittest.TestCase):
             traceback.print_exc(file=self.__lfh)
             self.fail()
 
-    def testCvsCheckOutRevisions(self):
+    def testCvsCheckOutRevisions(self) -> None:
         """"""
         self.__lfh.write("Starting %s %s\n" % (self.__class__.__name__, sys._getframe().f_code.co_name))
         try:
@@ -117,7 +120,7 @@ class CvsAdminTests(unittest.TestCase):
             traceback.print_exc(file=self.__lfh)
             self.fail()
 
-    def testCvsCheckOutProject(self):
+    def testCvsCheckOutProject(self) -> None:
         """"""
         self.__lfh.write("Starting %s %s\n" % (self.__class__.__name__, sys._getframe().f_code.co_name))
         try:
@@ -136,7 +139,7 @@ class CvsAdminTests(unittest.TestCase):
             traceback.print_exc(file=self.__lfh)
             self.fail()
 
-    def testCvsUpdateProject(self):
+    def testCvsUpdateProject(self) -> None:
         """"""
         self.__lfh.write("Starting %s %s\n" % (self.__class__.__name__, sys._getframe().f_code.co_name))
         try:
@@ -155,7 +158,7 @@ class CvsAdminTests(unittest.TestCase):
             traceback.print_exc(file=self.__lfh)
             self.fail()
 
-    def testCvsAddCommit(self):
+    def testCvsAddCommit(self) -> None:
         """"""
         self.__lfh.write("Starting %s %s\n" % (self.__class__.__name__, sys._getframe().f_code.co_name))
         try:
@@ -168,7 +171,10 @@ class CvsAdminTests(unittest.TestCase):
             ok, text = vc.checkOut(projectPath=self.__testProjectName)
             self.__lfh.write("CVS update status %r output is:\n%s\n" % (ok, text))
             #
-            projPath = os.path.join(vc.getSandBoxTopPath(), self.__testProjectName)
+            sboxPath = vc.getSandBoxTopPath()
+            if sboxPath is None:
+                self.fail("No sandbox path")
+            projPath = os.path.join(sboxPath, self.__testProjectName)
             dstDir = "D1"
             dstPath = os.path.join(projPath, dstDir)
             if not os.access(dstPath, os.F_OK):
@@ -208,7 +214,7 @@ class CvsAdminTests(unittest.TestCase):
             self.fail()
 
 
-def suiteCvsTests():
+def suiteCvsTests() -> unittest.TestSuite:
     suiteSelect = unittest.TestSuite()
     suiteSelect.addTest(CvsAdminTests("testCvsHistory"))
     suiteSelect.addTest(CvsAdminTests("testCvsCheckOutFile"))
@@ -216,7 +222,7 @@ def suiteCvsTests():
     return suiteSelect
 
 
-def suiteCvsSandBoxTests():
+def suiteCvsSandBoxTests() -> unittest.TestSuite:
     suiteSelect = unittest.TestSuite()
     suiteSelect.addTest(CvsAdminTests("testCvsCheckOutProject"))
     suiteSelect.addTest(CvsAdminTests("testCvsUpdateProject"))

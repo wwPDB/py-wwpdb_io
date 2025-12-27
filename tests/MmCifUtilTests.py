@@ -12,10 +12,11 @@ __docformat__ = "restructuredtext en"
 __author__ = "Ezra Peisach"
 __email__ = "peisach@rcsb.rutgers.edu"
 
-import unittest
 import os
-from wwpdb.io.file.mmCIFUtil import mmCIFUtil  # noqa: E402
 import platform
+import unittest
+
+from wwpdb.io.file.mmCIFUtil import mmCIFUtil  # noqa: E402
 
 HERE = os.path.abspath(os.path.dirname(__file__))
 TOPDIR = os.path.dirname(HERE)

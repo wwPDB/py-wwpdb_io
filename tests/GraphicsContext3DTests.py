@@ -12,6 +12,9 @@
 Test cases for GraphicsContext3D using a PDBx persistent store as a data source.
 
 """
+
+from __future__ import annotations
+
 __docformat__ = "restructuredtext en"
 __author__ = "John Westbrook"
 __email__ = "jwest@rcsb.rutgers.edu"
@@ -20,19 +23,24 @@ __version__ = "V0.01"
 
 # Disable checks for use of _getframe
 # pylint: disable=protected-access
+# ruff: noqa: SLF001
 
-import unittest
-import traceback
-import time
 import os
 import os.path
-import sys
 import platform
+import sys
+import time
+import traceback
+import unittest
+from typing import TYPE_CHECKING
 
 from mmcif_utils.persist.PdbxPersist import PdbxPersist
 from mmcif_utils.persist.PdbxPyIoAdapter import PdbxPyIoAdapter as PdbxIoAdapter
 
 from wwpdb.io.graphics.GraphicsContext3D import GraphicsContext3D
+
+if TYPE_CHECKING:
+    from mmcif.api.DataCategory import DataCategory
 
 HERE = os.path.abspath(os.path.dirname(__file__))
 TOPDIR = os.path.dirname(HERE)
@@ -43,17 +51,20 @@ mockTopPath = os.path.join(TOPDIR, "wwpdb", "mock-data")
 
 
 class GraphicsContext3DTests(unittest.TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         self.__lfh = sys.stdout
         self.__verbose = True
         self.__debug = False
         self.__pathPdbxDataFile = os.path.join(mockTopPath, "MODELS", "3rer.cif")
 
-    def tearDown(self):
+    def tearDown(self) -> None:
         pass
 
-    def getFirstObject(self, persistFilePath, objectName=None):
+    def getFirstObject(self, persistFilePath: str, objectName: str | None = None) -> DataCategory | None:
         """Open the persistent data store and fetch the input object name from the first container.
+
+        Returns:
+           DataCategory or None
 
         Note -- Will be used for more complex cases which require additional information from
         coordinate model file to resolve the graphics context.
@@ -68,13 +79,13 @@ class GraphicsContext3DTests(unittest.TestCase):
                 self.__lfh.write("GraphicsContext3D.getFirstObject() container name list %r\n" % indexD.items())
             myObj = myPersist.fetchOneObject(dbFileName=persistFilePath, containerName=firstContainerName, objectName=objectName)
             return myObj
-        except Exception as e:  # pragma: no cover
+        except Exception as e:  # noqa: BLE001 pragma: no cover
             if self.__verbose:
                 self.__lfh.write("+ERROR- GraphicsContext3D.getFirstObject() Read failed for file %s - %s\n" % (persistFilePath, str(e)))
                 traceback.print_exc(file=self.__lfh)
             return None
 
-    def testSimpleContexts(self):
+    def testSimpleContexts(self) -> None:
         """Test case -  create simple graphics contexts."""
         self.__lfh.write("\nStarting %s %s at %s\n" % (self.__class__.__name__, sys._getframe().f_code.co_name, time.strftime("%Y %m %d %H:%M:%S", time.localtime())))
 
@@ -123,7 +134,7 @@ class GraphicsContext3DTests(unittest.TestCase):
             traceback.print_exc(file=self.__lfh)
             self.fail()
 
-    def testSiteContexts(self):
+    def testSiteContexts(self) -> None:
         """Test case -  create graphics contexts for a full site"""
         self.__lfh.write("\nStarting %s %s at %s\n" % (self.__class__.__name__, sys._getframe().f_code.co_name, time.strftime("%Y %m %d %H:%M:%S", time.localtime())))
         try:
@@ -141,6 +152,8 @@ class GraphicsContext3DTests(unittest.TestCase):
             # Open the persistent store and read the site details -
             #
             mySite = self.getFirstObject(persistFilePath=outputDb, objectName="struct_site")
+            if mySite is None:
+                self.fail()
             aL = mySite.getAttributeList()
             #
             gC = GraphicsContext3D(app3D="JMol", verbose=self.__verbose, log=self.__lfh)
@@ -158,7 +171,7 @@ class GraphicsContext3DTests(unittest.TestCase):
             traceback.print_exc(file=self.__lfh)
             self.fail()
 
-    def testSiteContextsOld(self):
+    def testSiteContextsOld(self) -> None:
         """Test case -  create graphics contexts for a full site"""
         self.__lfh.write("\nStarting %s %s at %s\n" % (self.__class__.__name__, sys._getframe().f_code.co_name, time.strftime("%Y %m %d %H:%M:%S", time.localtime())))
         try:
@@ -176,6 +189,8 @@ class GraphicsContext3DTests(unittest.TestCase):
             # Open the persistent store and read the site details -
             #
             mySite = self.getFirstObject(persistFilePath=outputDb, objectName="struct_site")
+            if mySite is None:
+                self.fail()
             aL = mySite.getAttributeList()
             idx = aL.index("id")
             #
@@ -188,6 +203,8 @@ class GraphicsContext3DTests(unittest.TestCase):
             #
             #
             mySiteGen = self.getFirstObject(persistFilePath=outputDb, objectName="struct_site_gen")
+            if mySiteGen is None:
+                self.fail()
             aL = mySiteGen.getAttributeList()
             idx = aL.index("site_id")
             #
@@ -211,7 +228,7 @@ class GraphicsContext3DTests(unittest.TestCase):
             self.fail()
 
 
-def suiteFile():  # pragma: no cover
+def suiteFile() -> unittest.TestSuite:  # pragma: no cover
     suiteSelect = unittest.TestSuite()
     suiteSelect.addTest(GraphicsContext3DTests("testSimpleContexts"))
     suiteSelect.addTest(GraphicsContext3DTests("testSiteContexts"))

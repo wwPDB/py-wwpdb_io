@@ -16,8 +16,8 @@ import unittest
 
 from wwpdb.io.file.DataExchange import DataExchange  # noqa: F401 pylint: disable=unused-import
 from wwpdb.io.file.DataFile import DataFile  # noqa: F401
-from wwpdb.io.file.mmCIFUtil import mmCIFUtil  # noqa: F401
 from wwpdb.io.file.DataMaintenance import DataMaintenance  # noqa: F401 pylint: disable=unused-import
+from wwpdb.io.file.mmCIFUtil import mmCIFUtil  # noqa: F401
 from wwpdb.io.file.ValidateXml import ValidateXml  # noqa: F401 pylint: disable=unused-import
 
 

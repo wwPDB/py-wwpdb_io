@@ -12,6 +12,7 @@
 Test cases for the CvsUtiltity module.
 
 """
+
 __docformat__ = "restructuredtext en"
 __author__ = "John Westbrook"
 __email__ = "jwest@rcsb.rutgers.edu"
@@ -20,20 +21,22 @@ __version__ = "V0.001"
 
 # Disable checks for use of _getframe
 # pylint: disable=protected-access
+# ruff: noqa: SLF001
 
-import sys
-import unittest
+import logging
 import os
 import os.path
-import logging
+import sys
+import unittest
+
+from wwpdb.utils.testing.Features import Features
 
 from wwpdb.io.cvs.CvsUtility import CvsWrapper
-from wwpdb.utils.testing.Features import Features
 
 
 @unittest.skipUnless(Features().haveCvsTestServer(), "Needs CVS server for testing")
 class CvsUtilityTests(unittest.TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         self.__logger = logging.getLogger("wwpdb.utils.rcsb")
         #
         self.__testFilePath = "ligand-dict-v3/A/ATP/ATP.cif"
@@ -44,10 +47,10 @@ class CvsUtilityTests(unittest.TestCase):
         self.__cvsUser = os.getenv("CVS_TEST_USER")
         self.__cvsPassword = os.getenv("CVS_TEST_PW")
 
-    def tearDown(self):
+    def tearDown(self) -> None:
         pass
 
-    def testCvsHistory(self):
+    def testCvsHistory(self) -> None:
         """"""
         self.__logger.info("Starting %s %s", self.__class__.__name__, sys._getframe().f_code.co_name)
         try:
@@ -62,10 +65,10 @@ class CvsUtilityTests(unittest.TestCase):
             self.__logger.debug("CVS revision list for %s is:\n%r\n", self.__testFilePath, revList)
             vc.cleanup()
         except Exception as e:
-            self.__logger.exception("Exception in %s %s", self.__class__.__name__, str(e))
+            self.__logger.exception("Exception in %s %s", self.__class__.__name__, e)
             self.fail()
 
-    def testCvsCheckOutFile(self):
+    def testCvsCheckOutFile(self) -> None:
         """"""
         self.__logger.info("Starting %s %s", self.__class__.__name__, sys._getframe().f_code.co_name)
         try:
@@ -81,7 +84,7 @@ class CvsUtilityTests(unittest.TestCase):
             self.__logger.exception("Exception in %s", self.__class__.__name__)
             self.fail()
 
-    def testCvsCheckOutRevisions(self):
+    def testCvsCheckOutRevisions(self) -> None:
         """"""
         self.__logger.info("Starting %s %s", self.__class__.__name__, sys._getframe().f_code.co_name)
         try:

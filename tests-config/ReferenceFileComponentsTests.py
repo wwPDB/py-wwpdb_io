@@ -1,3 +1,4 @@
+# pylint: disable=protected-access
 ##
 # File:    ReferenceFileComponentsTests.py
 # Date:    18-Sep-2013
@@ -6,6 +7,7 @@
 Test cases for data reference class accessors
 
 """
+
 __docformat__ = "restructuredtext en"
 __author__ = "John Westbrook"
 __email__ = "jwest@rcsb.rutgers.edu"
@@ -13,12 +15,12 @@ __license__ = "Creative Commons Attribution 3.0 Unported"
 __version__ = "V0.01"
 
 
-import sys
-import unittest
-import traceback
 import os
 import os.path
 import platform
+import sys
+import traceback
+import unittest
 from unittest.mock import patch
 
 HERE = os.path.abspath(os.path.dirname(__file__))
@@ -34,7 +36,8 @@ from wwpdb.utils.testing.SiteConfigSetup import SiteConfigSetup  # noqa: E402
 SiteConfigSetup().setupEnvironment(TESTOUTPUT, mockTopPath)
 
 from wwpdb.utils.config.ConfigInfo import ConfigInfo  # noqa: E402
-from wwpdb.io.locator.DataReference import ReferenceFileComponents, ReferenceFileInfo, DataFileReference  # noqa: E402
+
+from wwpdb.io.locator.DataReference import DataFileReference, ReferenceFileComponents, ReferenceFileInfo  # noqa: E402
 
 
 class MyConfigInfo(ConfigInfo):
@@ -62,7 +65,7 @@ class ReferenceFileComponentsTests(unittest.TestCase):
     def testAccessors(self):
         """Test file component accessors"""
         self.__lfh.write("\n------------------------ ")
-        self.__lfh.write("Starting test function  %s" % sys._getframe().f_code.co_name)
+        self.__lfh.write("Starting test function  %s" % sys._getframe().f_code.co_name)  # noqa: SLF001
         self.__lfh.write(" -------------------------\n")
 
         valid = {
@@ -81,7 +84,7 @@ class ReferenceFileComponentsTests(unittest.TestCase):
                     "RFC- fileName %s idcode %s contentType %s contentFormat %s partNo %d versionId %s\n" % (fileName, idCode, contentType, contentFormat, partNo, versionNo)
                 )
                 self.assertEqual(valid[fileName], [idCode, contentType, contentFormat, partNo, versionNo])
-        except:  # noqa: E722  # pragma: no cover
+        except:  # noqa: E722  # pragma: no cover  # pylint: disable=bare-except
             traceback.print_exc(file=self.__lfh)
             self.fail()
 
@@ -176,7 +179,7 @@ def suiteDataFileReferenceTests():  # pragma: no cover
 
 
 if __name__ == "__main__":  # pragma: no cover
-    if True:
+    if True:  # pylint: disable=using-constant-test
         mySuite = suiteComponentAccessorsTests()
         unittest.TextTestRunner(verbosity=2).run(mySuite)
         unittest.TextTestRunner(verbosity=2).run(suiteDataFileReferenceTests())

@@ -47,6 +47,20 @@ class DataMover(ABC):
         # pylint: disable=unnecessary-pass
 
     @abstractmethod
+    def sync_file(self, source_file: str, destination_path: str) -> Dict[str, Any]:
+        """
+        Sync a single file from source to destination.
+
+        Args:
+            source_file: Path to the source file
+            destination_path: Destination directory path
+
+        Returns:
+            Dictionary containing sync results and statistics
+        """
+        # pylint: disable=unnecessary-pass
+
+    @abstractmethod
     def verify_integrity(self, source_path: str, destination_path: str, file_path: str) -> bool:
         """
         Verify file integrity after transfer.
@@ -119,14 +133,22 @@ class RsyncDataMover(DataMover):
             self.logger.error("Error calculating checksum for %s: %s", file_path, e)
             return ""
 
-    def _run_rsync_command(self, source_path: Path, destination_path: Path, additional_options: Optional[List[str]] = None) -> subprocess.CompletedProcess:
+    def _run_rsync_command(
+        self,
+        source_path: Path,
+        destination_path: Path,
+        additional_options: Optional[List[str]] = None,
+        sync_directory_contents: bool = True,
+    ) -> subprocess.CompletedProcess:
         """
         Execute rsync command with proper error handling.
 
         Args:
-            source_path: Source directory path
+            source_path: Source path (file or directory)
             destination_path: Destination directory path
             additional_options: Additional rsync options for this specific run
+            sync_directory_contents: If True, append trailing / to source (directory sync).
+                                     Set to False for single-file sync.
 
         Returns:
             CompletedProcess object with command results
@@ -135,8 +157,8 @@ class RsyncDataMover(DataMover):
         if additional_options:
             options.extend(additional_options)
 
-        # Ensure source path ends with / to sync contents, not the directory itself
-        source_str = str(source_path).rstrip("/") + "/"
+        # Append trailing / only for directory syncs (syncs contents, not the directory itself)
+        source_str = str(source_path).rstrip("/") + "/" if sync_directory_contents else str(source_path)
         destination_str = str(destination_path)
 
         cmd = ["rsync"] + options + [source_str, destination_str]  # noqa: RUF005
@@ -219,6 +241,61 @@ class RsyncDataMover(DataMover):
             "destination_path": str(destination_path_obj),
             "pre_sync_stats": pre_sync_stats,
             "post_sync_stats": post_sync_stats,
+            "transfer_stats": transfer_stats,
+            "timestamp": datetime.now().isoformat(),  # noqa: DTZ005
+        }
+
+    def sync_file(self, source_file: str, destination_path: str) -> Dict[str, Any]:
+        """
+        Sync a single file from source to destination using rsync.
+
+        Args:
+            source_file: Path to the source file
+            destination_path: Destination directory path
+
+        Returns:
+            Dictionary containing sync results and statistics
+        """
+        source_file_obj = Path(source_file)
+        destination_path_obj = Path(destination_path)
+
+        if not source_file_obj.exists():
+            estr = f"Source file does not exist: {source_file_obj}"
+            raise DataMoveError(estr)
+
+        if not source_file_obj.is_file():
+            estr = f"Source path is not a file: {source_file_obj}"
+            raise DataMoveError(estr)
+
+        if not self.dry_run:
+            destination_path_obj.mkdir(parents=True, exist_ok=True)
+
+        pre_sync_info = self.get_file_info(str(source_file_obj))
+
+        result = self._run_rsync_command(
+            source_file_obj,
+            destination_path_obj,
+            sync_directory_contents=False,
+        )
+
+        success = result.returncode == 0
+        if not success:
+            error_msg = f"Rsync failed with exit code {result.returncode}: {result.stderr}"
+            self.logger.error(error_msg)
+            raise DataMoveError(error_msg)
+
+        dest_file = destination_path_obj / source_file_obj.name
+        post_sync_info = self.get_file_info(str(dest_file)) if not self.dry_run else {}
+
+        transfer_stats = self._parse_rsync_stats(result.stdout)
+
+        return {
+            "success": success,
+            "dry_run": self.dry_run,
+            "source_file": str(source_file_obj),
+            "destination_file": str(dest_file),
+            "pre_sync_info": pre_sync_info,
+            "post_sync_info": post_sync_info,
             "transfer_stats": transfer_stats,
             "timestamp": datetime.now().isoformat(),  # noqa: DTZ005
         }

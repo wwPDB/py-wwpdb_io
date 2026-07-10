@@ -26,7 +26,7 @@ dependencies = [
     "mmcif >= 0.3",
     "mmcif.utils",
     "paramiko",
-    "wwpdb.utils.config ~= 0.40",
+    "wwpdb.utils.config >= 0.40",
 ]
 
 requires-python = ">=3.6"
@@ -146,7 +146,7 @@ check = ["ruff check --no-fix .", "mypy --non-interactive --install-types -p wwp
 check-ruff = "ruff check --no-fix . {args}"
 
 # to complement 'check-ruff'
-check-mypy = "mypy --non-interactive --install-types -p wwpdb -p tests-io -p tests-io-config {args}"
+check-mypy = "mypy --non-interactive --install-types -p wwpdb -p tests -p tests-config {args}"
 
 # only check security via Bandit; we require these rules to pass
 check-security = "ruff check --select S --no-fix ."

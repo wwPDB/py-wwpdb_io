@@ -23,7 +23,7 @@ __version__ = "V0.001"
 #
 #
 import logging
-from typing import Any, NoReturn
+from typing import Any, NoReturn, cast
 
 from wwpdb.utils.config.ConfigInfo import ConfigInfo, getSiteId
 
@@ -33,10 +33,10 @@ logger = logging.getLogger(__name__)
 class ArchiveIoBase:
     """A base class for for archive data transfer operation utilities."""
 
-    def __init__(self, *args, **kwargs) -> None:  # noqa: ARG002  pylint: disable=unused-argument
+    def __init__(self, *args: str, **kwargs: str) -> None:  # noqa: ARG002  pylint: disable=unused-argument
         self._raiseExceptions = kwargs.get("raiseExceptions", False)
         self._siteId = kwargs.get("siteId", getSiteId())
-        self._serverId = kwargs.get("serverId")
+        self._serverId = cast(str, kwargs.get("serverId"))
 
         self.__cI = ConfigInfo(siteId=getSiteId())
         #

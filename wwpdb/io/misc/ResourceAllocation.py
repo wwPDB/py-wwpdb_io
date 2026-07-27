@@ -20,7 +20,10 @@ class ResourceAllocation:
         if not path or not os.path.exists(path):
             return {}
 
-        with open(path) as fh:
-            data = yaml.safe_load(fh)
+        try:
+            with open(path) as fh:
+                data = yaml.safe_load(fh)
+        except (OSError, yaml.YAMLError):
+            return {}
 
-        return data or {}
+        return data if isinstance(data, dict) else {}

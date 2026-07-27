@@ -1,7 +1,5 @@
 # ruff: noqa: S101
 
-import os
-
 import pytest
 import yaml
 from wwpdb.utils.config.ConfigInfo import ConfigInfo
@@ -51,3 +49,17 @@ def test_resolves_config_path_via_config_info(monkeypatch, config_file):
     monkeypatch.setattr(ConfigInfo, "get", fake_get)
     ra = ResourceAllocation(site_id="TEST")
     assert ra._config == SAMPLE_CONFIG
+
+
+def test_falls_back_silently_when_config_file_malformed(tmp_path):
+    path = tmp_path / "malformed.yml"
+    path.write_text("key: [unclosed")
+    ra = ResourceAllocation(config_file=str(path))
+    assert ra._config == {}
+
+
+def test_falls_back_silently_when_config_root_is_not_a_dict(tmp_path):
+    path = tmp_path / "not_a_dict.yml"
+    path.write_text(yaml.safe_dump([1, 2, 3]))
+    ra = ResourceAllocation(config_file=str(path))
+    assert ra._config == {}

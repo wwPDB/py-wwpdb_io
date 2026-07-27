@@ -61,7 +61,7 @@ class ResourceAllocation:
 
         if text.startswith("all/"):
             divisor = int(text.split("/", 1)[1])
-            return self._available_cpu_count() // divisor
+            return max(1, self._available_cpu_count() // divisor)
 
         return int(text)
 
@@ -80,6 +80,9 @@ class ResourceAllocation:
         if text == "all":
             return None
 
+        if not text:
+            raise ValueError("empty memory value")
+
         unit = text[-1].upper()
         if unit == "G":
             return int(text[:-1]) * 1024
@@ -94,4 +97,9 @@ class ResourceAllocation:
 
         available = sorted(os.sched_getaffinity(0))
         pinned = set(available[:num_cpus])
+        if not pinned:
+            # Pinning to zero CPUs is meaningless and os.sched_setaffinity raises
+            # OSError (EINVAL) on an empty set, so treat it as a no-op instead of
+            # crashing the caller's subprocess spawn.
+            return
         os.sched_setaffinity(0, pinned)

@@ -169,3 +169,29 @@ def test_set_cpu_affinity_noop_when_unsupported(tmp_path, monkeypatch):
     monkeypatch.delattr(os, "sched_setaffinity", raising=False)
     ra = ResourceAllocation(config_file=str(tmp_path / "missing.yml"))
     ra.set_cpu_affinity(2)  # must not raise
+
+
+def test_get_cpus_all_over_n_floors_to_one_when_division_hits_zero(config_file, monkeypatch):
+    monkeypatch.setattr(os, "sched_getaffinity", lambda _pid: set(range(2)), raising=False)
+    ra = ResourceAllocation(config_file=config_file)
+    assert ra._resolve_cpu_value("all/4") == 1  # 2 // 4 == 0, floored to 1
+
+
+def test_set_cpu_affinity_does_not_call_sched_setaffinity_with_empty_set(tmp_path, monkeypatch):
+    monkeypatch.setattr(os, "sched_getaffinity", lambda _pid: {0, 1, 2, 3}, raising=False)
+    calls = []
+    monkeypatch.setattr(os, "sched_setaffinity", lambda pid, cpus: calls.append((pid, cpus)), raising=False)
+
+    ra = ResourceAllocation(config_file=str(tmp_path / "missing.yml"))
+    ra.set_cpu_affinity(0)  # must not raise OSError: [Errno 22] Invalid argument
+
+    assert all(cpus != set() for _pid, cpus in calls)
+    assert len(calls) == 0
+
+
+def test_get_memory_mb_empty_string_raises_clear_value_error(tmp_path):
+    path = tmp_path / "cfg.yml"
+    path.write_text(yaml.safe_dump({"jobs": {"job_a": {"memory": ""}}}))
+    ra = ResourceAllocation(config_file=str(path))
+    with pytest.raises(ValueError):
+        ra.get_memory_mb("job_a")

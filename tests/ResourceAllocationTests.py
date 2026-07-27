@@ -108,3 +108,44 @@ def test_get_cpus_falls_back_to_cpu_count_off_linux(tmp_path, monkeypatch):
     monkeypatch.setattr(os, "cpu_count", lambda: 3)
     ra = ResourceAllocation(config_file=str(tmp_path / "missing.yml"))
     assert ra.get_cpus("anything") == 3
+
+
+def test_get_memory_mb_from_job_override(config_file):
+    ra = ResourceAllocation(config_file=config_file)
+    assert ra.get_memory_mb("entity_transform_img_generator") == 16384
+
+
+def test_get_memory_mb_falls_back_to_defaults(config_file):
+    ra = ResourceAllocation(config_file=config_file)
+    assert ra.get_memory_mb("unlisted_job") == 8192  # defaults.memory = 8G
+
+
+def test_get_memory_mb_falls_back_to_defaults_for_job_without_override(config_file):
+    ra = ResourceAllocation(config_file=config_file)
+    assert ra.get_memory_mb("cif_validator") == 8192  # no job-level memory key, so defaults.memory = 8G applies
+
+
+def test_get_memory_mb_all_is_unconstrained(tmp_path):
+    path = tmp_path / "cfg.yml"
+    path.write_text(yaml.safe_dump({"defaults": {"memory": "all"}}))
+    ra = ResourceAllocation(config_file=str(path))
+    assert ra.get_memory_mb("anything") is None
+
+
+def test_get_memory_mb_megabyte_suffix(tmp_path):
+    path = tmp_path / "cfg.yml"
+    path.write_text(yaml.safe_dump({"jobs": {"job_a": {"memory": "8M"}}}))
+    ra = ResourceAllocation(config_file=str(path))
+    assert ra.get_memory_mb("job_a") == 8
+
+
+def test_get_memory_mb_unconstrained_when_config_empty(tmp_path):
+    ra = ResourceAllocation(config_file=str(tmp_path / "missing.yml"))
+    assert ra.get_memory_mb("anything") is None
+
+
+def test_get_memory_mb_plain_number_string(tmp_path):
+    path = tmp_path / "cfg.yml"
+    path.write_text(yaml.safe_dump({"jobs": {"job_a": {"memory": "5"}}}))
+    ra = ResourceAllocation(config_file=str(path))
+    assert ra.get_memory_mb("job_a") == 5

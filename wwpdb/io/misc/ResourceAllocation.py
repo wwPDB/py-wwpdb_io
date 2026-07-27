@@ -64,3 +64,26 @@ class ResourceAllocation:
             return self._available_cpu_count() // divisor
 
         return int(text)
+
+    def get_memory_mb(self, job_name: str) -> Optional[int]:
+        value = self._lookup(job_name, "memory")
+        if value is None:
+            return None
+        return self._resolve_memory_value(value)
+
+    @staticmethod
+    def _resolve_memory_value(value: Any) -> Optional[int]:
+        if isinstance(value, int):
+            return value
+
+        text = str(value).strip()
+        if text == "all":
+            return None
+
+        unit = text[-1].upper()
+        if unit == "G":
+            return int(text[:-1]) * 1024
+        if unit == "M":
+            return int(text[:-1])
+
+        return int(text)

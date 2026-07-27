@@ -149,3 +149,23 @@ def test_get_memory_mb_plain_number_string(tmp_path):
     path.write_text(yaml.safe_dump({"jobs": {"job_a": {"memory": "5"}}}))
     ra = ResourceAllocation(config_file=str(path))
     assert ra.get_memory_mb("job_a") == 5
+
+
+def test_set_cpu_affinity_pins_subset(tmp_path, monkeypatch):
+    monkeypatch.setattr(os, "sched_getaffinity", lambda _pid: {0, 1, 2, 3, 4, 5, 6, 7}, raising=False)
+    calls = []
+    monkeypatch.setattr(os, "sched_setaffinity", lambda pid, cpus: calls.append((pid, cpus)), raising=False)
+
+    ra = ResourceAllocation(config_file=str(tmp_path / "missing.yml"))
+    ra.set_cpu_affinity(3)
+
+    assert len(calls) == 1
+    pid, cpus = calls[0]
+    assert pid == 0
+    assert cpus == {0, 1, 2}
+
+
+def test_set_cpu_affinity_noop_when_unsupported(tmp_path, monkeypatch):
+    monkeypatch.delattr(os, "sched_setaffinity", raising=False)
+    ra = ResourceAllocation(config_file=str(tmp_path / "missing.yml"))
+    ra.set_cpu_affinity(2)  # must not raise

@@ -87,3 +87,11 @@ class ResourceAllocation:
             return int(text[:-1])
 
         return int(text)
+
+    def set_cpu_affinity(self, num_cpus: int) -> None:
+        if not hasattr(os, "sched_setaffinity"):
+            return
+
+        available = sorted(os.sched_getaffinity(0))
+        pinned = set(available[:num_cpus])
+        os.sched_setaffinity(0, pinned)

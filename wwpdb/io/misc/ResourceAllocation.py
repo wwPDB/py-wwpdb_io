@@ -49,7 +49,7 @@ class ResourceAllocation:
     def _available_cpu_count() -> int:
         if hasattr(os, "sched_getaffinity"):
             return len(os.sched_getaffinity(0))
-        return os.cpu_count()
+        return os.cpu_count() or 1
 
     def _resolve_cpu_value(self, value: Any) -> int:
         if isinstance(value, int):

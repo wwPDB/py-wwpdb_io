@@ -3,6 +3,7 @@ click
 mmcif
 mmcif.utils
 paramiko
+PyYAML
 wwpdb.utils.config
 # For testing
 wwpdb.utils.testing

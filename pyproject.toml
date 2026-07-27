@@ -26,6 +26,7 @@ dependencies = [
     "mmcif >= 0.3",
     "mmcif.utils",
     "paramiko",
+    "PyYAML",
     "wwpdb.utils.config >= 0.40",
 ]
 

@@ -1,5 +1,7 @@
 # ruff: noqa: S101
 
+import os
+
 import pytest
 import yaml
 from wwpdb.utils.config.ConfigInfo import ConfigInfo
@@ -63,3 +65,46 @@ def test_falls_back_silently_when_config_root_is_not_a_dict(tmp_path):
     path.write_text(yaml.safe_dump([1, 2, 3]))
     ra = ResourceAllocation(config_file=str(path))
     assert ra._config == {}
+
+
+def test_get_cpus_from_job_override(config_file):
+    ra = ResourceAllocation(config_file=config_file)
+    assert ra.get_cpus("entity_transform_img_generator") == 4
+
+
+def test_get_cpus_all_from_job_override(config_file, monkeypatch):
+    monkeypatch.setattr(os, "sched_getaffinity", lambda _pid: set(range(8)), raising=False)
+    ra = ResourceAllocation(config_file=config_file)
+    assert ra.get_cpus("cif_validator") == 8
+
+
+def test_get_cpus_all_over_n_from_job_override(config_file, monkeypatch):
+    monkeypatch.setattr(os, "sched_getaffinity", lambda _pid: set(range(8)), raising=False)
+    ra = ResourceAllocation(config_file=config_file)
+    assert ra.get_cpus("map_calculation") == 2  # 8 // 4
+
+
+def test_get_cpus_falls_back_to_defaults(config_file, monkeypatch):
+    monkeypatch.setattr(os, "sched_getaffinity", lambda _pid: set(range(8)), raising=False)
+    ra = ResourceAllocation(config_file=config_file)
+    assert ra.get_cpus("unlisted_job") == 4  # defaults.cpus = all/2, 8 // 2
+
+
+def test_get_cpus_falls_back_to_system_when_config_empty(tmp_path, monkeypatch):
+    monkeypatch.setattr(os, "sched_getaffinity", lambda _pid: set(range(6)), raising=False)
+    ra = ResourceAllocation(config_file=str(tmp_path / "missing.yml"))
+    assert ra.get_cpus("anything") == 6
+
+
+def test_get_cpus_plain_number_string(tmp_path):
+    path = tmp_path / "cfg.yml"
+    path.write_text(yaml.safe_dump({"jobs": {"job_a": {"cpus": "4"}}}))
+    ra = ResourceAllocation(config_file=str(path))
+    assert ra.get_cpus("job_a") == 4
+
+
+def test_get_cpus_falls_back_to_cpu_count_off_linux(tmp_path, monkeypatch):
+    monkeypatch.delattr(os, "sched_getaffinity", raising=False)
+    monkeypatch.setattr(os, "cpu_count", lambda: 3)
+    ra = ResourceAllocation(config_file=str(tmp_path / "missing.yml"))
+    assert ra.get_cpus("anything") == 3

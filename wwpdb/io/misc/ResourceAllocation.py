@@ -27,3 +27,40 @@ class ResourceAllocation:
             return {}
 
         return data if isinstance(data, dict) else {}
+
+    def get_cpus(self, job_name: str) -> int:
+        value = self._lookup(job_name, "cpus")
+        if value is None:
+            return self._available_cpu_count()
+        return self._resolve_cpu_value(value)
+
+    def _lookup(self, job_name: str, key: str) -> Optional[Any]:
+        job_cfg = (self._config.get("jobs") or {}).get(job_name) or {}
+        if key in job_cfg:
+            return job_cfg[key]
+
+        defaults_cfg = self._config.get("defaults") or {}
+        if key in defaults_cfg:
+            return defaults_cfg[key]
+
+        return None
+
+    @staticmethod
+    def _available_cpu_count() -> int:
+        if hasattr(os, "sched_getaffinity"):
+            return len(os.sched_getaffinity(0))
+        return os.cpu_count()
+
+    def _resolve_cpu_value(self, value: Any) -> int:
+        if isinstance(value, int):
+            return value
+
+        text = str(value).strip()
+        if text == "all":
+            return self._available_cpu_count()
+
+        if text.startswith("all/"):
+            divisor = int(text.split("/", 1)[1])
+            return self._available_cpu_count() // divisor
+
+        return int(text)

@@ -152,7 +152,8 @@ def test_get_memory_mb_plain_number_string(tmp_path):
 
 
 def test_set_cpu_affinity_pins_subset(tmp_path, monkeypatch):
-    monkeypatch.setattr(os, "sched_getaffinity", lambda _pid: {0, 1, 2, 3, 4, 5, 6, 7}, raising=False)
+    available = {0, 1, 2, 3, 4, 5, 6, 7}
+    monkeypatch.setattr(os, "sched_getaffinity", lambda _pid: available, raising=False)
     calls = []
     monkeypatch.setattr(os, "sched_setaffinity", lambda pid, cpus: calls.append((pid, cpus)), raising=False)
 
@@ -162,7 +163,34 @@ def test_set_cpu_affinity_pins_subset(tmp_path, monkeypatch):
     assert len(calls) == 1
     pid, cpus = calls[0]
     assert pid == 0
-    assert cpus == {0, 1, 2}
+    assert len(cpus) == 3
+    assert cpus.issubset(available)
+
+
+def test_set_cpu_affinity_randomizes_selection(tmp_path, monkeypatch):
+    available = set(range(100))
+    monkeypatch.setattr(os, "sched_getaffinity", lambda _pid: available, raising=False)
+    calls = []
+    monkeypatch.setattr(os, "sched_setaffinity", lambda pid, cpus: calls.append(cpus), raising=False)
+
+    ra = ResourceAllocation(config_file=str(tmp_path / "missing.yml"))
+    ra.set_cpu_affinity(5)
+    ra.set_cpu_affinity(5)
+
+    assert calls[0] != calls[1]
+
+
+def test_set_cpu_affinity_clamps_to_available_when_requested_exceeds_available(tmp_path, monkeypatch):
+    available = {0, 1, 2, 3}
+    monkeypatch.setattr(os, "sched_getaffinity", lambda _pid: available, raising=False)
+    calls = []
+    monkeypatch.setattr(os, "sched_setaffinity", lambda pid, cpus: calls.append(cpus), raising=False)
+
+    ra = ResourceAllocation(config_file=str(tmp_path / "missing.yml"))
+    ra.set_cpu_affinity(10)
+
+    assert len(calls) == 1
+    assert calls[0] == available
 
 
 def test_set_cpu_affinity_noop_when_unsupported(tmp_path, monkeypatch):

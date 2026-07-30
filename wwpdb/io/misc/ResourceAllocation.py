@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import random
 from typing import Any, Dict, Optional
 
 import yaml
@@ -95,8 +96,9 @@ class ResourceAllocation:
         if not hasattr(os, "sched_setaffinity"):
             return
 
-        available = sorted(os.sched_getaffinity(0))
-        pinned = set(available[:num_cpus])
+        available = list(os.sched_getaffinity(0))
+        k = min(num_cpus, len(available))
+        pinned = set(random.sample(available, k)) if k > 0 else set()
         if not pinned:
             # Pinning to zero CPUs is meaningless and os.sched_setaffinity raises
             # OSError (EINVAL) on an empty set, so treat it as a no-op instead of

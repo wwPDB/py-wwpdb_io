@@ -18,8 +18,14 @@ classifiers = [
     "Natural Language :: English",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.6",
-    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.9",
+
 ]
 dependencies = [
     "click",
@@ -29,7 +35,7 @@ dependencies = [
     "wwpdb.utils.config >= 0.40",
 ]
 
-requires-python = ">=3.6"
+requires-python = ">=3.8"
 
 [project.urls]
 Homepage = "https://github.com/rcsb/py-wwpdb_io"
@@ -51,7 +57,7 @@ exclude = ["/wwpdb/mock-data", "/wwpdb/io/Archive"]
 
 #=================================== Ruff basics =============================#
 [tool.ruff]
-target-version = "py38"
+target-version = "py39"
 output-format = "concise"
 
 line-length = 185 # 120 is hatch's default via 'hatch init'
@@ -82,6 +88,7 @@ explicit-preview-rules = true
 
 ignore = [
   "C402",     #  Unnecessary generator (rewrite as a `dict` comprehension)
+  "D419",     # Docstring is empty
   "EXE001",   # Shebang is present but file is not executabl
   "FBT002",   # Boolean default positional argument in function definition
   "FBT001",   # Boolean-typed positional argument in function definition
@@ -117,13 +124,15 @@ ignore = [
   "TRY400",   # Use `logging.exception` instead of `logging.error`
   "TRY401",   # Redundant exception object included in `logging.exception` call
   "UP008",    # Use `super()` instead of `super(__class__, self)`
-  "UP031",     # Use format specifiers instead of percent format
-  "UP032"     # Use f-string instead of `format` call
+  "UP031",    # Use format specifiers instead of percent format
+  "UP032",    # Use f-string instead of `format` call
+  "UP035",    # `typing.Dict` is deprecated, use `dict` instead
+  "UP045",    # Use `X | None` for type annotations
 ]
 
 # -------------------- default environment scripts ------------------
 [tool.hatch.envs.default]
-python = "3.8"
+python = "3.9"
 skip-install = true
 dependencies = ["mypy", "ruff >=0.6.9", "mmcif", "mmcif.utils", "paramiko", "wwpdb.utils.config", "pytest", "wwpdb.utils.testing"]
 

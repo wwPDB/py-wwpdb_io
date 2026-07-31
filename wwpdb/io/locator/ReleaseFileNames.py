@@ -17,6 +17,9 @@ from __future__ import annotations
 
 
 class ReleaseFileNames:
+    """Computes file names for entry content types as they appear publicly (on the FTP/HTTP archive)
+    or within the for_release directory, including any EMDB accession remapping and gzip compression."""
+
     def __init__(self) -> None:
         #                context   public    for_rel   gzip_pub, gzip_rel
 
@@ -61,9 +64,11 @@ class ReleaseFileNames:
         return "emd-{}".format(self.__get_emdb_number(accession))
 
     def get_lower_emdb_hyphen_format(self, accession: str) -> str:
+        """Returns lower case EMDB accession with a hyphen, e.g. "emd-1234"."""
         return self.__get_emdb_hyphen_format(accession)
 
     def get_lower_emdb_underscore_format(self, accession: str) -> str:
+        """Returns lower case EMDB accession with an underscore, e.g. "emd_1234"."""
         return self.__get_emdb_underscore_format(accession)
 
     def __process_remap(self, remap_type: str, accession: str) -> str:
@@ -103,49 +108,145 @@ class ReleaseFileNames:
         return fname
 
     def get_model(self, accession: str, for_release: bool = False) -> str:
+        """Returns the model coordinate file name.
+
+        Args:
+            accession: entry accession code.
+            for_release: if True, returns the for_release file name; otherwise the public file name.
+        """
         return self.__getfname("model", accession, for_release)
 
     def get_structure_factor(self, accession: str, for_release: bool = False) -> str:
+        """Returns the structure factor file name.
+
+        Args:
+            accession: entry accession code.
+            for_release: if True, returns the for_release file name; otherwise the public file name.
+        """
         return self.__getfname("sf", accession, for_release)
 
     def get_chemical_shifts(self, accession: str, for_release: bool = False) -> str:
+        """Returns the chemical shifts file name.
+
+        Args:
+            accession: entry accession code.
+            for_release: if True, returns the for_release file name; otherwise the public file name.
+        """
         return self.__getfname("cs", accession, for_release)
 
     def get_emdb_xml(self, accession: str, for_release: bool = False) -> str:
+        """Returns the EMDB header XML file name.
+
+        Args:
+            accession: EMDB accession code.
+            for_release: if True, returns the for_release file name; otherwise the public file name.
+        """
         return self.__getfname("emdxml", accession, for_release)
 
     def get_emdb_map(self, accession: str, for_release: bool = False) -> str:
+        """Returns the EMDB map file name.
+
+        Args:
+            accession: EMDB accession code.
+            for_release: if True, returns the for_release file name; otherwise the public file name.
+        """
         return self.__getfname("emdmap", accession, for_release)
 
     def get_emdb_fsc(self, accession: str, for_release: bool = False) -> str:
+        """Returns the EMDB FSC file name.
+
+        Args:
+            accession: EMDB accession code.
+            for_release: if True, returns the for_release file name; otherwise the public file name.
+        """
         return self.__getfname("emdfsc", accession, for_release)
 
     def get_validation_pdf(self, accession: str, for_release: bool = False) -> str:
+        """Returns the validation report PDF file name.
+
+        Args:
+            accession: entry accession code.
+            for_release: if True, returns the for_release file name; otherwise the public file name.
+        """
         return self.__getfname("validpdf", accession, for_release)
 
     def get_validation_full_pdf(self, accession: str, for_release: bool = False) -> str:
+        """Returns the full validation report PDF file name.
+
+        Args:
+            accession: entry accession code.
+            for_release: if True, returns the for_release file name; otherwise the public file name.
+        """
         return self.__getfname("validpdffull", accession, for_release)
 
     def get_validation_xml(self, accession: str, for_release: bool = False) -> str:
+        """Returns the validation report XML file name.
+
+        Args:
+            accession: entry accession code.
+            for_release: if True, returns the for_release file name; otherwise the public file name.
+        """
         return self.__getfname("validxml", accession, for_release)
 
     def get_validation_cif(self, accession: str, for_release: bool = False) -> str:
+        """Returns the validation report mmCIF file name.
+
+        Args:
+            accession: entry accession code.
+            for_release: if True, returns the for_release file name; otherwise the public file name.
+        """
         return self.__getfname("validcif", accession, for_release)
 
     def get_validation_png(self, accession: str, for_release: bool = False) -> str:
+        """Returns the multi-percentile validation plot PNG file name.
+
+        Args:
+            accession: entry accession code.
+            for_release: if True, returns the for_release file name; otherwise the public file name.
+        """
         return self.__getfname("validpng", accession, for_release)
 
     def get_validation_svg(self, accession: str, for_release: bool = False) -> str:
+        """Returns the multi-percentile validation plot SVG file name.
+
+        Args:
+            accession: entry accession code.
+            for_release: if True, returns the for_release file name; otherwise the public file name.
+        """
         return self.__getfname("validsvg", accession, for_release)
 
     def get_validation_2fofc(self, accession: str, for_release: bool = False) -> str:
+        """Returns the validation 2Fo-Fc map coefficients file name.
+
+        Args:
+            accession: entry accession code.
+            for_release: if True, returns the for_release file name; otherwise the public file name.
+        """
         return self.__getfname("valid2fo", accession, for_release)
 
     def get_validation_fofc(self, accession: str, for_release: bool = False) -> str:
+        """Returns the validation Fo-Fc map coefficients file name.
+
+        Args:
+            accession: entry accession code.
+            for_release: if True, returns the for_release file name; otherwise the public file name.
+        """
         return self.__getfname("validfo", accession, for_release)
 
     def get_nmr_data(self, accession: str, for_release: bool = False) -> str:
+        """Returns the combined NMR data file name.
+
+        Args:
+            accession: entry accession code.
+            for_release: if True, returns the for_release file name; otherwise the public file name.
+        """
         return self.__getfname("nmr_data", accession, for_release)
 
     def get_validation_image_tar(self, accession: str, for_release: bool = False) -> str:
+        """Returns the validation images tar file name.
+
+        Args:
+            accession: entry accession code.
+            for_release: if True, returns the for_release file name; otherwise the public file name.
+        """
         return self.__getfname("validimagetar", accession, for_release)

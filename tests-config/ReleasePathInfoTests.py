@@ -20,6 +20,7 @@ import logging
 import os
 import platform
 import unittest
+from typing import Literal, Optional
 
 HERE = os.path.abspath(os.path.dirname(__file__))
 TOPDIR = os.path.dirname(HERE)
@@ -42,6 +43,14 @@ logging.basicConfig(format=FORMAT, level=logging.DEBUG)
 logger = logging.getLogger()
 
 
+class MyReleasePathInfo(ReleasePathInfo):
+    def __init__(self, siteId: str | None = None) -> None:
+        super().__init__(siteId=siteId)
+
+    def get_previous_folder_name(self) -> str:
+        return self._previous_folder_name
+
+
 class ReleasePathInfoTests(unittest.TestCase):
     def setUp(self) -> None:
         #
@@ -49,14 +58,14 @@ class ReleasePathInfoTests(unittest.TestCase):
 
     def testGetReleasePaths(self) -> None:
         """Test getting standard file names within session paths."""
-        tests: list[list[str | None]] = [
+        tests: list[tuple[Optional[Literal["modified", "added", "obsolete", "val_reports"]], Optional[Literal["current", "previous"]]]] = [
             # subdir, vers
-            [None, None],
-            ["modified", None],
-            ["val_reports", None],
-            [None, "previous"],
-            [None, "current"],
-            ["modified", "previous"],
+            (None, None),
+            ("modified", None),
+            ("val_reports", None),
+            (None, "previous"),
+            (None, "current"),
+            ("modified", "previous"),
         ]
         for subdir, vers in tests:
             rpi = ReleasePathInfo(self.__siteId)
@@ -94,13 +103,13 @@ class ReleasePathInfoTests(unittest.TestCase):
         rpi = ReleasePathInfo(self.__siteId)
 
         with self.assertRaises(NameError):
-            rpi.getForReleasePath(version="something")
+            rpi.getForReleasePath(version="something")  # type: ignore[arg-type]
 
         with self.assertRaises(NameError):
-            rpi.getForReleasePath(subdir="something")
+            rpi.getForReleasePath(subdir="something")  # type: ignore[arg-type]
 
         with self.assertRaises(NameError):
-            rpi.getForReleasePath(version="some", subdir="something")
+            rpi.getForReleasePath(version="some", subdir="something")  # type: ignore[arg-type]
 
         with self.assertRaises(NameError):
             rpi.getForReleasePath(subdir="emd", accession="EMD-1000", em_sub_path="something")
@@ -108,10 +117,18 @@ class ReleasePathInfoTests(unittest.TestCase):
 
 class ReleasePathInfoPreviousTests(unittest.TestCase):
     def setUp(self) -> None:
-        self.RPI = ReleasePathInfo()
+        self.RPI = MyReleasePathInfo()
 
     def test_for_release(self) -> None:
         ret = self.RPI.get_for_release_path()
+        self.assertIsNotNone(ret)
+
+    def test_for_release_beta(self) -> None:
+        ret = self.RPI.get_for_release_beta_path()
+        self.assertIsNotNone(ret)
+
+    def test_for_release_version(self) -> None:
+        ret = self.RPI.get_for_release_version_path()
         self.assertIsNotNone(ret)
 
     def test_for_release_added(self) -> None:
@@ -127,7 +144,7 @@ class ReleasePathInfoPreviousTests(unittest.TestCase):
         self.assertIsNotNone(ret)
         self.assertNotEqual(ret, rel_path)
         self.assertTrue("added" in ret)
-        self.assertTrue(self.RPI.previous_folder_name in ret)
+        self.assertTrue(self.RPI.get_previous_folder_name() in ret)
 
     def test_for_release_modified(self) -> None:
         rel_path = self.RPI.get_for_release_path()
@@ -142,7 +159,7 @@ class ReleasePathInfoPreviousTests(unittest.TestCase):
         self.assertIsNotNone(ret)
         self.assertNotEqual(ret, rel_path)
         self.assertTrue("modified" in ret)
-        self.assertTrue(self.RPI.previous_folder_name in ret)
+        self.assertTrue(self.RPI.get_previous_folder_name() in ret)
 
     def test_for_release_emd_header(self) -> None:
         rel_path = self.RPI.get_for_release_path()
@@ -157,7 +174,7 @@ class ReleasePathInfoPreviousTests(unittest.TestCase):
         self.assertIsNotNone(ret)
         self.assertNotEqual(ret, rel_path)
         self.assertTrue("emd" in ret)
-        self.assertTrue(self.RPI.previous_folder_name in ret)
+        self.assertTrue(self.RPI.get_previous_folder_name() in ret)
 
 
 def suiteStandardPathTests() -> unittest.TestSuite:  # pragma: no cover
@@ -171,6 +188,8 @@ def suiteStandardPathTests() -> unittest.TestSuite:  # pragma: no cover
 def suitePreviousPathTests() -> unittest.TestSuite:  # pragma: no cover
     suiteSelect = unittest.TestSuite()
     suiteSelect.addTest(ReleasePathInfoPreviousTests("test_for_release"))
+    suiteSelect.addTest(ReleasePathInfoPreviousTests("test_for_release_beta"))
+    suiteSelect.addTest(ReleasePathInfoPreviousTests("test_for_release_version"))
     suiteSelect.addTest(ReleasePathInfoPreviousTests("test_for_release_added"))
     suiteSelect.addTest(ReleasePathInfoPreviousTests("test_for_release_added_previous"))
     suiteSelect.addTest(ReleasePathInfoPreviousTests("test_for_release_modified"))

@@ -45,7 +45,7 @@ class ReleasePathInfo:
         subdir: Optional[Literal["added", "modified", "obsolete", "emd", "val_reports", "em_val_reports", "val_images"]] = None,
         version: Literal["current", "previous"] = "current",
         accession: Optional[str] = None,
-        em_sub_path: Optional[str] = None,
+        em_sub_path: Optional[Literal["header", "map", "fsc", "images", "masks", "metadata", "other", "validation"]] = None,
     ) -> str:
         """Returns path to for-release directory.
 
@@ -77,6 +77,7 @@ class ReleasePathInfo:
                     "fsc",
                     "images",
                     "masks",
+                    "metadata",
                     "other",
                     "validation",
                 ]:
@@ -126,7 +127,12 @@ class ReleasePathInfo:
         """Returns path to the "modified" subdirectory of the previous for_release directory."""
         return self.get_modified_path(version=self._previous_folder_name)
 
-    def get_emd_subfolder_path(self, accession: str, subfolder: str, version: Optional[Literal["current", "previous"]] = None) -> str:
+    def get_emd_subfolder_path(
+        self,
+        accession: str,
+        subfolder: Literal["header", "map", "fsc", "images", "masks", "metadata", "other", "validation"],
+        version: Optional[Literal["current", "previous"]] = None,
+    ) -> str:
         """Returns path to an EMDB accession's subfolder within the "emd" subdirectory of the for_release directory.
 
         Args:
@@ -138,7 +144,11 @@ class ReleasePathInfo:
             version = self.__current_folder_name
         return self.getForReleasePath(subdir="emd", accession=accession, em_sub_path=subfolder, version=version)
 
-    def get_previous_emd_subfolder_path(self, accession: str, subfolder: str) -> str:
+    def get_previous_emd_subfolder_path(
+        self,
+        accession: str,
+        subfolder: Literal["header", "map", "fsc", "images", "masks", "metadata", "other", "validation"],
+    ) -> str:
         """Returns path to an EMDB accession's subfolder within the "emd" subdirectory of the previous for_release directory.
 
         Args:

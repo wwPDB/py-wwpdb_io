@@ -83,12 +83,13 @@ class ReleasePathInfoTests(unittest.TestCase):
 
     def testGetEMReleaseSubPaths(self) -> None:
         """Test getting standard file names within session paths."""
-        emsub = [
+        emsub: list[Literal["header", "map", "fsc", "images", "masks", "metadata", "other", "validation"]] = [
             "header",
             "map",
             "fsc",
             "images",
             "masks",
+            "metadata",
             "other",
             "validation",
         ]
@@ -112,7 +113,7 @@ class ReleasePathInfoTests(unittest.TestCase):
             rpi.getForReleasePath(version="some", subdir="something")  # type: ignore[arg-type]
 
         with self.assertRaises(NameError):
-            rpi.getForReleasePath(subdir="emd", accession="EMD-1000", em_sub_path="something")
+            rpi.getForReleasePath(subdir="emd", accession="EMD-1000", em_sub_path="something")  # type: ignore[arg-type]
 
 
 class ReleasePathInfoPreviousTests(unittest.TestCase):

@@ -17,6 +17,8 @@ __email__ = "ezra.peisach@rcsb.org"
 
 # ruff: noqa: PT027
 import unittest
+from datetime import date
+from unittest import mock
 
 from wwpdb.io.locator.ReleaseFileNames import ReleaseFileNames
 
@@ -24,6 +26,7 @@ from wwpdb.io.locator.ReleaseFileNames import ReleaseFileNames
 class ReleaseFileNamesTests(unittest.TestCase):
     def setUp(self) -> None:
         self.__rfn = ReleaseFileNames()
+        self.__rfn_beta = ReleaseFileNames(use_beta_filenames=True)
         self.__accession = "1abc"
         self.__emdb_accession = "EMD-1234"
 
@@ -34,6 +37,61 @@ class ReleaseFileNamesTests(unittest.TestCase):
     def testGetStructureFactor(self) -> None:
         self.assertEqual(self.__rfn.get_structure_factor(self.__accession), "r1abcsf.ent.gz")
         self.assertEqual(self.__rfn.get_structure_factor(self.__accession, for_release=True), "1abc-sf.cif")
+
+    def testGetStructureFactorBeta(self) -> None:
+        # use_beta_filenames kwarg - for_release_beta area gzips the structure factor file
+        self.assertEqual(self.__rfn_beta.get_structure_factor(self.__accession), "r1abcsf.ent.gz")
+        self.assertEqual(self.__rfn_beta.get_structure_factor(self.__accession, for_release=True), "1abc-sf.cif.gz")
+
+    def testUseBetaFilenamesDefault(self) -> None:
+        # default construction (no kwargs) must match whichever mode the 17-Jul-2027 date cutoff selects
+        rfn_default = ReleaseFileNames()
+        is_beta_by_date = ReleaseFileNames._is_on_or_after_20270717()
+        rfn_expected = ReleaseFileNames(use_beta_filenames=is_beta_by_date)
+        self.assertEqual(
+            rfn_default.get_structure_factor(self.__accession, for_release=True),
+            rfn_expected.get_structure_factor(self.__accession, for_release=True),
+        )
+
+    def testIsOnOrAfter20270717(self) -> None:
+        self.assertEqual(ReleaseFileNames._is_on_or_after_20270717(), date.today() >= date(2027, 7, 17))
+
+    def testIsOnOrAfter20270717Before(self) -> None:
+        class FakeDate(date):
+            @classmethod
+            def today(cls) -> date:
+                return date(2027, 7, 16)
+
+        with mock.patch("wwpdb.io.locator.ReleaseFileNames.date", FakeDate):
+            self.assertFalse(ReleaseFileNames._is_on_or_after_20270717())
+
+    def testIsOnOrAfter20270717Exact(self) -> None:
+        class FakeDate(date):
+            @classmethod
+            def today(cls) -> date:
+                return date(2027, 7, 17)
+
+        with mock.patch("wwpdb.io.locator.ReleaseFileNames.date", FakeDate):
+            self.assertTrue(ReleaseFileNames._is_on_or_after_20270717())
+
+    def testIsOnOrAfter20270717After(self) -> None:
+        class FakeDate(date):
+            @classmethod
+            def today(cls) -> date:
+                return date(2027, 7, 18)
+
+        with mock.patch("wwpdb.io.locator.ReleaseFileNames.date", FakeDate):
+            self.assertTrue(ReleaseFileNames._is_on_or_after_20270717())
+
+    def testUseBetaFilenamesDefaultAfterCutoff(self) -> None:
+        class FakeDate(date):
+            @classmethod
+            def today(cls) -> date:
+                return date(2027, 7, 18)
+
+        with mock.patch("wwpdb.io.locator.ReleaseFileNames.date", FakeDate):
+            rfn = ReleaseFileNames()
+        self.assertEqual(rfn.get_structure_factor(self.__accession, for_release=True), "1abc-sf.cif.gz")
 
     def testGetChemicalShifts(self) -> None:
         self.assertEqual(self.__rfn.get_chemical_shifts(self.__accession), "1abc_cs.str.gz")
@@ -47,6 +105,11 @@ class ReleaseFileNamesTests(unittest.TestCase):
         # accession remapping: public uses hyphen form, for_release uses underscore form
         self.assertEqual(self.__rfn.get_emdb_xml(self.__emdb_accession), "emd-1234-v30.xml")
         self.assertEqual(self.__rfn.get_emdb_xml(self.__emdb_accession, for_release=True), "emd_1234_v3.xml")
+
+    def testGetEmdbMetaData(self) -> None:
+        # accession remapping: public uses hyphen form, for_release uses underscore form
+        self.assertEqual(self.__rfn.get_emdb_metadata(self.__emdb_accession), "emd-1234.cif.gz")
+        self.assertEqual(self.__rfn.get_emdb_metadata(self.__emdb_accession, for_release=True), "emd-1234.cif.gz")
 
     def testGetEmdbMap(self) -> None:
         # accession remapping: both public and for_release use underscore form
@@ -104,9 +167,17 @@ def suiteReleaseFileNamesTests() -> unittest.TestSuite:  # pragma: no cover
     suiteSelect = unittest.TestSuite()
     suiteSelect.addTest(ReleaseFileNamesTests("testGetModel"))
     suiteSelect.addTest(ReleaseFileNamesTests("testGetStructureFactor"))
+    suiteSelect.addTest(ReleaseFileNamesTests("testGetStructureFactorBeta"))
+    suiteSelect.addTest(ReleaseFileNamesTests("testUseBetaFilenamesDefault"))
+    suiteSelect.addTest(ReleaseFileNamesTests("testIsOnOrAfter20270717"))
+    suiteSelect.addTest(ReleaseFileNamesTests("testIsOnOrAfter20270717Before"))
+    suiteSelect.addTest(ReleaseFileNamesTests("testIsOnOrAfter20270717Exact"))
+    suiteSelect.addTest(ReleaseFileNamesTests("testIsOnOrAfter20270717After"))
+    suiteSelect.addTest(ReleaseFileNamesTests("testUseBetaFilenamesDefaultAfterCutoff"))
     suiteSelect.addTest(ReleaseFileNamesTests("testGetChemicalShifts"))
     suiteSelect.addTest(ReleaseFileNamesTests("testGetNmrData"))
     suiteSelect.addTest(ReleaseFileNamesTests("testGetEmdbXml"))
+    suiteSelect.addTest(ReleaseFileNamesTests("testGetEmdbMetaData"))
     suiteSelect.addTest(ReleaseFileNamesTests("testGetEmdbMap"))
     suiteSelect.addTest(ReleaseFileNamesTests("testGetEmdbFsc"))
     suiteSelect.addTest(ReleaseFileNamesTests("testGetValidationPdf"))

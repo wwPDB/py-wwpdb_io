@@ -15,20 +15,45 @@ In general the methods take accession and for_release flags.  for_release indica
 
 from __future__ import annotations
 
+from datetime import date
+from typing import Final, Literal
+
+ContentType = Literal[
+    "model",
+    "sf",
+    "cs",
+    "nmr_data",
+    "emdxml",
+    "emdmap",
+    "emdmetadata",
+    "emdfsc",
+    "validpdf",
+    "validpdffull",
+    "validxml",
+    "validcif",
+    "validpng",
+    "validsvg",
+    "valid2fo",
+    "validfo",
+    "validimagetar",
+]
+
 
 class ReleaseFileNames:
     """Computes file names for entry content types as they appear publicly (on the FTP/HTTP archive)
     or within the for_release directory, including any EMDB accession remapping and gzip compression."""
 
-    def __init__(self) -> None:
+    def __init__(self, **kwargs: bool) -> None:
+        self.__use_beta_filenames: bool = kwargs.get("use_beta_filenames", self._is_on_or_after_20270717())
+
         #                context   public    for_rel   gzip_pub, gzip_rel
 
-        self.__mapping: dict[str, tuple[str, str, bool, bool]] = {
+        base_mapping: dict[ContentType, tuple[str, str, bool, bool]] = {
             "model": ("{}.cif", "{}.cif", True, True),
-            "sf": ("r{}sf.ent", "{}-sf.cif", True, False),
             "cs": ("{}_cs.str", "{}_cs.str", True, False),
             "nmr_data": ("{}_nmr-data.str", "{}_nmr-data.str", True, True),
             "emdxml": ("{}-v30.xml", "{}_v3.xml", False, False),
+            "emdmetadata": ("{}.cif", "{}.cif", True, True),
             "emdmap": ("{}.map", "{}.map", True, True),
             "emdfsc": ("{}_fsc.xml", "{}_fsc.xml", False, False),
             "validpdf": ("{}_validation.pdf", "{}_validation.pdf", False, False),
@@ -42,12 +67,30 @@ class ReleaseFileNames:
             "validimagetar": ("{}_validation_images.tar", "{}_validation_images.tar", False, False),
         }
 
+        legacy_sf_mapping: dict[ContentType, tuple[str, str, bool, bool]] = {
+            "sf": ("r{}sf.ent", "{}-sf.cif", True, False),
+        }
+
+        # for_release_beta - sf files are compressed
+        beta_sf_mapping: dict[ContentType, tuple[str, str, bool, bool]] = {
+            "sf": ("r{}sf.ent", "{}-sf.cif", True, True),
+        }
+
+        self.__legacy_mapping: Final = {**base_mapping, **legacy_sf_mapping}
+        self.__beta_mapping: Final = {**base_mapping, **beta_sf_mapping}
+
         # public for_rel
-        self.__accession_remap = {
+        self.__accession_remap: Final = {
             "emdxml": ("hyphen", "underscore"),
             "emdmap": ("underscore", "underscore"),
             "emdfsc": ("underscore", "underscore"),
+            "emdmetadata": ("hyphen", "hyphen"),
         }
+
+    @staticmethod
+    def _is_on_or_after_20270717() -> bool:
+        """Returns True if the current local date is on or after 17-Jul-2027."""
+        return date.today() >= date(2027, 7, 17)
 
     @staticmethod
     def __get_emdb_number(accession: str) -> str:
@@ -80,7 +123,7 @@ class ReleaseFileNames:
         msg = "unknown EMDB file remapping: {}".format(remap_type)
         raise NameError(msg)  # pragma: no cover
 
-    def __do_accession_remap(self, content: str, accession: str, for_release: bool) -> str:
+    def __do_accession_remap(self, content: ContentType, accession: str, for_release: bool) -> str:
         """does accession remapping"""
         if content in self.__accession_remap:
             (public, release) = self.__accession_remap[content]
@@ -90,10 +133,12 @@ class ReleaseFileNames:
                 accession = self.__process_remap(public, accession)
         return accession
 
-    def __getfname(self, content: str, accession: str, for_release: bool) -> str:
+    def __getfname(self, content: ContentType, accession: str, for_release: bool) -> str:
         """Retrieves the released content file name with compression"""
-        assert content in self.__mapping  # noqa: S101
-        (public, release, pub_gzip, rel_gzip) = self.__mapping[content]
+
+        assert content in self.__legacy_mapping  # noqa: S101
+        assert content in self.__beta_mapping  # noqa: S101
+        (public, release, pub_gzip, rel_gzip) = self.__beta_mapping[content] if self.__use_beta_filenames else self.__legacy_mapping[content]
         accession = self.__do_accession_remap(accession=accession, content=content, for_release=for_release)
         if for_release:
             base = release
@@ -151,6 +196,15 @@ class ReleaseFileNames:
             for_release: if True, returns the for_release file name; otherwise the public file name.
         """
         return self.__getfname("emdmap", accession, for_release)
+
+    def get_emdb_metadata(self, accession: str, for_release: bool = False) -> str:
+        """Returns the EMDB metadata file name.
+
+        Args:
+            accession: EMDB accession code.
+            for_release: if True, returns the for_release file name; otherwise the public file name.
+        """
+        return self.__getfname("emdmetadata", accession, for_release)
 
     def get_emdb_fsc(self, accession: str, for_release: bool = False) -> str:
         """Returns the EMDB FSC file name.

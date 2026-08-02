@@ -5,7 +5,7 @@
 # Updated:
 ##
 """
-Common methods for finding path information for release directories used in the system.
+Common methods for finding path information for_release directories used in the system.
 
 """
 

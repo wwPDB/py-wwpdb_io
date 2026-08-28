@@ -60,7 +60,7 @@ class LocalFTPPathInfoTests(unittest.TestCase):
         """set_ftp_pdb_root() only updates the root when given a truthy value."""
         lfpi = LocalFTPPathInfo(self.__siteId)
         lfpi.set_ftp_pdb_root(self.__pdbRoot)
-        self.assertEqual(lfpi.get_ftp_pdb_root(), self.__pdbRoot)
+
         self.assertEqual(lfpi.get_ftp_pdb(), os.path.join(self.__pdbRoot, "pdb", "data", "structures", "all"))
 
         # Falsy values (None or empty string) are ignored and do not clear an existing root

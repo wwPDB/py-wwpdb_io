@@ -17,10 +17,16 @@ __email__ = "ezra.peisach@rcsb.org"
 
 # ruff: noqa: PT027
 import unittest
-from datetime import date
+from datetime import date, datetime, timezone
 from unittest import mock
 
 from wwpdb.io.locator.ReleaseFileNames import ReleaseFileNames
+
+
+class MyReleaseFileNames(ReleaseFileNames):
+    @classmethod
+    def is_on_or_after_20270717(cls) -> bool:
+        return cls._is_on_or_after_20270717()
 
 
 class ReleaseFileNamesTests(unittest.TestCase):
@@ -46,7 +52,7 @@ class ReleaseFileNamesTests(unittest.TestCase):
     def testUseBetaFilenamesDefault(self) -> None:
         # default construction (no kwargs) must match whichever mode the 17-Jul-2027 date cutoff selects
         rfn_default = ReleaseFileNames()
-        is_beta_by_date = ReleaseFileNames._is_on_or_after_20270717()
+        is_beta_by_date = MyReleaseFileNames.is_on_or_after_20270717()
         rfn_expected = ReleaseFileNames(use_beta_filenames=is_beta_by_date)
         self.assertEqual(
             rfn_default.get_structure_factor(self.__accession, for_release=True),
@@ -54,42 +60,42 @@ class ReleaseFileNamesTests(unittest.TestCase):
         )
 
     def testIsOnOrAfter20270717(self) -> None:
-        self.assertEqual(ReleaseFileNames._is_on_or_after_20270717(), date.today() >= date(2027, 7, 17))
+        self.assertEqual(MyReleaseFileNames.is_on_or_after_20270717(), datetime.now(timezone.utc).date() >= date(2027, 7, 17))
 
     def testIsOnOrAfter20270717Before(self) -> None:
-        class FakeDate(date):
+        class FakeDatetime(datetime):
             @classmethod
-            def today(cls) -> date:
-                return date(2027, 7, 16)
+            def now(cls, tz=None) -> FakeDatetime:  # noqa: ANN001
+                return cls(2027, 7, 16, tzinfo=tz)
 
-        with mock.patch("wwpdb.io.locator.ReleaseFileNames.date", FakeDate):
-            self.assertFalse(ReleaseFileNames._is_on_or_after_20270717())
+        with mock.patch("wwpdb.io.locator.ReleaseFileNames.datetime", FakeDatetime):
+            self.assertFalse(MyReleaseFileNames.is_on_or_after_20270717())
 
     def testIsOnOrAfter20270717Exact(self) -> None:
-        class FakeDate(date):
+        class FakeDatetime(datetime):
             @classmethod
-            def today(cls) -> date:
-                return date(2027, 7, 17)
+            def now(cls, tz=None) -> FakeDatetime:  # noqa: ANN001
+                return cls(2027, 7, 17, tzinfo=tz)
 
-        with mock.patch("wwpdb.io.locator.ReleaseFileNames.date", FakeDate):
-            self.assertTrue(ReleaseFileNames._is_on_or_after_20270717())
+        with mock.patch("wwpdb.io.locator.ReleaseFileNames.datetime", FakeDatetime):
+            self.assertTrue(MyReleaseFileNames.is_on_or_after_20270717())
 
     def testIsOnOrAfter20270717After(self) -> None:
-        class FakeDate(date):
+        class FakeDatetime(datetime):
             @classmethod
-            def today(cls) -> date:
-                return date(2027, 7, 18)
+            def now(cls, tz=None) -> FakeDatetime:  # noqa: ANN001
+                return cls(2027, 7, 18, tzinfo=tz)
 
-        with mock.patch("wwpdb.io.locator.ReleaseFileNames.date", FakeDate):
-            self.assertTrue(ReleaseFileNames._is_on_or_after_20270717())
+        with mock.patch("wwpdb.io.locator.ReleaseFileNames.datetime", FakeDatetime):
+            self.assertTrue(MyReleaseFileNames.is_on_or_after_20270717())
 
     def testUseBetaFilenamesDefaultAfterCutoff(self) -> None:
-        class FakeDate(date):
+        class FakeDatetime(datetime):
             @classmethod
-            def today(cls) -> date:
-                return date(2027, 7, 18)
+            def now(cls, tz=None) -> FakeDatetime:  # noqa: ANN001
+                return cls(2027, 7, 18, tzinfo=tz)
 
-        with mock.patch("wwpdb.io.locator.ReleaseFileNames.date", FakeDate):
+        with mock.patch("wwpdb.io.locator.ReleaseFileNames.datetime", FakeDatetime):
             rfn = ReleaseFileNames()
         self.assertEqual(rfn.get_structure_factor(self.__accession, for_release=True), "1abc-sf.cif.gz")
 

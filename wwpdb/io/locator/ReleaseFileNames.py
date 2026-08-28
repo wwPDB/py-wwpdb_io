@@ -15,7 +15,7 @@ In general the methods take accession and for_release flags.  for_release indica
 
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, datetime, timezone
 from typing import Final, Literal
 
 ContentType = Literal[
@@ -90,7 +90,7 @@ class ReleaseFileNames:
     @staticmethod
     def _is_on_or_after_20270717() -> bool:
         """Returns True if the current local date is on or after 17-Jul-2027."""
-        return date.today() >= date(2027, 7, 17)
+        return datetime.now(timezone.utc).date() >= date(2027, 7, 17)
 
     @staticmethod
     def __get_emdb_number(accession: str) -> str:

@@ -439,11 +439,11 @@ class PathInfo:
         dataSetId,
         wfInstanceId=None,
         contentType=None,  # noqa: ARG002  pylint: disable=unused-argument
-        formatType=None,
+        formatType=None,  # noqa: ARG002  pylint: disable=unused-argument
         fileSource="archive",
-        versionId="latest",
-        partNumber="1",
-        mileStone=None,
+        versionId="latest",  # noqa: ARG002  pylint: disable=unused-argument
+        partNumber="1",  # noqa: ARG002  pylint: disable=unused-argument
+        mileStone=None,  # noqa: ARG002  pylint: disable=unused-argument
     ):  # noqa: E501,ARG002 pylint: disable=unused-argument
         dfRef = DataFileReference(siteId=self.__siteId, verbose=self.__verbose, log=self.__lfh)
         dfRef.setDepositionDataSetId(dataSetId)

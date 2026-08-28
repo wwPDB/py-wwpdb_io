@@ -171,7 +171,7 @@ class mmCIFUtil:
         if block is None:
             block = self.__blockID
         values, attributes = self.GetValueAndItemByBlock(block, category)
-        data = [[x[y] if y in x else None for y in attributes] for x in values]
+        data = [[x[y] if y in x else None for y in attributes] for x in values]  # noqa: SIM401
         return {category: {"Items": attributes, "Values": data}}
 
     def block_as_dict(self, block=None):

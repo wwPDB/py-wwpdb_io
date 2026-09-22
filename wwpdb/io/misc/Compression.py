@@ -4,12 +4,15 @@ import os
 import shutil
 import tarfile
 from fnmatch import fnmatch
+from typing import Any
+
+from wwpdb.utils.config.ConfigInfo import ConfigInfo
 
 logger = logging.getLogger()
 
 
 class Compression:
-    def __init__(self, config, dbapi) -> None:
+    def __init__(self, config: ConfigInfo, dbapi: Any) -> None:
         # injecting dbapi so the connection can be opened only once
         # by the calling code, in case of multiple entries
         self._archive_dir = os.path.join(config.get("SITE_ARCHIVE_STORAGE_PATH"), "archive")
@@ -22,7 +25,7 @@ class Compression:
 
         self._dbapi = dbapi
 
-    def _can_be_compressed(self, dep_id: str):
+    def _can_be_compressed(self, dep_id: str) -> bool:
         rows = self._dbapi.runSelectNQ(table="deposition", select=["notify", "locking"], where={"dep_set_id": dep_id})
 
         if len(rows) == 0:
@@ -45,7 +48,7 @@ class Compression:
 
         return True
 
-    def is_compressed(self, dep_id: str):
+    def is_compressed(self, dep_id: str) -> bool:
         dep_tarball = os.path.join(self._cold_archive_dir, f"{dep_id}.tar.gz")
 
         if os.path.exists(dep_tarball):
@@ -53,7 +56,7 @@ class Compression:
 
         return False
 
-    def check_tarball(self, dep_id: str):
+    def check_tarball(self, dep_id: str) -> None:
         dep_tarball = os.path.join(self._cold_archive_dir, f"{dep_id}.tar.gz")
 
         if not self.is_compressed(dep_id=dep_id):
@@ -63,7 +66,7 @@ class Compression:
         with tarfile.open(dep_tarball, "r:gz") as fp:
             fp.getmembers()
 
-    def compress(self, dep_id: str, overwrite: bool = False):
+    def compress(self, dep_id: str, overwrite: bool = False) -> str:
         if not dep_id.startswith("D_"):
             msg = "Invalid deposition id"
             raise Exception(msg)  # pylint: disable=broad-exception-raised)
@@ -94,7 +97,7 @@ class Compression:
 
         return dep_tarball
 
-    def decompress(self, dep_id: str, overwrite: bool = False):
+    def decompress(self, dep_id: str, overwrite: bool = False) -> None:
         dep_archive = os.path.join(self._archive_dir, dep_id)
         dep_tarball = os.path.join(self._cold_archive_dir, f"{dep_id}.tar.gz")
 
@@ -110,7 +113,7 @@ class Compression:
             tf.extractall(self._archive_dir)  # noqa: S202
             logger.info(f"{dep_id} extracted successfully")  # pylint: disable=logging-fstring-interpolation
 
-    def get_compressed_count(self):
+    def get_compressed_count(self) -> int:
         for _root, _dirs, files in os.walk(self._cold_archive_dir):
             tar_files = [tf for tf in files if fnmatch(tf, "*.tar.gz")]
 

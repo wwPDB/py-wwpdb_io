@@ -68,7 +68,7 @@ class ArchiveIoSftpTests(unittest.TestCase):
 
         try:
             aio = ArchiveIoSftp()
-            ok = aio.connect(self.__hostName, self.__userName, self.__hostPort, keyFilePath=self.__keyFilePath, keyFileType=self.__keyFileType)
+            ok = aio.connect(self.__hostName, self.__userName, port=self.__hostPort, keyFilePath=self.__keyFilePath, keyFileType=self.__keyFileType)
             aio.close()
             self.assertEqual(ok, True)
         except Exception as e:

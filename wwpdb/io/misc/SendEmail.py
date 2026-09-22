@@ -5,18 +5,19 @@ Some functions to allow sending of email messages using the configuration
 import smtplib
 import sys
 from email.mime.text import MIMEText
+from typing import Optional, TextIO
 
 from wwpdb.utils.config.ConfigInfo import getSiteId
 from wwpdb.utils.config.ConfigInfoApp import ConfigInfoAppCommunication
 
 
 class SendEmail:
-    def __init__(self, siteId=None, verbose=False, log=sys.stderr):
+    def __init__(self, siteId: Optional[str] = None, verbose: bool = False, log: TextIO = sys.stderr) -> None:
         self.__verbose = verbose
         self.__lfh = log
         self.__siteId = siteId if siteId is not None else getSiteId(defaultSiteId=siteId)
 
-    def send_email(self, body, subject, to_email, from_email, relayhost="localhost"):
+    def send_email(self, body: str, subject: str, to_email: str, from_email: str, relayhost: str = "localhost") -> bool:
         """
         function to send email
         :param body: the body of the message
@@ -44,7 +45,7 @@ class SendEmail:
 
         return False
 
-    def send_system_error(self, body, subject):
+    def send_system_error(self, body: str, subject: str) -> bool:
         """Handles the sending of a system email message based on site-config
         Returns True on succss
         """

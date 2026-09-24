@@ -17,6 +17,8 @@ License described at http://creativecommons.org/licenses/by/3.0/.
 
 """
 
+from __future__ import annotations
+
 __docformat__ = "restructuredtext en"
 __author__ = "Zukang Feng"
 __email__ = "zfeng@rcsb.rutgers.edu"
@@ -25,76 +27,160 @@ __version__ = "V0.07"
 
 import sys
 import traceback
+from typing import Dict, List, Literal, Optional, TextIO, Union, cast, overload
 from xml.dom import minidom
+
+from typing_extensions import TypedDict
+
+# Need to add  plane-outlier all List[Dict[str, str]]
+ValidateXmlOutliersKeys = Literal[
+    "angle-outlier",
+    "atom_inclusion_all_atoms",
+    "atom_inclusion_backbone",
+    "bond-outlier",
+    "chain_average_residue_inclusion",
+    "chiral-outlier",
+    "clash",
+    "dihedralangle_violation",
+    "distance_violation",
+    "ligand-rsrz-outlier",
+    "mog-angle-outlier",
+    "mog-bond-outlier",
+    "mog-ring-outlier",
+    "mog-torsion-outlier",
+    "plane-outlier",
+    "polymer-rsrz-outlier",
+    "r_free_diff",
+    "r_work_diff",
+    "torsion-outlier",
+]
+ValidateXmlOutliers = TypedDict(
+    "ValidateXmlOutliers",
+    {
+        "angle-outlier": List[Dict[str, str]],
+        "atom_inclusion_all_atoms": str,
+        "atom_inclusion_backbone": str,
+        "bond-outlier": List[Dict[str, str]],
+        "chain_average_residue_inclusion": List[Dict[str, Union[str, float]]],
+        "chiral-outlier": List[Dict[str, str]],
+        "clash": List[Dict[str, str]],
+        "dihedralangle_violation": List[Dict[str, str]],
+        "distance_violation": List[Dict[str, str]],
+        "ligand-rsrz-outlier": List[Dict[str, str]],
+        "mog-angle-outlier": List[Dict[str, str]],
+        "mog-bond-outlier": List[Dict[str, str]],
+        "mog-ring-outlier": List[Dict[str, str]],
+        "mog-torsion-outlier": List[Dict[str, str]],
+        "plane-outlier": List[Dict[str, str]],
+        "polymer-rsrz-outlier": List[Dict[str, str]],
+        "r_free_diff": List[Dict[str, str]],
+        "r_work_diff": List[Dict[str, str]],
+        "symm-clash": List[Dict[str, str]],
+        "torsion-outlier": List[Dict[str, str]],
+    },
+    total=False,
+)
 
 
 class ValidateXml:
     """Class responsible for parsing validation XML report"""
 
-    def __init__(self, FileName=None, verbose=False, log=sys.stderr):  # noqa: ARG002 pylint: disable=unused-argument
+    def __init__(self, FileName: Optional[str] = None, verbose: bool = False, log: TextIO = sys.stderr) -> None:  # noqa: ARG002 pylint: disable=unused-argument
         self.__xmlFile = FileName
+        if self.__xmlFile is None:
+            raise ValueError
         self.__doc = minidom.parse(self.__xmlFile)  # noqa: S318
         #
-        self.clashMap = {}
-        self.clashOutliers = []
-        self.summaryValues = {}
-        self.__outlierMap = {}
-        self.__outlierResult = {}
+        self.clashMap: Dict[str, List[Dict[str, str]]] = {}
+        self.clashOutliers: List[Dict[str, str]] = []
+        self.summaryValues: Dict[str, float] = {}
+        self.__outlierMap: Dict[str, List[str]] = {}
+        # self.__outlierResult: Dict[str, str | List[str] | List[Dict[str, str]]] = {}
+        self.__outlierResult: ValidateXmlOutliers = {}
         self.__calculated_completeness = ""
         self.__number_of_errors_while_mapping = 0
         self.__number_of_warnings_while_mapping = 0
-        self.__not_found_in_structure_cs_list = []
-        self.__not_found_residue_in_structure_cs_list = []
-        self.__cs_outlier_list = []
-        self.__cs_referencing_offset_list = []
+        self.__not_found_in_structure_cs_list: List[List[str]] = []
+        self.__not_found_residue_in_structure_cs_list: List[List[str]] = []
+        self.__cs_outlier_list: List[List[str]] = []
+        self.__cs_referencing_offset_list: List[List[str]] = []
         self.__has_cs_referencing_offset_flag = False
         #
         self.__getOutlierDefinition()
         self.__parse()
 
-    def getOutlier(self, Type):
+    @overload
+    def getOutlier(self, Type: Literal["atom_inclusion_all_atoms", "atom_inclusion_backbone"]) -> str: ...
+
+    @overload
+    def getOutlier(self, Type: Literal["chain_average_residue_inclusion"]) -> List[Dict[str, Union[str, float]]]: ...
+
+    @overload
+    def getOutlier(
+        self,
+        Type: Literal[
+            "angle-outlier",
+            "bond-outlier",
+            "chiral-outlier",
+            "clash",
+            "dihedralangle_violation",
+            "distance_violation",
+            "ligand-rsrz-outlier",
+            "mog-angle-outlier",
+            "mog-bond-outlier",
+            "mog-ring-outlier",
+            "mog-torsion-outlier",
+            "plane-outlier",
+            "polymer-rsrz-outlier",
+            "r_free_diff",
+            "r_work_diff",
+            "torsion-outlier",
+        ],
+    ) -> List[Dict[str, str]]: ...
+
+    def getOutlier(self, Type: ValidateXmlOutliersKeys) -> Union[str, List[dict[str, Union[str, float]]], List[Dict[str, str]]]:
         """"""
         if Type in self.__outlierResult:
             return self.__outlierResult[Type]
         #
         return []
 
-    def getClashOutliers(self):
+    def getClashOutliers(self) -> List[Dict[str, str]]:
         """"""
         return self.clashOutliers
 
-    def getCalculatedCompleteness(self):
+    def getCalculatedCompleteness(self) -> str:
         """"""
         return self.__calculated_completeness
 
-    def getCsMappingErrorNumber(self):
+    def getCsMappingErrorNumber(self) -> int:
         """"""
         return self.__number_of_errors_while_mapping
 
-    def getCsMappingWarningNumber(self):
+    def getCsMappingWarningNumber(self) -> int:
         """"""
         return self.__number_of_warnings_while_mapping
 
-    def getNotFoundInStructureCsList(self):
+    def getNotFoundInStructureCsList(self) -> list[list[str]]:
         """"""
         return self.__not_found_in_structure_cs_list
 
-    def getNotFoundResidueInStructureCsList(self):
+    def getNotFoundResidueInStructureCsList(self) -> list[list[str]]:
         """"""
         return self.__not_found_residue_in_structure_cs_list
 
-    def getCsOutliers(self):
+    def getCsOutliers(self) -> list[list[str]]:
         """"""
         return self.__cs_outlier_list
 
-    def getCsReferencingOffsetFlag(self):
+    def getCsReferencingOffsetFlag(self) -> bool:
         """"""
         return self.__has_cs_referencing_offset_flag
 
-    def getSummary(self):
+    def getSummary(self) -> dict[str, float]:
         return self.summaryValues
 
-    def __getOutlierDefinition(self):
+    def __getOutlierDefinition(self) -> None:
         """"""
         self.__outlierMap["torsion-outlier"] = ["phi", "psi"]
         self.__outlierMap["mog-ring-outlier"] = ["atoms", "mean", "mindiff", "stdev", "numobs"]
@@ -107,7 +193,7 @@ class ValidateXml:
         self.__outlierMap["angle-outlier"] = ["atom0", "atom1", "atom2", "mean", "stdev", "obs", "z", "link"]
         self.__outlierMap["clash"] = ["atom", "cid", "clashmag", "dist"]
 
-    def __parse(self):
+    def __parse(self) -> None:
         """"""
         self.__processGlobalValues()
         #
@@ -119,7 +205,7 @@ class ValidateXml:
             if node.nodeType != node.ELEMENT_NODE:
                 continue
             #
-            residueInfo = {}
+            residueInfo: Dict[str, str] = {}
             if node.hasAttribute("rama"):
                 val = node.getAttribute("rama").strip()
                 if val == "OUTLIER":
@@ -219,11 +305,11 @@ class ValidateXml:
                 outlier = residueInfo.copy()
                 outlier.update(dirmap)
                 if childnode.tagName in self.__outlierResult:
-                    self.__outlierResult[childnode.tagName].append(outlier)
+                    cast("list[dict[str, str]]", self.__outlierResult[cast("ValidateXmlOutliersKeys", childnode.tagName)]).append(outlier)
                 else:
                     listout = []
                     listout.append(outlier)
-                    self.__outlierResult[childnode.tagName] = listout
+                    self.__outlierResult[cast("ValidateXmlOutliersKeys", childnode.tagName)] = listout
                 #
             #
         #
@@ -275,7 +361,7 @@ class ValidateXml:
             #
         #
 
-    def __getSummaryValues(self):
+    def __getSummaryValues(self) -> None:
         summaryList = [
             "DCC_Rfree",
             "clashscore",
@@ -294,7 +380,7 @@ class ValidateXml:
                 except:  # noqa: E722 pylint: disable=bare-except
                     pass
 
-    def __processGlobalValues(self):
+    def __processGlobalValues(self) -> None:
         """"""
         self.__getSummaryValues()
         global_values = {}
@@ -303,11 +389,11 @@ class ValidateXml:
             if Entry.getAttribute(item) and Entry.getAttribute(item) != "NotAvailable":
                 global_values[item] = Entry.getAttribute(item)
             #
-        for item in ("atom_inclusion_all_atoms", "atom_inclusion_backbone"):
-            if Entry.getAttribute(item) and Entry.getAttribute(item) != "NotAvailable":
-                value = Entry.getAttribute(item)
+        for item2 in ("atom_inclusion_all_atoms", "atom_inclusion_backbone"):
+            if Entry.getAttribute(item2) and Entry.getAttribute(item2) != "NotAvailable":
+                value = Entry.getAttribute(item2)
                 if float(value) < 0.4:
-                    self.__outlierResult[item] = value
+                    self.__outlierResult[item2] = value
         #
         if Entry.getAttribute("DataCompleteness") and Entry.getAttribute("DataCompleteness") != "NotAvailable":
             self.__calculated_completeness = Entry.getAttribute("DataCompleteness")
@@ -324,7 +410,7 @@ class ValidateXml:
             #
         #
 
-    def __processChemcalShiftList(self):
+    def __processChemcalShiftList(self) -> None:
         """ chemical_shift_list.attributes = ( 'block_name', 'file_id', 'file_name', 'list_id', 'number_of_errors_while_mapping', 'number_of_mapped_shifts' \
                         'number_of_parsed_shifts', 'number_of_unparsed_shifts', 'number_of_warnings_while_mapping', 'total_number_of_shifts' )
 
@@ -407,9 +493,9 @@ class ValidateXml:
             #
         #
 
-    def __getMapInfo(self, node, items):
+    def __getMapInfo(self, node: minidom.Element, items: list[str]) -> dict[str, str]:
         """"""
-        mapping = {}
+        mapping: dict[str, str] = {}
         for item in items:
             val = ""
             if node.hasAttribute(item):

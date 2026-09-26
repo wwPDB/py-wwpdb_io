@@ -42,12 +42,19 @@ __version__ = "V0.07"
 import logging
 import os
 import os.path
+from typing import Dict, Literal, Optional, TextIO, Tuple, Union, cast  # pylint: disable=unused-import
 
 from wwpdb.utils.config.ConfigInfo import ConfigInfo, getSiteId
 
-from wwpdb.io.locator.DataReference import DataFileReference, ReferenceFileComponents
+from wwpdb.io.locator.DataReference import DataFileReference, DataReferencePartitionId, DataReferenceStorageType, DataReferenceVersionId, ReferenceFileComponents
 
 logger = logging.getLogger(__name__)
+
+
+# Types
+PathInfoVersionId = DataReferenceVersionId  # Same
+PathInfoPartitionId = Union[DataReferencePartitionId, str]  # These APIs allow strings
+PathInfoStorageType = Union[DataReferenceStorageType, Literal["session-download"]]  # These APIs allow additional one
 
 
 class PathInfo:
@@ -60,30 +67,40 @@ class PathInfo:
 
     """
 
-    def __init__(self, siteId=None, sessionPath=".", verbose=False, log=None):
+    def __init__(self, siteId: Optional[str] = None, sessionPath: Optional[str] = ".", verbose: bool = False, log: Optional[TextIO] = None):
         """"""
+        self.__lfh: TextIO
         self.__verbose = verbose
-        self.__lfh = log
+        self.__closelfh = False
+        if log is None:
+            self.__lfh = open(os.devnull, "w")
+            self.__closelfh = True
+        else:
+            self.__lfh = log
         #
         self.__debug = False  # pylint: disable=unused-private-member
         self.__siteId = siteId if siteId is not None else getSiteId(defaultSiteId=siteId)
         self.__sessionPath = sessionPath
-        self.__sessionDownloadPath = None
+        self.__sessionDownloadPath: Optional[str] = None
         if self.__sessionPath is not None:
             self.__sessionDownloadPath = os.path.join(self.__sessionPath, "downloads")
         #
         self.__cI = ConfigInfo(siteId=self.__siteId, verbose=self.__verbose, log=self.__lfh)
 
-    def setDebugFlag(self, flag):
+    def __del__(self) -> None:
+        if self.__closelfh:
+            self.__lfh.close()
+
+    def setDebugFlag(self, flag: bool) -> None:
         self.__debug = flag  # pylint: disable=unused-private-member
 
-    def parseFileName(self, fileName):
+    def parseFileName(self, fileName: str) -> Tuple[Optional[str], Optional[str], Optional[str], Optional[Union[str, int]], Optional[Union[str, int]]]:
         rfc = ReferenceFileComponents(verbose=self.__verbose, log=self.__lfh)
         if rfc.set(fileName=fileName):
             return rfc.get()
         return None, None, None, None, None
 
-    def isValidFileName(self, fileName, requireVersion=True):
+    def isValidFileName(self, fileName: str, requireVersion: bool = True) -> bool:
         """Is the input file name project compliant ?"""
         rfc = ReferenceFileComponents(verbose=self.__verbose, log=self.__lfh)
         if rfc.set(fileName=fileName):
@@ -97,14 +114,14 @@ class PathInfo:
             return True
         return False
 
-    def getFileExtension(self, formatType):
-        eD = self.__cI.get("FILE_FORMAT_EXTENSION_DICTIONARY")
+    def getFileExtension(self, formatType: str) -> Optional[str]:
+        eD = cast("Dict[str, str]", self.__cI.get("FILE_FORMAT_EXTENSION_DICTIONARY"))
         try:
             return eD[formatType]
         except Exception as _e:  # noqa: F841,BLE001
             return None
 
-    def splitFileName(self, fileName):
+    def splitFileName(self, fileName: str) -> Tuple[Optional[str], Optional[str], Optional[str], Optional[DataReferencePartitionId], Optional[DataReferenceVersionId]]:
         """
         returns (depositionDataSetId, contentType, contentFormat, filePartionNumber, [versionId (int) or None])
         """
@@ -117,12 +134,12 @@ class PathInfo:
 
     #
 
-    def setSessionPath(self, sessionPath):
+    def setSessionPath(self, sessionPath: str) -> None:
         """Set the top path that will be searched for files with fileSource='session'"""
         self.__sessionPath = sessionPath
         self.__sessionDownloadPath = os.path.join(self.__sessionPath, "downloads")
 
-    def getArchivePath(self, dataSetId):
+    def getArchivePath(self, dataSetId: str) -> Optional[str]:
         try:
             if dataSetId.startswith("G_"):
                 return self.getDirPath(dataSetId=dataSetId, fileSource="autogroup")
@@ -131,55 +148,63 @@ class PathInfo:
         except Exception as _e:  # noqa: F841,BLE001
             return None
 
-    def getInstancePath(self, dataSetId, wfInstanceId):
+    def getInstancePath(self, dataSetId: str, wfInstanceId: Optional[str]) -> Optional[str]:
         try:
             return self.getDirPath(dataSetId=dataSetId, fileSource="wf-instance", wfInstanceId=wfInstanceId)
             # return os.path.join(self.__cI.get('SITE_ARCHIVE_STORAGE_PATH'), 'workflow', dataSetId, 'instance', wfInstanceId)
         except Exception as _e:  # noqa: F841,BLE001
             return None
 
-    def getInstanceTopPath(self, dataSetId):
+    def getInstanceTopPath(self, dataSetId: str) -> Optional[str]:
         try:
-            return os.path.dirname(self.getDirPath(dataSetId=dataSetId, fileSource="wf-instance", wfInstanceId="W_001"))
+            return os.path.dirname(cast("str", self.getDirPath(dataSetId=dataSetId, fileSource="wf-instance", wfInstanceId="W_001")))
             # return os.path.join(self.__cI.get('SITE_ARCHIVE_STORAGE_PATH'), 'workflow', dataSetId, 'instance')
         except Exception as _e:  # noqa: F841,BLE001
             return None
 
-    def getDepositPath(self, dataSetId):
+    def getDepositPath(self, dataSetId: str) -> Optional[str]:
         try:
             return self.getDirPath(dataSetId=dataSetId, fileSource="deposit")
             # return os.path.join(self.__cI.get('SITE_ARCHIVE_STORAGE_PATH'), 'deposit', dataSetId)
         except Exception as _e:  # noqa: F841,BLE001
             return None
 
-    def getDepositUIPath(self, dataSetId):
+    def getDepositUIPath(self, dataSetId: str) -> Optional[str]:
         try:
             return self.getDirPath(dataSetId=dataSetId, fileSource="deposit-ui")
         except Exception as _e:  # noqa: F841,BLE001
             return None
 
-    def getTempDepPath(self, dataSetId):
+    def getTempDepPath(self, dataSetId: str) -> Optional[str]:
         try:
             return self.getDirPath(dataSetId=dataSetId, fileSource="tempdep")
         except Exception as _e:  # noqa: F841,BLE001
             return None
 
-    def getModelPdbxFilePath(self, dataSetId, wfInstanceId=None, fileSource="archive", versionId="latest", mileStone=None):
+    def getModelPdbxFilePath(
+        self, dataSetId: str, wfInstanceId: Optional[str] = None, fileSource: PathInfoStorageType = "archive", versionId: PathInfoVersionId = "latest", mileStone: Optional[str] = None
+    ) -> Optional[str]:
         return self.__getStandardPath(
             dataSetId=dataSetId, wfInstanceId=wfInstanceId, fileSource=fileSource, versionId=versionId, contentTypeBase="model", formatType="pdbx", mileStone=mileStone
         )
 
-    def getModelPdbFilePath(self, dataSetId, wfInstanceId=None, fileSource="archive", versionId="latest", mileStone=None):
+    def getModelPdbFilePath(
+        self, dataSetId: str, wfInstanceId: Optional[str] = None, fileSource: PathInfoStorageType = "archive", versionId: PathInfoVersionId = "latest", mileStone: Optional[str] = None
+    ) -> Optional[str]:
         return self.__getStandardPath(
             dataSetId=dataSetId, wfInstanceId=wfInstanceId, fileSource=fileSource, versionId=versionId, contentTypeBase="model", formatType="pdb", mileStone=mileStone
         )
 
-    def getStructureFactorsPdbxFilePath(self, dataSetId, wfInstanceId=None, fileSource="archive", versionId="latest", mileStone=None):
+    def getStructureFactorsPdbxFilePath(
+        self, dataSetId: str, wfInstanceId: Optional[str] = None, fileSource: PathInfoStorageType = "archive", versionId: PathInfoVersionId = "latest", mileStone: Optional[str] = None
+    ) -> Optional[str]:
         return self.__getStandardPath(
             dataSetId=dataSetId, wfInstanceId=wfInstanceId, fileSource=fileSource, versionId=versionId, contentTypeBase="structure-factors", formatType="pdbx", mileStone=mileStone
         )
 
-    def getPolyLinkFilePath(self, dataSetId, wfInstanceId=None, fileSource="archive", versionId="latest", mileStone=None):
+    def getPolyLinkFilePath(
+        self, dataSetId: str, wfInstanceId: Optional[str] = None, fileSource: PathInfoStorageType = "archive", versionId: PathInfoVersionId = "latest", mileStone: Optional[str] = None
+    ) -> Optional[str]:
         return self.__getStandardPath(
             dataSetId=dataSetId,
             wfInstanceId=wfInstanceId,
@@ -190,7 +215,9 @@ class PathInfo:
             mileStone=mileStone,
         )
 
-    def getPolyLinkReportFilePath(self, dataSetId, wfInstanceId=None, fileSource="archive", versionId="latest", mileStone=None):
+    def getPolyLinkReportFilePath(
+        self, dataSetId: str, wfInstanceId: Optional[str] = None, fileSource: PathInfoStorageType = "archive", versionId: PathInfoVersionId = "latest", mileStone: Optional[str] = None
+    ) -> Optional[str]:
         return self.__getStandardPath(
             dataSetId=dataSetId,
             wfInstanceId=wfInstanceId,
@@ -201,12 +228,22 @@ class PathInfo:
             mileStone=mileStone,
         )
 
-    def getSequenceStatsFilePath(self, dataSetId, wfInstanceId=None, fileSource="archive", versionId="latest", mileStone=None):
+    def getSequenceStatsFilePath(
+        self, dataSetId: str, wfInstanceId: Optional[str] = None, fileSource: PathInfoStorageType = "archive", versionId: PathInfoVersionId = "latest", mileStone: Optional[str] = None
+    ) -> Optional[str]:
         return self.__getStandardPath(
             dataSetId=dataSetId, wfInstanceId=wfInstanceId, fileSource=fileSource, versionId=versionId, contentTypeBase="seq-data-stats", formatType="pic", mileStone=mileStone
         )
 
-    def getSequenceAlignFilePath(self, dataSetId, entityId="1", wfInstanceId=None, fileSource="archive", versionId="latest", mileStone=None):
+    def getSequenceAlignFilePath(
+        self,
+        dataSetId: str,
+        entityId: PathInfoPartitionId = "1",
+        wfInstanceId: Optional[str] = None,
+        fileSource: PathInfoStorageType = "archive",
+        versionId: PathInfoVersionId = "latest",
+        mileStone: Optional[str] = None,
+    ) -> Optional[str]:
         return self.__getStandardPath(
             dataSetId=dataSetId,
             wfInstanceId=wfInstanceId,
@@ -218,7 +255,15 @@ class PathInfo:
             mileStone=mileStone,
         )
 
-    def getReferenceSequenceFilePath(self, dataSetId, entityId="1", wfInstanceId=None, fileSource="archive", versionId="latest", mileStone=None):
+    def getReferenceSequenceFilePath(
+        self,
+        dataSetId: str,
+        entityId: PathInfoPartitionId = "1",
+        wfInstanceId: Optional[str] = None,
+        fileSource: PathInfoStorageType = "archive",
+        versionId: PathInfoVersionId = "latest",
+        mileStone: Optional[str] = None,
+    ) -> Optional[str]:
         return self.__getStandardPath(
             dataSetId=dataSetId,
             wfInstanceId=wfInstanceId,
@@ -230,17 +275,29 @@ class PathInfo:
             mileStone=mileStone,
         )
 
-    def getSequenceAssignmentFilePath(self, dataSetId, wfInstanceId=None, fileSource="archive", versionId="latest", mileStone=None):
+    def getSequenceAssignmentFilePath(
+        self, dataSetId: str, wfInstanceId: Optional[str] = None, fileSource: PathInfoStorageType = "archive", versionId: PathInfoVersionId = "latest", mileStone: Optional[str] = None
+    ) -> Optional[str]:
         return self.__getStandardPath(
             dataSetId=dataSetId, wfInstanceId=wfInstanceId, fileSource=fileSource, versionId=versionId, contentTypeBase="seq-assign", formatType="pdbx", mileStone=mileStone
         )
 
-    def getAssemblyAssignmentFilePath(self, dataSetId, wfInstanceId=None, fileSource="archive", versionId="latest", mileStone=None):
+    def getAssemblyAssignmentFilePath(
+        self, dataSetId: str, wfInstanceId: Optional[str] = None, fileSource: PathInfoStorageType = "archive", versionId: PathInfoVersionId = "latest", mileStone: Optional[str] = None
+    ) -> Optional[str]:
         return self.__getStandardPath(
             dataSetId=dataSetId, wfInstanceId=wfInstanceId, fileSource=fileSource, versionId=versionId, contentTypeBase="assembly-assign", formatType="pdbx", mileStone=mileStone
         )
 
-    def getBlastMatchFilePath(self, dataSetId, entityId="1", wfInstanceId=None, fileSource="archive", versionId="latest", mileStone=None):
+    def getBlastMatchFilePath(
+        self,
+        dataSetId: str,
+        entityId: PathInfoPartitionId = "1",
+        wfInstanceId: Optional[str] = None,
+        fileSource: PathInfoStorageType = "archive",
+        versionId: PathInfoVersionId = "latest",
+        mileStone: Optional[str] = None,
+    ) -> Optional[str]:
         return self.__getStandardPath(
             dataSetId=dataSetId,
             wfInstanceId=wfInstanceId,
@@ -252,7 +309,9 @@ class PathInfo:
             mileStone=mileStone,
         )
 
-    def getMap2fofcFilePath(self, dataSetId, wfInstanceId=None, fileSource="archive", versionId="latest", mileStone=None):
+    def getMap2fofcFilePath(
+        self, dataSetId: str, wfInstanceId: Optional[str] = None, fileSource: PathInfoStorageType = "archive", versionId: PathInfoVersionId = "latest", mileStone: Optional[str] = None
+    ) -> Optional[str]:
         return self.__getStandardPath(
             dataSetId=dataSetId,
             wfInstanceId=wfInstanceId,
@@ -264,7 +323,9 @@ class PathInfo:
             mileStone=mileStone,
         )
 
-    def getMapfofcFilePath(self, dataSetId, wfInstanceId=None, fileSource="archive", versionId="latest", mileStone=None):
+    def getMapfofcFilePath(
+        self, dataSetId: str, wfInstanceId: Optional[str] = None, fileSource: PathInfoStorageType = "archive", versionId: PathInfoVersionId = "latest", mileStone: Optional[str] = None
+    ) -> Optional[str]:
         return self.__getStandardPath(
             dataSetId=dataSetId,
             wfInstanceId=wfInstanceId,
@@ -276,7 +337,9 @@ class PathInfo:
             mileStone=mileStone,
         )
 
-    def getOmitMap2fofcFilePath(self, dataSetId, wfInstanceId=None, fileSource="archive", versionId="latest", mileStone=None):
+    def getOmitMap2fofcFilePath(
+        self, dataSetId: str, wfInstanceId: Optional[str] = None, fileSource: PathInfoStorageType = "archive", versionId: PathInfoVersionId = "latest", mileStone: Optional[str] = None
+    ) -> Optional[str]:
         return self.__getStandardPath(
             dataSetId=dataSetId,
             wfInstanceId=wfInstanceId,
@@ -288,7 +351,9 @@ class PathInfo:
             mileStone=mileStone,
         )
 
-    def getOmitMapfofcFilePath(self, dataSetId, wfInstanceId=None, fileSource="archive", versionId="latest", mileStone=None):
+    def getOmitMapfofcFilePath(
+        self, dataSetId: str, wfInstanceId: Optional[str] = None, fileSource: PathInfoStorageType = "archive", versionId: PathInfoVersionId = "latest", mileStone: Optional[str] = None
+    ) -> Optional[str]:
         return self.__getStandardPath(
             dataSetId=dataSetId,
             wfInstanceId=wfInstanceId,
@@ -302,7 +367,9 @@ class PathInfo:
 
     #
 
-    def getEmVolumeFilePath(self, dataSetId, wfInstanceId=None, fileSource="archive", versionId="latest", mileStone=None):
+    def getEmVolumeFilePath(
+        self, dataSetId: str, wfInstanceId: Optional[str] = None, fileSource: PathInfoStorageType = "archive", versionId: PathInfoVersionId = "latest", mileStone: Optional[str] = None
+    ) -> Optional[str]:
         return self.__getStandardPath(
             dataSetId=dataSetId,
             wfInstanceId=wfInstanceId,
@@ -314,7 +381,15 @@ class PathInfo:
             mileStone=mileStone,
         )
 
-    def getEmMaskFilePath(self, dataSetId, maskNumber="1", wfInstanceId=None, fileSource="archive", versionId="latest", mileStone=None):
+    def getEmMaskFilePath(
+        self,
+        dataSetId: str,
+        maskNumber: PathInfoPartitionId = "1",
+        wfInstanceId: Optional[str] = None,
+        fileSource: PathInfoStorageType = "archive",
+        versionId: PathInfoVersionId = "latest",
+        mileStone: Optional[str] = None,
+    ) -> Optional[str]:
         return self.__getStandardPath(
             dataSetId=dataSetId,
             wfInstanceId=wfInstanceId,
@@ -326,7 +401,15 @@ class PathInfo:
             mileStone=mileStone,
         )
 
-    def getEmDepositVolumeParamsFilePath(self, dataSetId, maskNumber="1", wfInstanceId=None, fileSource="deposit", versionId="latest", mileStone=None):
+    def getEmDepositVolumeParamsFilePath(
+        self,
+        dataSetId: str,
+        maskNumber: PathInfoPartitionId = "1",
+        wfInstanceId: Optional[str] = None,
+        fileSource: PathInfoStorageType = "deposit",
+        versionId: PathInfoVersionId = "latest",
+        mileStone: Optional[str] = None,
+    ) -> Optional[str]:
         return self.__getStandardPath(
             dataSetId=dataSetId,
             wfInstanceId=wfInstanceId,
@@ -338,7 +421,16 @@ class PathInfo:
             mileStone=mileStone,
         )
 
-    def getAuthChemcialShiftsFilePath(self, dataSetId, formatType="nmr-star", partNumber="next", wfInstanceId=None, fileSource="archive", versionId="latest", mileStone=None):
+    def getAuthChemcialShiftsFilePath(
+        self,
+        dataSetId: str,
+        formatType: str = "nmr-star",
+        partNumber: PathInfoPartitionId = "next",
+        wfInstanceId: Optional[str] = None,
+        fileSource: PathInfoStorageType = "archive",
+        versionId: PathInfoVersionId = "latest",
+        mileStone: Optional[str] = None,
+    ) -> Optional[str]:
         return self.__getStandardPath(
             dataSetId=dataSetId,
             wfInstanceId=wfInstanceId,
@@ -350,7 +442,15 @@ class PathInfo:
             mileStone=mileStone,
         )
 
-    def getChemcialShiftsFilePath(self, dataSetId, formatType="nmr-star", wfInstanceId=None, fileSource="archive", versionId="latest", mileStone=None):
+    def getChemcialShiftsFilePath(
+        self,
+        dataSetId: str,
+        formatType: str = "nmr-star",
+        wfInstanceId: Optional[str] = None,
+        fileSource: PathInfoStorageType = "archive",
+        versionId: PathInfoVersionId = "latest",
+        mileStone: Optional[str] = None,
+    ) -> Optional[str]:
         return self.__getStandardPath(
             dataSetId=dataSetId,
             wfInstanceId=wfInstanceId,
@@ -362,7 +462,15 @@ class PathInfo:
             mileStone=mileStone,
         )
 
-    def getMolecularRestraintsFilePath(self, dataSetId, formatType="nmr-star", wfInstanceId=None, fileSource="archive", versionId="latest", mileStone=None):
+    def getMolecularRestraintsFilePath(
+        self,
+        dataSetId: str,
+        formatType: str = "nmr-star",
+        wfInstanceId: Optional[str] = None,
+        fileSource: PathInfoStorageType = "archive",
+        versionId: PathInfoVersionId = "latest",
+        mileStone: Optional[str] = None,
+    ) -> Optional[str]:
         return self.__getStandardPath(
             dataSetId=dataSetId,
             wfInstanceId=wfInstanceId,
@@ -374,7 +482,15 @@ class PathInfo:
             mileStone=mileStone,
         )
 
-    def getNMRCombinedFilePath(self, dataSetId, formatType="nmr-star", wfInstanceId=None, fileSource="archive", versionId="latest", mileStone=None):
+    def getNMRCombinedFilePath(
+        self,
+        dataSetId: str,
+        formatType: str = "nmr-star",
+        wfInstanceId: Optional[str] = None,
+        fileSource: PathInfoStorageType = "archive",
+        versionId: PathInfoVersionId = "latest",
+        mileStone: Optional[str] = None,
+    ) -> Optional[str]:
         return self.__getStandardPath(
             dataSetId=dataSetId,
             wfInstanceId=wfInstanceId,
@@ -386,28 +502,44 @@ class PathInfo:
             mileStone=mileStone,
         )
 
-    def getNMRifFilePath(self, dataSetId, wfInstanceId=None, fileSource="deposit", versionId="latest", mileStone=None):
+    def getNMRifFilePath(
+        self, dataSetId: str, wfInstanceId: Optional[str] = None, fileSource: PathInfoStorageType = "deposit", versionId: PathInfoVersionId = "latest", mileStone: Optional[str] = None
+    ) -> Optional[str]:
         return self.__getStandardPath(
             dataSetId=dataSetId, wfInstanceId=wfInstanceId, fileSource=fileSource, versionId=versionId, contentTypeBase="nmrif", formatType="pdbx", mileStone=mileStone
         )
 
-    def getAssemblyModelFilePath(self, dataSetId, wfInstanceId=None, fileSource="deposit", versionId="latest", mileStone=None):
+    def getAssemblyModelFilePath(
+        self, dataSetId: str, wfInstanceId: Optional[str] = None, fileSource: PathInfoStorageType = "deposit", versionId: PathInfoVersionId = "latest", mileStone: Optional[str] = None
+    ) -> Optional[str]:
         return self.__getStandardPath(
             dataSetId=dataSetId, wfInstanceId=wfInstanceId, fileSource=fileSource, versionId=versionId, contentTypeBase="assembly-model", formatType="pdbx", mileStone=mileStone
         )
 
-    def getAssemblySuggestedFilePath(self, dataSetId, wfInstanceId=None, fileSource="deposit", versionId="latest", mileStone=None):
+    def getAssemblySuggestedFilePath(
+        self, dataSetId: str, wfInstanceId: Optional[str] = None, fileSource: PathInfoStorageType = "deposit", versionId: PathInfoVersionId = "latest", mileStone: Optional[str] = None
+    ) -> Optional[str]:
         return self.__getStandardPath(
             dataSetId=dataSetId, wfInstanceId=wfInstanceId, fileSource=fileSource, versionId=versionId, contentTypeBase="assembly-suggested", formatType="json", mileStone=mileStone
         )
 
-    def getStatusHistoryFilePath(self, dataSetId, fileSource="archive", versionId="latest"):
+    def getStatusHistoryFilePath(self, dataSetId: str, fileSource: PathInfoStorageType = "archive", versionId: PathInfoVersionId = "latest") -> Optional[str]:
         return self.__getStandardPath(
             dataSetId=dataSetId, wfInstanceId=None, fileSource=fileSource, versionId=versionId, partNumber="1", contentTypeBase="status-history", formatType="pdbx", mileStone=None
         )
 
     #
-    def getFilePath(self, dataSetId, wfInstanceId=None, contentType=None, formatType=None, fileSource="archive", versionId="latest", partNumber="1", mileStone=None):
+    def getFilePath(
+        self,
+        dataSetId: Optional[str],
+        wfInstanceId: Optional[str] = None,
+        contentType: Optional[str] = None,
+        formatType: Optional[str] = None,
+        fileSource: PathInfoStorageType = "archive",
+        versionId: PathInfoVersionId = "latest",
+        partNumber: PathInfoPartitionId = "1",
+        mileStone: Optional[str] = None,
+    ) -> Optional[str]:
         return self.__getStandardPath(
             dataSetId=dataSetId,
             wfInstanceId=wfInstanceId,
@@ -420,34 +552,47 @@ class PathInfo:
         )
 
     #
-    def getFileName(self, dataSetId, wfInstanceId=None, contentType=None, formatType=None, fileSource="archive", versionId="latest", partNumber="1", mileStone=None):
+    def getFileName(
+        self,
+        dataSetId: str,
+        wfInstanceId: Optional[str] = None,
+        contentType: Optional[str] = None,
+        formatType: Optional[str] = None,
+        fileSource: PathInfoStorageType = "archive",
+        versionId: PathInfoVersionId = "latest",
+        partNumber: PathInfoPartitionId = "1",
+        mileStone: Optional[str] = None,
+    ) -> str:
         return os.path.basename(
-            self.__getStandardPath(
-                dataSetId=dataSetId,
-                wfInstanceId=wfInstanceId,
-                contentTypeBase=contentType,
-                formatType=formatType,
-                fileSource=fileSource,
-                versionId=versionId,
-                partNumber=partNumber,
-                mileStone=mileStone,
+            cast(
+                "str",
+                self.__getStandardPath(
+                    dataSetId=dataSetId,
+                    wfInstanceId=wfInstanceId,
+                    contentTypeBase=contentType,
+                    formatType=formatType,
+                    fileSource=fileSource,
+                    versionId=versionId,
+                    partNumber=partNumber,
+                    mileStone=mileStone,
+                ),
             )
         )
 
     def getDirPath(
         self,
-        dataSetId,
-        wfInstanceId=None,
-        contentType=None,  # noqa: ARG002  pylint: disable=unused-argument
-        formatType=None,  # noqa: ARG002  pylint: disable=unused-argument
-        fileSource="archive",
-        versionId="latest",  # noqa: ARG002  pylint: disable=unused-argument
-        partNumber="1",  # noqa: ARG002  pylint: disable=unused-argument
-        mileStone=None,  # noqa: ARG002  pylint: disable=unused-argument
-    ):  # noqa: E501,ARG002 pylint: disable=unused-argument
+        dataSetId: str,
+        wfInstanceId: Optional[str] = None,
+        contentType: Optional[str] = None,  # noqa: ARG002  pylint: disable=unused-argument
+        formatType: Optional[str] = None,  # noqa: ARG002  pylint: disable=unused-argument
+        fileSource: PathInfoStorageType = "archive",
+        versionId: Optional[PathInfoVersionId] = "latest",  # noqa: ARG002  pylint: disable=unused-argument
+        partNumber: PathInfoPartitionId = "1",  # noqa: ARG002  pylint: disable=unused-argument
+        mileStone: Optional[str] = None,  # noqa: ARG002  pylint: disable=unused-argument
+    ) -> Optional[str]:  # noqa: E501,ARG002 pylint: disable=unused-argument
         dfRef = DataFileReference(siteId=self.__siteId, verbose=self.__verbose, log=self.__lfh)
         dfRef.setDepositionDataSetId(dataSetId)
-        dfRef.setStorageType(fileSource)
+        dfRef.setStorageType(cast("DataReferenceStorageType", fileSource))  # session-download will cause rejection here - but we correct below
         if fileSource in ("session", "wf-session"):
             dfRef.setStorageType("session")
             dfRef.setSessionPath(self.__sessionPath)
@@ -467,23 +612,44 @@ class PathInfo:
         #                                               partNumber=partNumber,
         #                                               mileStone=mileStone))
 
-    def getWebDownloadPath(self, dataSetId, wfInstanceId=None, contentType=None, formatType=None, versionId="latest", partNumber="1", mileStone=None):
+    def getWebDownloadPath(
+        self,
+        dataSetId: str,
+        wfInstanceId: Optional[str] = None,
+        contentType: Optional[str] = None,
+        formatType: Optional[str] = None,
+        versionId: PathInfoVersionId = "latest",
+        partNumber: PathInfoPartitionId = "1",
+        mileStone: Optional[str] = None,
+    ) -> str:
         fn = os.path.basename(
-            self.__getStandardPath(
-                dataSetId=dataSetId,
-                wfInstanceId=wfInstanceId,
-                contentTypeBase=contentType,
-                formatType=formatType,
-                fileSource="session-download",
-                versionId=versionId,
-                partNumber=partNumber,
-                mileStone=mileStone,
+            cast(
+                "str",
+                self.__getStandardPath(
+                    dataSetId=dataSetId,
+                    wfInstanceId=wfInstanceId,
+                    contentTypeBase=contentType,
+                    formatType=formatType,
+                    fileSource="session-download",
+                    versionId=versionId,
+                    partNumber=partNumber,
+                    mileStone=mileStone,
+                ),
             )
         )
-        (_p, sId) = os.path.split(self.__sessionPath)
+        (_p, sId) = os.path.split(cast("str", self.__sessionPath))
         return os.path.join("/sessions", sId, "downloads", fn)
 
-    def getFilePathVersionTemplate(self, dataSetId, wfInstanceId=None, contentType=None, formatType=None, fileSource="archive", partNumber="1", mileStone=None):
+    def getFilePathVersionTemplate(
+        self,
+        dataSetId: str,
+        wfInstanceId: Optional[str] = None,
+        contentType: Optional[str] = None,
+        formatType: Optional[str] = None,
+        fileSource: PathInfoStorageType = "archive",
+        partNumber: PathInfoPartitionId = "1",
+        mileStone: Optional[str] = None,
+    ) -> Optional[str]:
         _fp, vt, _pt, _cct = self.__getPathWorker(
             dataSetId=dataSetId,
             wfInstanceId=wfInstanceId,
@@ -496,7 +662,15 @@ class PathInfo:
         )
         return vt
 
-    def getFilePathPartitionTemplate(self, dataSetId, wfInstanceId=None, contentType=None, formatType=None, fileSource="archive", mileStone=None):
+    def getFilePathPartitionTemplate(
+        self,
+        dataSetId: str,
+        wfInstanceId: Optional[str] = None,
+        contentType: Optional[str] = None,
+        formatType: Optional[str] = None,
+        fileSource: PathInfoStorageType = "archive",
+        mileStone: Optional[str] = None,
+    ) -> Optional[str]:
         _fp, _vt, pt, _cct = self.__getPathWorker(
             dataSetId=dataSetId,
             wfInstanceId=wfInstanceId,
@@ -509,7 +683,9 @@ class PathInfo:
         )
         return pt
 
-    def getFilePathContentTypeTemplate(self, dataSetId, wfInstanceId=None, contentType=None, fileSource="archive", mileStone=None):
+    def getFilePathContentTypeTemplate(
+        self, dataSetId: str, wfInstanceId: Optional[str] = None, contentType: Optional[str] = None, fileSource: PathInfoStorageType = "archive", mileStone: Optional[str] = None
+    ) -> Optional[str]:
         _fp, _vt, _pt, cct = self.__getPathWorker(
             dataSetId=dataSetId,
             wfInstanceId=wfInstanceId,
@@ -522,7 +698,17 @@ class PathInfo:
         )
         return cct
 
-    def __getStandardPath(self, dataSetId, wfInstanceId=None, contentTypeBase=None, formatType=None, fileSource="archive", versionId="latest", partNumber="1", mileStone=None):
+    def __getStandardPath(
+        self,
+        dataSetId: Optional[str],
+        wfInstanceId: Optional[str] = None,
+        contentTypeBase: Optional[str] = None,
+        formatType: Optional[str] = None,
+        fileSource: PathInfoStorageType = "archive",
+        versionId: PathInfoVersionId = "latest",
+        partNumber: PathInfoPartitionId = "1",
+        mileStone: Optional[str] = None,
+    ) -> Optional[str]:
         fP = None
         try:
             fP, _vT, _pT, _ccT = self.__getPathWorker(
@@ -540,7 +726,17 @@ class PathInfo:
 
         return fP
 
-    def __getPathWorker(self, dataSetId, wfInstanceId=None, contentTypeBase=None, formatType=None, fileSource="archive", versionId="latest", partNumber="1", mileStone=None):
+    def __getPathWorker(
+        self,
+        dataSetId: Optional[str],
+        wfInstanceId: Optional[str] = None,
+        contentTypeBase: Optional[str] = None,
+        formatType: Optional[str] = None,
+        fileSource: PathInfoStorageType = "archive",
+        versionId: PathInfoVersionId = "latest",
+        partNumber: PathInfoPartitionId = "1",
+        mileStone: Optional[str] = None,
+    ) -> Tuple[Optional[str], Optional[str], Optional[str], Optional[str]]:
         """Return the path and templates corresponding to the input file typing arguments.
 
         Return:  <full file path>,<file path as a version template>,<file path as a partition template>
@@ -548,7 +744,7 @@ class PathInfo:
         #
         try:
             if mileStone is not None:
-                contentType = contentTypeBase + "-" + mileStone
+                contentType: Optional[str] = cast("str", contentTypeBase) + "-" + mileStone
             else:
                 contentType = contentTypeBase
                 #
@@ -626,9 +822,9 @@ class PathInfo:
             if dfRef.isReferenceValid():
                 fP = dfRef.getFilePathReference()
                 dP = dfRef.getDirPathReference()
-                pT = os.path.join(dP, dfRef.getPartitionNumberSearchTarget())
-                vT = os.path.join(dP, dfRef.getVersionIdSearchTarget())
-                ctT = os.path.join(dP, dfRef.getContentTypeSearchTarget())
+                pT = os.path.join(cast("str", dP), cast("str", dfRef.getPartitionNumberSearchTarget()))
+                vT = os.path.join(cast("str", dP), cast("str", dfRef.getVersionIdSearchTarget()))
+                ctT = os.path.join(cast("str", dP), cast("str", dfRef.getContentTypeSearchTarget()))
                 logger.debug("+PathInfo.__getPathworker() file path:                %s", fP)
                 logger.debug("+PathInfo.__getPathworker() partition search path:    %s", pT)
                 logger.debug("+PathInfo.__getPathworker() version search path:      %s", vT)
@@ -636,7 +832,7 @@ class PathInfo:
             else:
                 dP = dfRef.getDirPathReference()
                 try:
-                    ctT = os.path.join(dP, dfRef.getContentTypeSearchTarget())
+                    ctT = os.path.join(cast("str", dP), cast("str", dfRef.getContentTypeSearchTarget()))
                 except Exception as e:
                     ctT = None
                     logger.exception("+PathInfo.__getPathworker() failing with content type search template construction with %r", str(e))

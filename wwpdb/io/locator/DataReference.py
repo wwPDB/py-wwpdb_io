@@ -73,7 +73,10 @@ DataReferenceStorageType = Literal[
 ]
 
 DataReferenceVersionName = Literal["latest", "original", "previous", "next", "none"]
+DataReferenceVersionId = Union[DataReferenceVersionName, str, int]
+
 DataReferencePartitionName = Literal["latest", "original", "previous", "next", "none"]
+DataReferencePartitionId = Union[DataReferencePartitionName, int]
 
 
 class DataReferenceBase:
@@ -174,18 +177,18 @@ class ReferenceFileComponents:
 
     def __reset(self) -> None:
         self.__depositionDataSetId: Optional[str] = None
-        self.__filePartNumber: Optional[Union[str, int]] = None
+        self.__filePartNumber: Optional[DataReferencePartitionId] = None
         self.__contentType: Optional[str] = None
         self.__contentTypeAcronym: Optional[str] = None
         self.__contentFormat: Optional[str] = None
-        self.__versionId: Optional[Union[DataReferenceVersionName, str, int]] = None
+        self.__versionId: Optional[DataReferenceVersionId] = None
 
     def set(self, fileName: str) -> bool:
         self.__fileName = fileName
         self.__reset()
         return self.__splitFileName()
 
-    def get(self) -> Tuple[Optional[str], Optional[str], Optional[str], Optional[Union[str, int]], Optional[Union[str, int]]]:
+    def get(self) -> Tuple[Optional[str], Optional[str], Optional[str], Optional[DataReferencePartitionId], Optional[DataReferenceVersionId]]:
         """Convenience method returning the elements of the reference file name
         in a single tuple.
         """
@@ -294,7 +297,7 @@ class DataFileReference(DataReferenceBase):
            - inline
            - others to be enumerated
            """
-        self.__versionId: Optional[Union[str, int]] = None
+        self.__versionId: Optional[DataReferenceVersionId] = None
         """Version identifier:
            - latest
            - orginal
@@ -303,7 +306,7 @@ class DataFileReference(DataReferenceBase):
            - version number (1,2,...,)
            """
         #
-        self.__filePartNumber: Union[DataReferencePartitionName, int] = 1
+        self.__filePartNumber: DataReferencePartitionId = 1
         """Placeholder for future integer index for file partitioning.
         """
         #
@@ -441,7 +444,7 @@ class DataFileReference(DataReferenceBase):
 
         return False
 
-    def setContentTypeAndFormat(self, contentType: str, fileFormat: str) -> bool:
+    def setContentTypeAndFormat(self, contentType: Optional[str], fileFormat: Optional[str]) -> bool:
         """Set the content type and file format for the file reference.
 
         Examples of supported content types include:
@@ -505,7 +508,7 @@ class DataFileReference(DataReferenceBase):
         True for a recognized storage type or False otherwise.
 
         """
-        tS = cast(DataReferenceStorageType, str(storageType).lower())
+        tS = cast("DataReferenceStorageType", str(storageType).lower())
         if tS in self.__storageTypeList:
             self.__storageType = tS
             if tS not in ["inline", "constant"]:
@@ -513,7 +516,7 @@ class DataFileReference(DataReferenceBase):
             return True
         return False
 
-    def setVersionId(self, versionId: Union[DataReferenceVersionName, str, int]) -> bool:
+    def setVersionId(self, versionId: DataReferenceVersionId) -> bool:
         """Set the version identifier for this file reference.
 
         Supported version identifiers include:
@@ -541,7 +544,7 @@ class DataFileReference(DataReferenceBase):
             ok = False
         return ok
 
-    def setDepositionDataSetId(self, dId: str) -> bool:
+    def setDepositionDataSetId(self, dId: Optional[str]) -> bool:
         """Set the deposition data set identifier.
 
         A depostion data set identifier begins with the prefix *D_* and is followed
@@ -562,7 +565,7 @@ class DataFileReference(DataReferenceBase):
             return True
         return False
 
-    def setWorkflowInstanceId(self, wId: str) -> bool:
+    def setWorkflowInstanceId(self, wId: Optional[str]) -> bool:
         """Set the workflow instance identifier.
 
         A workflow instance identifier begins with the prefix *W_* and is followed
@@ -583,7 +586,7 @@ class DataFileReference(DataReferenceBase):
             return True
         return False
 
-    def setSessionDataSetId(self, sId: str) -> bool:
+    def setSessionDataSetId(self, sId: Optional[str]) -> bool:
         """Set the session data set identifier.
 
         Data set identifier applied for session storage. No conventions are
@@ -600,7 +603,7 @@ class DataFileReference(DataReferenceBase):
             return True
         return False
 
-    def setWorkflowNameSpace(self, wNameSpace: str) -> bool:
+    def setWorkflowNameSpace(self, wNameSpace: Optional[str]) -> bool:
         """Set the workflow name space identifier.
 
         This identifier must be an alpha numeric string containing only
@@ -620,7 +623,7 @@ class DataFileReference(DataReferenceBase):
         self.__workflowNameSpace = wNameSpace
         return True
 
-    def setPartitionNumber(self, iPartitionNumber: Union[DataReferencePartitionName, str, int] = 1) -> bool:
+    def setPartitionNumber(self, iPartitionNumber: Union[DataReferencePartitionId, str] = 1) -> bool:  # string accepted - but stored as int
         """Set the integer file partition number.  This is used to identify the physical
         pieces of a single logical data file.
 
@@ -638,7 +641,7 @@ class DataFileReference(DataReferenceBase):
         try:
             tS = str(iPartitionNumber).lower()
             if iPartitionNumber in self.__partitionNameList:
-                self.__filePartNumber = cast(DataReferencePartitionName, tS)
+                self.__filePartNumber = cast("DataReferencePartitionName", tS)
                 ok = True
             elif self.__isInteger(tS):
                 self.__filePartNumber = int(tS)
@@ -651,7 +654,7 @@ class DataFileReference(DataReferenceBase):
             logger.debug("+DataFileReference.setPartitionNumber() setting is  %r", self.__filePartNumber)
         return ok
 
-    def getPartitionNumber(self) -> Union[DataReferencePartitionName, int]:
+    def getPartitionNumber(self) -> DataReferencePartitionId:
         """Returns:
 
         The current partition number  or *1* if this is not set.
@@ -680,7 +683,7 @@ class DataFileReference(DataReferenceBase):
 
         return self.__storageType
 
-    def getVersionId(self) -> Optional[Union[DataReferenceVersionName, int, str]]:
+    def getVersionId(self) -> Optional[DataReferenceVersionId]:
         """Returns:
 
         The current version identifier or *None* if this is not set.
@@ -910,11 +913,11 @@ class DataFileReference(DataReferenceBase):
         """
         try:
             if self.__storageType == "archive" or self.__storageType == "wf-archive":
-                tpth = os.path.join(self.__cI.get("SITE_ARCHIVE_STORAGE_PATH"), "archive", cast(str, self.__depositionDataSetId))
+                tpth = os.path.join(self.__cI.get("SITE_ARCHIVE_STORAGE_PATH"), "archive", cast("str", self.__depositionDataSetId))
             elif self.__storageType == "autogroup":
-                tpth = os.path.join(self.__cI.get("SITE_ARCHIVE_STORAGE_PATH"), "autogroup", cast(str, self.__depositionDataSetId))
+                tpth = os.path.join(self.__cI.get("SITE_ARCHIVE_STORAGE_PATH"), "autogroup", cast("str", self.__depositionDataSetId))
             elif self.__storageType == "deposit":
-                tpth = os.path.join(self.__cI.get("SITE_ARCHIVE_STORAGE_PATH"), "deposit", cast(str, self.__depositionDataSetId))
+                tpth = os.path.join(self.__cI.get("SITE_ARCHIVE_STORAGE_PATH"), "deposit", cast("str", self.__depositionDataSetId))
             elif self.__storageType == "deposit-ui":
                 uipath = self.__cI.get("SITE_ARCHIVE_UI_STORAGE_PATH")
                 if uipath is None:
@@ -922,16 +925,16 @@ class DataFileReference(DataReferenceBase):
                     subpath = "deposit"
                 else:
                     subpath = "deposit-ui"
-                tpth = os.path.join(uipath, subpath, cast(str, self.__depositionDataSetId))
+                tpth = os.path.join(uipath, subpath, cast("str", self.__depositionDataSetId))
             elif self.__storageType == "tempdep":
                 uipath = self.__cI.get("SITE_ARCHIVE_UI_STORAGE_PATH")
                 if uipath is None:
                     uipath = self.__cI.get("SITE_ARCHIVE_STORAGE_PATH")
-                tpth = os.path.join(uipath, "tempdep", cast(str, self.__depositionDataSetId))
+                tpth = os.path.join(uipath, "tempdep", cast("str", self.__depositionDataSetId))
             elif self.__storageType == "wf-shared":
-                tpth = os.path.join(self.__cI.get("SITE_ARCHIVE_STORAGE_PATH"), "workflow", cast(str, self.__depositionDataSetId), "shared", cast(str, self.__workflowNameSpace))
+                tpth = os.path.join(self.__cI.get("SITE_ARCHIVE_STORAGE_PATH"), "workflow", cast("str", self.__depositionDataSetId), "shared", cast("str", self.__workflowNameSpace))
             elif self.__storageType == "wf-instance":
-                tpth = os.path.join(self.__cI.get("SITE_ARCHIVE_STORAGE_PATH"), "workflow", cast(str, self.__depositionDataSetId), "instance", cast(str, self.__workflowInstanceId))
+                tpth = os.path.join(self.__cI.get("SITE_ARCHIVE_STORAGE_PATH"), "workflow", cast("str", self.__depositionDataSetId), "instance", cast("str", self.__workflowInstanceId))
             elif self.__storageType in ["session", "wf-session"]:
                 tpth = self.__sessionPath
             elif self.__storageType == "uploads" or self.__storageType == "pickles":
@@ -942,10 +945,10 @@ class DataFileReference(DataReferenceBase):
                     subpath = "deposit"
                 else:
                     subpath = "deposit-ui"
-                tpth = os.path.join(uipath, subpath, "temp_files", subsecondpath, cast(str, self.__depositionDataSetId))
+                tpth = os.path.join(uipath, subpath, "temp_files", subsecondpath, cast("str", self.__depositionDataSetId))
             else:
                 tpth = None  # Will trigger an exception in next line
-            pth = os.path.abspath(cast(str, tpth))
+            pth = os.path.abspath(cast("str", tpth))
         except Exception as e:
             logger.exception("Failing with %r", str(e))
 
@@ -973,11 +976,35 @@ class DataFileReference(DataReferenceBase):
                 return None
 
             if self.__storageType in ["archive", "autogroup", "wf-archive", "wf-shared", "deposit", "deposit-ui", "tempdep"]:
-                fn = cast(str, self.__depositionDataSetId) + "_" + self.__contentInfoD[self.__contentType][1] + "_P" + str(self.__filePartNumber) + "." + self.__formatExtensionD[self.__fileFormat]
+                fn = (
+                    cast("str", self.__depositionDataSetId)
+                    + "_"
+                    + self.__contentInfoD[self.__contentType][1]
+                    + "_P"
+                    + str(self.__filePartNumber)
+                    + "."
+                    + self.__formatExtensionD[self.__fileFormat]
+                )
             elif self.__storageType in ["session", "wf-session"]:
-                fn = cast(str, self.__sessionDataSetId) + "_" + self.__contentInfoD[self.__contentType][1] + "_P" + str(self.__filePartNumber) + "." + self.__formatExtensionD[self.__fileFormat]
+                fn = (
+                    cast("str", self.__sessionDataSetId)
+                    + "_"
+                    + self.__contentInfoD[self.__contentType][1]
+                    + "_P"
+                    + str(self.__filePartNumber)
+                    + "."
+                    + self.__formatExtensionD[self.__fileFormat]
+                )
             elif self.__storageType in ["wf-instance"]:
-                fn = cast(str, self.__depositionDataSetId) + "_" + self.__contentInfoD[self.__contentType][1] + "_P" + str(self.__filePartNumber) + "." + self.__formatExtensionD[self.__fileFormat]
+                fn = (
+                    cast("str", self.__depositionDataSetId)
+                    + "_"
+                    + self.__contentInfoD[self.__contentType][1]
+                    + "_P"
+                    + str(self.__filePartNumber)
+                    + "."
+                    + self.__formatExtensionD[self.__fileFormat]
+                )
             else:
                 fn = None
         except Exception as e:
@@ -1001,8 +1028,8 @@ class DataFileReference(DataReferenceBase):
         try:
             if self.getReferenceType() != "file":
                 return None
-            dirPath = cast(str, self.__getInternalPath())
-            fN = cast(str, self.__getInternalFileNameVersioned())
+            dirPath = cast("str", self.__getInternalPath())
+            fN = cast("str", self.__getInternalFileNameVersioned())
             pth = os.path.join(dirPath, fN)
             return pth
         except Exception as _e:  # noqa: F841,BLE001
@@ -1017,7 +1044,7 @@ class DataFileReference(DataReferenceBase):
         try:
             if self.getReferenceType() != "file":
                 return None
-            baseName = cast(str, self.__getInternalFileNameBase())  # will raise exception if not configured in next line
+            baseName = cast("str", self.__getInternalFileNameBase())  # will raise exception if not configured in next line
             vst = baseName + ".V*"
             return vst
         except Exception as _e:  # noqa: F841,BLE001
@@ -1037,7 +1064,7 @@ class DataFileReference(DataReferenceBase):
         try:
             if self.getReferenceType() != "file":
                 return None
-            dirPath = cast(str, self.__getInternalPath())   # For typing assume not None on a properly configured system
+            dirPath = cast("str", self.__getInternalPath())  # For typing assume not None on a properly configured system
             #
             # First resolve any symbolic partition information -
             #
@@ -1081,7 +1108,7 @@ class DataFileReference(DataReferenceBase):
             elif self.__versionId == "none":
                 fn = baseName
             else:
-                fn = baseName + ".V" + str(int(cast(str, self.__versionId)))
+                fn = baseName + ".V" + str(int(cast("str", self.__versionId)))
 
             return fn
         except Exception as e:
@@ -1102,9 +1129,9 @@ class DataFileReference(DataReferenceBase):
         try:
             if self.getReferenceType() != "file":
                 return 0
-            dirPath = cast(str, self.__getInternalPath())  # An exception will be raised or will get 0 returned
+            dirPath = cast("str", self.__getInternalPath())  # An exception will be raised or will get 0 returned
             self.__filePartNumber = self.__getInternalPartitionNumber()
-            baseName = cast(str, self.__getInternalFileNameBase())
+            baseName = cast("str", self.__getInternalFileNameBase())
             if self.__versionId == "latest":
                 iV = self.__latestVersion(dirPath, baseName)
             elif self.__versionId == "next":
@@ -1117,7 +1144,7 @@ class DataFileReference(DataReferenceBase):
             elif self.__versionId == "original":
                 iV = 1
             else:
-                iV = int(cast(str, self.__versionId))
+                iV = int(cast("str", self.__versionId))
             return iV
         except Exception as e:
             if self.__debug:
@@ -1219,11 +1246,11 @@ class DataFileReference(DataReferenceBase):
                 return None
 
             if self.__storageType in ["archive", "autogroup", "wf-archive", "wf-shared", "deposit", "deposit-ui", "tempdep"]:
-                fn = cast(str, self.__depositionDataSetId) + "_" + self.__contentInfoD[self.__contentType][1] + "_P*" + "." + self.__formatExtensionD[self.__fileFormat] + "*"
+                fn = cast("str", self.__depositionDataSetId) + "_" + self.__contentInfoD[self.__contentType][1] + "_P*" + "." + self.__formatExtensionD[self.__fileFormat] + "*"
             elif self.__storageType in ["session", "wf-session"]:
-                fn = cast(str, self.__sessionDataSetId) + "_" + self.__contentInfoD[self.__contentType][1] + "_P*" + "." + self.__formatExtensionD[self.__fileFormat] + "*"
+                fn = cast("str", self.__sessionDataSetId) + "_" + self.__contentInfoD[self.__contentType][1] + "_P*" + "." + self.__formatExtensionD[self.__fileFormat] + "*"
             elif self.__storageType in ["wf-instance"]:
-                fn = cast(str, self.__depositionDataSetId) + "_" + self.__contentInfoD[self.__contentType][1] + "_P*" + "." + self.__formatExtensionD[self.__fileFormat] + "*"
+                fn = cast("str", self.__depositionDataSetId) + "_" + self.__contentInfoD[self.__contentType][1] + "_P*" + "." + self.__formatExtensionD[self.__fileFormat] + "*"
             else:
                 fn = None
         except Exception as e:
@@ -1255,11 +1282,11 @@ class DataFileReference(DataReferenceBase):
             #  return None
 
             if self.__storageType in ["archive", "autogroup", "wf-archive", "wf-shared", "deposit", "deposit-ui", "tempdep"]:
-                fn = cast(str, self.__depositionDataSetId) + "_" + self.__contentInfoD[self.__contentType][1] + "_P*"
+                fn = cast("str", self.__depositionDataSetId) + "_" + self.__contentInfoD[self.__contentType][1] + "_P*"
             elif self.__storageType in ["session", "wf-session"]:
-                fn = cast(str, self.__sessionDataSetId) + "_" + self.__contentInfoD[self.__contentType][1] + "_P*"
+                fn = cast("str", self.__sessionDataSetId) + "_" + self.__contentInfoD[self.__contentType][1] + "_P*"
             elif self.__storageType in ["wf-instance"]:
-                fn = cast(str, self.__depositionDataSetId) + "_" + self.__contentInfoD[self.__contentType][1] + "_P*"
+                fn = cast("str", self.__depositionDataSetId) + "_" + self.__contentInfoD[self.__contentType][1] + "_P*"
             else:
                 fn = None
         except Exception as e:
@@ -1282,8 +1309,8 @@ class DataFileReference(DataReferenceBase):
         try:
             if self.getReferenceType() != "file":
                 return 0
-            dirPath = cast(str, self.__getInternalPath())  # If None - will be caught elsewhere
-            searchTarget = cast(str, self.getPartitionNumberSearchTarget())
+            dirPath = cast("str", self.__getInternalPath())  # If None - will be caught elsewhere
+            searchTarget = cast("str", self.getPartitionNumberSearchTarget())
             if self.__filePartNumber == "latest":
                 iP = self.__latestPartitionNumber(dirPath, searchTarget)
             elif self.__filePartNumber == "next":

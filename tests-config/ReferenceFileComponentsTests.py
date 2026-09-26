@@ -136,7 +136,7 @@ class ReferenceFileComponentsTests(unittest.TestCase):
                 rfc.set(fileName)
                 idCode, contentType, contentFormat, partNo, versionNo = rfc.get()
                 self.__lfh.write(
-                    "RFC- fileName %s idcode %s contentType %s contentFormat %s partNo %d versionId %s\n" % (fileName, idCode, contentType, contentFormat, partNo, versionNo)
+                    "RFC- fileName %s idcode %s contentType %s contentFormat %s partNo %s versionId %s\n" % (fileName, idCode, contentType, contentFormat, partNo, versionNo)
                 )
                 self.assertEqual(valid[fileName], [idCode, contentType, contentFormat, partNo, versionNo])
         except:  # noqa: E722  # pragma: no cover  # pylint: disable=bare-except
@@ -169,14 +169,14 @@ class DataFileReferenceTests(unittest.TestCase):
     def testUploadsUIDefault(self) -> None:
         """Test uploads should not have /deposit-ui/ in path"""
         dfr = self.__getdfr("uploads")
-        pth = cast(str, dfr.getDirPathReference())
+        pth = cast("str", dfr.getDirPathReference())
         self.assertNotIn("/deposit-ui/", pth)
         self.assertIn("/deposition_uploads/", pth)
 
     def testTempDepUIDefault(self) -> None:
         """Test tempdep should not have /deposit-ui/ in path"""
         dfr = self.__getdfr("tempdep")
-        pth = cast(str, dfr.getDirPathReference())
+        pth = cast("str", dfr.getDirPathReference())
         self.assertNotIn("/ui-path/tempdep/", pth)
 
     @patch("wwpdb.io.locator.DataReference.ConfigInfo", side_effect=MyConfigInfo)
@@ -184,6 +184,7 @@ class DataFileReferenceTests(unittest.TestCase):
         """Test tempdep should not have /deposit-ui/ in path"""
         dfr = self.__getdfr("tempdep")
         pth = dfr.getDirPathReference()
+        assert pth is not None
         self.assertIn("/ui-path/tempdep/", pth)
         self.assertTrue(mock1.called, "Patch did not work")
 
@@ -204,6 +205,7 @@ class DataFileReferenceTests(unittest.TestCase):
         """Test uploads should have /deposit-ui/ in path"""
         dfr = self.__getdfr("uploads")
         pth = dfr.getDirPathReference()
+        assert pth is not None
         self.assertIn("/deposit-ui/", pth)
         self.assertTrue(mock1.called, "Patch did not work")
 
@@ -211,6 +213,7 @@ class DataFileReferenceTests(unittest.TestCase):
         """Test pickles should not have /deposit-ui/ in path"""
         dfr = self.__getdfr("pickles")
         pth = dfr.getDirPathReference()
+        assert pth is not None
         self.assertNotIn("/deposit-ui/", pth)
         self.assertIn("/deposition-v-200/", pth)
 

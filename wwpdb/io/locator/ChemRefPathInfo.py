@@ -83,11 +83,15 @@ class ChemRefPathInfo:
 
         return id_type
 
+    # fmt: off
     @overload
-    def getCcdHash(self, idCode: None) -> None: ...
+    def getCcdHash(self, idCode: None) -> None:
+        ...
 
     @overload
-    def getCcdHash(self, idCode: str) -> str: ...
+    def getCcdHash(self, idCode: str) -> str:
+        ...
+    # fmt: on
 
     def getCcdHash(self, idCode: Optional[str]) -> Optional[str]:
         """Returns the hash code for a CCD id.  Currently first letter or last two (if extended CCD)"""

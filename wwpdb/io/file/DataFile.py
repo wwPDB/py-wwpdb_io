@@ -37,41 +37,43 @@ import sys
 import tempfile
 import time
 from email.mime.text import MIMEText
+from typing import List, Literal, Optional, TextIO, Tuple, cast
 
 ##
 ##
+DataFileMode = Literal["today", "preserve", "tomorrow", "lastweek", "yesterday"]
 
 
 class DataFile:
     """Class of utilities for managing data files."""
 
-    def __init__(self, fPath=None, tMode=None, verbose=False):
+    def __init__(self, fPath: Optional[str] = None, tMode: Optional[DataFileMode] = None, verbose: bool = False) -> None:
         self.test = " "
         self.verbose = verbose
         self.vout = sys.stdout
-        self.srcPathInp = None
-        self.srcPath = None
-        self.srcDirName = None
-        self.srcFileName = None
-        self.srcFileBaseName = None
-        self.srcFileExt = None
-        self.srcType = None
-        self.srcStat = None
+        self.srcPathInp: Optional[str] = None
+        self.srcPath: Optional[str] = None
+        self.srcDirName: Optional[str] = None
+        self.srcFileName: Optional[str] = None
+        self.srcFileBaseName: Optional[str] = None
+        self.srcFileExt: Optional[str] = None
+        self.srcType: Optional[Literal["zlib", "gzip", "bzip"]] = None
+        self.srcStat: Optional[os.stat_result] = None
         self.__updateSrc(fPath)
         #
-        self.dstPathInp = None
-        self.dstPath = None
-        self.dstDirName = None
-        self.dstFileName = None
-        self.dstFileBaseName = None
-        self.dstFileExt = None
-        self.dstType = None
-        self.dstStat = None
+        self.dstPathInp: Optional[str] = None
+        self.dstPath: Optional[str] = None
+        self.dstDirName: Optional[str] = None
+        self.dstFileName: Optional[str] = None
+        self.dstFileBaseName: Optional[str] = None
+        self.dstFileExt: Optional[str] = None
+        self.dstType: Optional[Literal["zlib", "gzip", "bzip"]] = None
+        self.dstStat: Optional[os.stat_result] = None
         #
         self.__formatTimeStamp = "%Y-%m-%d:%H:%M:%S"
         self.tMode = tMode
 
-    def __updateSrc(self, fPath):
+    def __updateSrc(self, fPath: Optional[str]) -> None:
         if fPath is not None:
             self.srcPathInp = fPath
             self.srcPath = os.path.abspath(fPath)
@@ -80,7 +82,7 @@ class DataFile:
             self.srcType = self.__ftype(self.srcFileExt)
             self.srcStat = None
 
-    def __updateDst(self, fPath):
+    def __updateDst(self, fPath: Optional[str]) -> None:
         if fPath is not None:
             self.dstPathInp = fPath
             self.dstPath = os.path.abspath(fPath)
@@ -89,7 +91,8 @@ class DataFile:
             self.dstType = self.__ftype(self.dstFileExt)
             self.dstStat = None
 
-    def __ftype(self, fExt):
+    def __ftype(self, fExt: str) -> Optional[Literal["zlib", "gzip", "bzip"]]:
+        ftype: Optional[Literal["zlib", "gzip", "bzip"]]
         if fExt == ".Z":
             ftype = "zlib"
         elif fExt == ".gz":
@@ -100,14 +103,14 @@ class DataFile:
             ftype = None
         return ftype
 
-    def __exists(self, fPath):
+    def __exists(self, fPath: Optional[str]) -> bool:
         if fPath is not None:
             if os.access(fPath, os.F_OK):
                 return True
             return False
         return False
 
-    def __stat(self, fPath):
+    def __stat(self, fPath: Optional[str]) -> Optional[os.stat_result]:
         if fPath is not None:
             try:
                 tup = os.stat(fPath)
@@ -117,11 +120,11 @@ class DataFile:
         else:
             return None
 
-    def __mkdir(self, path):
+    def __mkdir(self, path: str) -> None:
         if not os.path.isdir(path):
             os.makedirs(path, 0o755)
 
-    def __pathDivide(self, p, rest=None):
+    def __pathDivide(self, p: str, rest: Optional[List[str]] = None) -> List[str]:
         if rest is None:
             rest = []
         (h, t) = os.path.split(p)
@@ -131,7 +134,7 @@ class DataFile:
             return [h] + rest
         return self.__pathDivide(h, [t] + rest)
 
-    def __findCommonMembers(self, l1, l2, common=None):
+    def __findCommonMembers(self, l1: List[str], l2: List[str], common: Optional[List[str]] = None) -> Tuple[List[str], List[str], List[str]]:
         if common is None:
             common = []
         if len(l1) < 1:
@@ -142,7 +145,7 @@ class DataFile:
             return (common, l1, l2)
         return self.__findCommonMembers(l1[1:], l2[1:], common + [l1[0]])
 
-    def __makeRelativePath(self, src, dst):
+    def __makeRelativePath(self, src: str, dst: str) -> str:
         #        self.vout.write("++INFO - src %s\n" % src)
         #        self.vout.write("++INFO - dst %s\n" % dst)
         (_common, l1, l2) = self.__findCommonMembers(self.__pathDivide(dst), self.__pathDivide(src))
@@ -155,16 +158,22 @@ class DataFile:
         p = p + l2
         return os.path.join(*p)
 
-    def __symLinkRelative(self):
+    def __symLinkRelative(self) -> None:
         """Internal method that makes a relative symbolic link to srcPath from dstPath.
         Intervening path components are created for the destination so this method
         is only appropriate for linking files.
         """
-        if not self.srcFileExists() or not os.path.isabs(self.srcPath):
+        if not self.srcFileExists():
+            return
+        if self.srcPath is None:
+            raise ValueError
+        if not os.path.isabs(self.srcPath):
             return
         if self.dstPath is None:
             return
         if not self.dstDirExists():
+            if self.dstDirName is None:
+                raise ValueError
             self.__mkdir(self.dstDirName)
 
         rPath = self.__makeRelativePath(self.srcPath, self.dstPath)
@@ -176,34 +185,45 @@ class DataFile:
                 os.unlink(self.dstPath)
             return os.symlink(rPath, self.dstPath)
         self.vout.write("++ERROR - relative pathname creation failed %s\n" % rPath)
-        return -1
+        return  # -1
 
-    def __symLink(self):
+    def __symLink(self) -> None:
         """Internal method that creates a symbolic link to srcPath named dstPath.
         Intervening path components are created for the destination so this method
         is only appropriate for linking files.
         """
-        if not self.srcFileExists() or not os.path.isabs(self.srcPath):
+        if not self.srcFileExists():
+            return
+        if self.srcPath is None:
+            raise ValueError
+        if not os.path.isabs(self.srcPath):
             return
         if self.dstPath is None:
             return
         if not self.dstDirExists():
+            if self.dstDirName is None:
+                raise ValueError
             self.__mkdir(self.dstDirName)
         if os.path.islink(self.dstPath):
             os.unlink(self.dstPath)
         return os.symlink(self.srcPath, self.dstPath)
 
-    def __copy(self, op="copy"):
+    def __copy(self, op: str = "copy") -> int:
         """Internal method that copies srcPath to dstPath converting compression mode
         according to file type.
         """
         if not self.srcFileExists():
-            return
+            return -1
         if not self.dstDirExists():
+            if self.dstDirName is None:
+                raise ValueError
             self.__mkdir(self.dstDirName)
 
+        if self.srcPath is None or self.dstPath is None:
+            raise ValueError
         if self.srcType == self.dstType and op == "copy":
-            return shutil.copy2(self.srcPath, self.dstPath)
+            shutil.copy2(self.srcPath, self.dstPath)
+            return 0
         if (self.srcType == "zlib") or (self.srcType == "gzip"):
             cmdP1 = "zcat " + self.srcPath
         elif self.srcType == "bzip":
@@ -236,7 +256,7 @@ class DataFile:
         cmd = cmdP1 + cmdP2
         return os.system(cmd)  # noqa: S605
 
-    def __compare(self):
+    def __compare(self) -> bool:
         """Compare srcPath to dstPath converting compression according to
            file extension (.Z, .gz, .bz ).
 
@@ -250,6 +270,8 @@ class DataFile:
         if not self.dstFileExists():
             return isSame
 
+        if self.srcPath is None or self.dstPath is None:
+            raise ValueError
         if self.srcType == self.dstType:
             isSame = filecmp.cmp(self.srcPath, self.dstPath, False)
         else:
@@ -292,27 +314,34 @@ class DataFile:
 
         return isSame
 
-    def __remove(self):
+    def __remove(self) -> None:
         """Internal method that removes srcPath if it exists."""
         if not self.srcFileExists():
-            return True
+            return
+        if self.srcPath is None:
+            raise ValueError
         if os.path.islink(self.srcPath) or os.path.isfile(self.srcPath):
             return os.unlink(self.srcPath)
         if os.path.isdir(self.srcPath):
             return shutil.rmtree(self.srcPath, True)
-        return False  # Unknown file type
+        return
 
-    def __move(self):
+    def __move(self) -> None:
         """Internal method that moves srcPath to dstPath."""
         if not self.srcFileExists():
             return
         if not self.dstDirExists():
+            if self.dstDirName is None:
+                raise ValueError
             self.__mkdir(self.dstDirName)
         if self.srcType == self.dstType:
-            return shutil.move(self.srcPath, self.dstPath)
+            if self.srcPath is None or self.dstPath is None:
+                raise ValueError
+            shutil.move(self.srcPath, self.dstPath)
+            return
         return
 
-    def __timeStampCopy(self):
+    def __timeStampCopy(self) -> None:
         """Reset the atime/mtimes of the destination using those of the
         source file.
         """
@@ -320,9 +349,11 @@ class DataFile:
             self.srcStat = self.__stat(self.srcPath)
         if self.srcStat is not None and self.__exists(self.dstPath):
             times = (self.srcStat[stat.ST_ATIME], self.srcStat[stat.ST_MTIME])
+            if self.dstPath is None:
+                raise ValueError
             os.utime(self.dstPath, times)
 
-    def __setTimeStamp(self, fPath, tObj):
+    def __setTimeStamp(self, fPath: str, tObj: datetime.datetime) -> None:
         """Reset the atime/mtimes of the input file using the input timestamp."""
         if tObj is None or not self.__exists(fPath):
             return
@@ -330,7 +361,7 @@ class DataFile:
         times = (mtime, mtime)
         os.utime(fPath, times)
 
-    def __setFileMode(self, fPath, mode):
+    def __setFileMode(self, fPath: str, mode: int) -> bool:
         """Reset the file mode of the input file using the input integer mode (e.g. 0644)"""
         try:
             os.chmod(fPath, mode)
@@ -338,48 +369,60 @@ class DataFile:
         except:  # noqa: E722 pylint: disable=bare-except
             return False
 
-    def setSrcFileMode(self, mode):
+    def setSrcFileMode(self, mode: int) -> bool:
         if not self.srcFileExists():
             return False
+        if self.srcPath is None:
+            raise ValueError
         return self.__setFileMode(self.srcPath, mode)
 
-    def setDstFileMode(self, mode):
+    def setDstFileMode(self, mode: int) -> bool:
         if not self.dstFileExists():
             return False
+        if self.dstPath is None:
+            raise ValueError
         return self.__setFileMode(self.dstPath, mode)
 
-    def __setDstTimeStamp(self):
+    def __setDstTimeStamp(self) -> None:
         if self.tMode is not None and self.__exists(self.dstPath):
             if self.tMode == "preserve":
                 self.__timeStampCopy()
             elif self.tMode == "today":
                 tObj = datetime.datetime.today()  # noqa: DTZ002
+                if self.dstPath is None:
+                    raise ValueError
                 self.__setTimeStamp(self.dstPath, tObj)
             elif self.tMode == "yesterday":
                 tObj = datetime.datetime.today() + datetime.timedelta(days=-1)  # noqa: DTZ002
+                if self.dstPath is None:
+                    raise ValueError
                 self.__setTimeStamp(self.dstPath, tObj)
             elif self.tMode == "tomorrow":
                 tObj = datetime.datetime.today() + datetime.timedelta(days=1)  # noqa: DTZ002
+                if self.dstPath is None:
+                    raise ValueError
                 self.__setTimeStamp(self.dstPath, tObj)
             elif self.tMode == "lastweek":
                 tObj = datetime.datetime.today() + datetime.timedelta(days=-7)  # noqa: DTZ002
+                if self.dstPath is None:
+                    raise ValueError
                 self.__setTimeStamp(self.dstPath, tObj)
 
     #
 
-    def src(self, fPath):
+    def src(self, fPath: str) -> None:
         """Set or reset the source file path"""
         self.__updateSrc(fPath)
 
-    def dst(self, fPath):
+    def dst(self, fPath: Optional[str]) -> None:
         """Set or reset the destination file path"""
         self.__updateDst(fPath)
 
-    def timeMode(self, tMode):
+    def timeMode(self, tMode: Optional[DataFileMode]) -> None:
         """Sets the behavior of the timestamping of destination files: one of None, preserve, today, ..."""
         self.tMode = tMode
 
-    def pr(self, fh=sys.stdout):
+    def pr(self, fh: TextIO = sys.stdout) -> None:
         """Output the information about source and destination files"""
         if self.srcPath is not None:
             fh.write("Source path (input):        %s\n" % self.srcPathInp)
@@ -416,7 +459,7 @@ class DataFile:
                 fh.write("Destination uid/gid:             %d|%d\n" % (self.dstStat[stat.ST_UID], self.dstStat[stat.ST_GID]))
                 fh.write("Destination mode:                %o\n" % self.dstStat[stat.ST_MODE])
 
-    def copy(self, dstPath=None):
+    def copy(self, dstPath: Optional[str] = None) -> None:
         """Copies srcPath to dstPath converting compression mode
         according to file type.
         """
@@ -424,7 +467,7 @@ class DataFile:
         self.__copy(op="copy")
         self.__setDstTimeStamp()
 
-    def append(self, dstPath=None):
+    def append(self, dstPath: Optional[str] = None) -> None:
         """Appends srcPath to dstPath converting compression mode
         according to file type.
         """
@@ -432,7 +475,7 @@ class DataFile:
         self.__copy(op="append")
         self.__setDstTimeStamp()
 
-    def compare(self, dstPath=None):
+    def compare(self, dstPath: Optional[str] = None) -> bool:
         """Compare srcPath to dstPath converting compression mode
         according to file type.
 
@@ -441,57 +484,57 @@ class DataFile:
         self.dst(dstPath)
         return self.__compare()
 
-    def remove(self):
+    def remove(self) -> None:
         """Removes srcPath."""
         self.__remove()
 
-    def srcFileSize(self):
+    def srcFileSize(self) -> int:
         if self.srcStat is None:
             self.srcStat = self.__stat(self.srcPath)
         if self.srcStat is not None:
             return self.srcStat[stat.ST_SIZE]
         return 0
 
-    def dstFileSize(self):
+    def dstFileSize(self) -> int:
         if self.dstStat is None:
             self.dstStat = self.__stat(self.dstPath)
         if self.dstStat is not None:
             return self.dstStat[stat.ST_SIZE]
         return 0
 
-    def move(self, dstPath=None):
+    def move(self, dstPath: Optional[str] = None) -> None:
         """Moves (renames) srcPath to dstPath."""
         self.dst(dstPath)
         self.__move()
         self.__setDstTimeStamp()
 
-    def symLinkRelative(self, dstPath=None):
+    def symLinkRelative(self, dstPath: Optional[str] = None) -> None:
         """Creates a relative symbolic link to srcPath at dstPath."""
         self.dst(dstPath)
         self.__symLinkRelative()
 
     #        self.__setDstTimeStamp()
 
-    def symLink(self, dstPath=None):
+    def symLink(self, dstPath: Optional[str] = None) -> None:
         """Create a symbolic link to srcPath at dstPath."""
         self.dst(dstPath)
         self.__symLink()
 
     #        self.__setDstTimeStamp()
 
-    def srcFileExists(self):
+    def srcFileExists(self) -> bool:
         """Return True if source file exists or False otherwise."""
         return self.__exists(self.srcPath)
 
-    def dstFileExists(self):
+    def dstFileExists(self) -> bool:
         """Return True if destination file exists or False otherwise."""
         return self.__exists(self.dstPath)
 
-    def dstDirExists(self):
+    def dstDirExists(self) -> bool:
         """Return True if destination file exists or False otherwise."""
         return self.__exists(self.dstDirName)
 
-    def srcModTime(self):
+    def srcModTime(self) -> Optional[float]:
         """Return modification time of the source file as the number of seconds
         since the epoch (ie. 1970-01-01).
         """
@@ -501,7 +544,7 @@ class DataFile:
             return self.srcStat[stat.ST_MTIME]
         return None
 
-    def srcModTimeStamp(self):
+    def srcModTimeStamp(self) -> Optional[str]:
         """Return modification time of the source file as the number of seconds
         since the epoch (ie. 1970-01-01).
         """
@@ -511,7 +554,7 @@ class DataFile:
             return time.strftime(self.__formatTimeStamp, time.localtime(self.srcStat[stat.ST_MTIME]))
         return None
 
-    def newerThan(self, fPath):
+    def newerThan(self, fPath: Optional[str]) -> Optional[bool]:
         """Return True if srcPath has been modified more recently than fPath.
         If the comparison cannot be made 'None' is returned.
         """
@@ -531,7 +574,7 @@ class DataFile:
         # no stat for srcPath
         return None
 
-    def eMail(self, toAddr, fromAddr, subject):  # pragma: no cover
+    def eMail(self, toAddr: str, fromAddr: str, subject: str) -> None:  # pragma: no cover
         """Internal method to mail srcPath file as text."""
         if not self.srcFileExists():
             return
@@ -541,17 +584,22 @@ class DataFile:
             f1 = self.srcPath
         elif (self.srcType == "zlib") or (self.srcType == "gzip"):
             f1 = tempfile.mktemp()  # noqa: S306
+            if self.srcPath is None:
+                raise ValueError
             cmd = "zcat " + self.srcPath + "> " + f1
         elif self.srcType == "bzip":
             f1 = tempfile.mktemp()  # noqa: S306
+            if self.srcPath is None:
+                raise ValueError
             cmd = "bzcat " + self.srcPath + "> " + f1
         if len(cmd) > 0:
             os.system(cmd)  # noqa: S605
 
         # Create a text/plain message
-        fp = open(f1, "rb")
-        msg = MIMEText(fp.read())
-        fp.close()
+        if f1 is None:
+            raise ValueError
+        with open(f1, "rb") as fp:
+            msg = MIMEText(cast("str", fp.read()))
         msg["Subject"] = subject
         msg["From"] = fromAddr
         msg["To"] = toAddr
@@ -562,8 +610,8 @@ class DataFile:
         if f1 != self.srcPath:
             os.remove(f1)
 
-    def setDstMTimeYYYYMMDD(self, dateYYYYMMDD):
+    def setDstMTimeYYYYMMDD(self, dateYYYYMMDD: str) -> None:
         """Set access and modification times to the input date stamp."""
 
-    def setDstMTime(self, refPath):
+    def setDstMTime(self, refPath: str) -> None:
         """Set access and modification times to the input date stamp."""

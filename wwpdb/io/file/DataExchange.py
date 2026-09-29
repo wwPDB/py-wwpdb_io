@@ -35,7 +35,7 @@ import shutil
 import sys
 import traceback
 from datetime import datetime
-from typing import Any, List, TextIO, cast
+from typing import Any, List, Optional, TextIO, Tuple, cast
 
 from wwpdb.utils.config.ConfigInfo import ConfigInfo
 
@@ -417,7 +417,9 @@ class DataExchange:
                 traceback.print_exc(file=self.__lfh)
             return []
 
-    def getPartitionFileList(self, fileSource: PathInfoStorageType = "archive", contentType="model", formatType="pdbx", mileStone=None):
+    def getPartitionFileList(
+        self, fileSource: PathInfoStorageType = "archive", contentType: str = "model", formatType: str = "pdbx", mileStone: Optional[str] = None
+    ) -> List[Tuple[str, str, float]]:
         """
         For the input content object return a list of file partitions sorted by modification time.
 

@@ -110,7 +110,7 @@ class CvsWrapperBase:
             self.__lfh.write("+CvsWrapperBase(_cvsRoot) failed")
             self.__lfh.write(str(e))  # Fixed code to not raise an exception here
             raise TypeError from e  # Backwards compatbility
-            return False
+            # return False
 
     def _getOutputFilePath(self) -> str:
         if self._wrkPath is None:

@@ -1,11 +1,16 @@
 # ruff: noqa: S101,PT011,B017
+from __future__ import annotations
 
 import importlib
 import json
 import logging
 import os
 import shutil
+from typing import TYPE_CHECKING, List
 from unittest.mock import Mock
+
+if TYPE_CHECKING:
+    from collections.abc import Iterator
 
 import pytest
 from wwpdb.utils.config.ConfigInfo import ConfigInfo
@@ -16,7 +21,7 @@ from wwpdb.io.misc.Compression import Compression
 logging.basicConfig(level=logging.INFO)
 
 
-def compile_site_config():
+def compile_site_config() -> None:
     from wwpdb.utils.config.ConfigInfoFileExec import ConfigInfoFileExec  # noqa: PLC0415
 
     ci = ConfigInfoFileExec()
@@ -24,7 +29,7 @@ def compile_site_config():
 
 
 @pytest.fixture
-def mock_config(monkeypatch):  # noqa: ARG001
+def mock_config(monkeypatch: pytest.MonkeyPatch) -> None:  # noqa: ARG001
     with open("./wwpdb/io/tests-io/fixtures/site-config/test/test/ConfigInfoFileCache.json") as fp:
         test_config = json.load(fp)
     monkeypatch.setattr(ConfigInfoData, "getConfigDictionary", lambda s: test_config["TEST"])  # noqa: ARG005
@@ -33,14 +38,14 @@ def mock_config(monkeypatch):  # noqa: ARG001
 
 
 @pytest.fixture
-def config():
+def config() -> ConfigInfo:
     from wwpdb.utils.config.ConfigInfo import ConfigInfo  # noqa: PLC0415 pylint: disable=redefined-outer-name,reimported
 
     return ConfigInfo(siteId="TEST")
 
 
 @pytest.fixture
-def archive_dir(mock_config, config):  # noqa: ARG001 pylint: disable=unused-argument,redefined-outer-name
+def archive_dir(mock_config: pytest.MonkeyPatch, config: ConfigInfo) -> Iterator[str]:  # noqa: ARG001 pylint: disable=unused-argument,redefined-outer-name
     onedep_base = config.get("SITE_ARCHIVE_STORAGE_PATH")
 
     if onedep_base is None or not onedep_base.startswith("/tmp"):  # noqa: S108
@@ -56,7 +61,7 @@ def archive_dir(mock_config, config):  # noqa: ARG001 pylint: disable=unused-arg
     shutil.rmtree(onedep_base)
 
 
-def test_compression(monkeypatch, archive_dir):  # noqa: ARG001  pylint: disable=unused-argument,redefined-outer-name
+def test_compression(monkeypatch: pytest.MonkeyPatch, archive_dir: str) -> None:  # noqa: ARG001  pylint: disable=unused-argument,redefined-outer-name
     dep_dir = os.path.join(archive_dir, "D_800001")
     os.makedirs(dep_dir, exist_ok=True)
     open(os.path.join(dep_dir, "foo"), "w").close()
@@ -82,7 +87,7 @@ def test_compression(monkeypatch, archive_dir):  # noqa: ARG001  pylint: disable
     assert os.path.exists(os.path.join(dep_dir, "foo"))
 
 
-def test_overwrite_compression(monkeypatch, archive_dir):  # noqa: ARG001  pylint: disable=unused-argument,redefined-outer-name
+def test_overwrite_compression(monkeypatch: pytest.MonkeyPatch, archive_dir: str) -> None:  # noqa: ARG001  pylint: disable=unused-argument,redefined-outer-name
     dep_dir = os.path.join(archive_dir, "D_800001")
     os.makedirs(dep_dir, exist_ok=True)
 
@@ -104,7 +109,7 @@ def test_overwrite_compression(monkeypatch, archive_dir):  # noqa: ARG001  pylin
         compression.decompress(dep_id="D_800001")
 
 
-def test_corrupted_file(archive_dir):  # pylint: disable=redefined-outer-name
+def test_corrupted_file(archive_dir: str) -> None:  # pylint: disable=redefined-outer-name
     dep_dir = os.path.join(archive_dir, "D_800001")
     cold_archive = os.path.join(archive_dir, "..", "cold_archive")
     os.makedirs(dep_dir, exist_ok=True)
@@ -118,7 +123,7 @@ def test_corrupted_file(archive_dir):  # pylint: disable=redefined-outer-name
     assert os.path.exists(os.path.join(cold_archive, "D_800001.tar.gz"))
 
 
-def test_count(archive_dir):  # pylint: disable=redefined-outer-name
+def test_count(archive_dir: str) -> None:  # pylint: disable=redefined-outer-name
     cold_archive = os.path.join(archive_dir, "..", "cold_archive")
     compression = Compression(ConfigInfo(), Mock())
 
@@ -131,7 +136,7 @@ def test_count(archive_dir):  # pylint: disable=redefined-outer-name
     assert compression.get_compressed_count() == 5
 
 
-def test_compression_precheck(archive_dir, monkeypatch):  # noqa: ARG001  pylint: disable=unused-argument,redefined-outer-name
+def test_compression_precheck(archive_dir: str, monkeypatch: pytest.MonkeyPatch) -> None:  # noqa: ARG001  pylint: disable=unused-argument,redefined-outer-name
     dep_dir = os.path.join(archive_dir, "D_800001")
     os.makedirs(dep_dir, exist_ok=True)
 
@@ -150,7 +155,7 @@ def test_compression_precheck(archive_dir, monkeypatch):  # noqa: ARG001  pylint
 
     assert str(e.value) == "Deposition D_800001 cannot be compressed"
 
-    def mock_select_comm(table, select, where):  # noqa: ARG001 pylint: disable=unused-argument
+    def mock_select_comm(table: str, select: str, where: str) -> List[List[str]]:  # noqa: ARG001 pylint: disable=unused-argument
         if table == "communication":
             return [["working"]]
         return [["", ""]]

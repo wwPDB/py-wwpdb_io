@@ -24,7 +24,7 @@ __version__ = "V0.01"
 
 import sys
 import traceback
-from typing import TYPE_CHECKING, List, Optional, TextIO, Tuple, Union, cast
+from typing import TYPE_CHECKING, List, Optional, TextIO, Tuple, Union, cast  # pylint: disable=unused-import
 
 from mmcif_utils.persist.PdbxPersist import PdbxPersist
 
@@ -487,6 +487,8 @@ class GraphicsContext3D:
             myCatObj = self.__getFirstObject(persistFilePath=self.__persistFilePath, objectName=searchCategoryName)
             if myCatObj is not None:
                 aL = myCatObj.getAttributeList()
+                if searchKeyName is None:
+                    raise ValueError
                 indexSearchKey = aL.index(searchKeyName)
                 #
                 # assemble a row dictionary list to hold search results.

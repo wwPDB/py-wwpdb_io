@@ -109,11 +109,14 @@ class ValidateXml:
         self.__getOutlierDefinition()
         self.__parse()
 
+    # fmt: off
     @overload
-    def getOutlier(self, Type: Literal["atom_inclusion_all_atoms", "atom_inclusion_backbone"]) -> str: ...
+    def getOutlier(self, Type: Literal["atom_inclusion_all_atoms", "atom_inclusion_backbone"]) -> str:
+        ...
 
     @overload
-    def getOutlier(self, Type: Literal["chain_average_residue_inclusion"]) -> List[Dict[str, Union[str, float]]]: ...
+    def getOutlier(self, Type: Literal["chain_average_residue_inclusion"]) -> List[Dict[str, Union[str, float]]]:
+        ...
 
     @overload
     def getOutlier(
@@ -136,7 +139,9 @@ class ValidateXml:
             "r_work_diff",
             "torsion-outlier",
         ],
-    ) -> List[Dict[str, str]]: ...
+    ) -> List[Dict[str, str]]:
+        ...
+    # fmt: on
 
     def getOutlier(self, Type: ValidateXmlOutliersKeys) -> Union[str, List[dict[str, Union[str, float]]], List[Dict[str, str]]]:
         """"""

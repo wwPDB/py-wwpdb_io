@@ -16,7 +16,7 @@ __version__ = "V0.001"
 
 import logging
 import unittest
-from typing import Any
+from typing import Any, Dict
 from unittest.mock import MagicMock, patch
 
 from wwpdb.io.sftp.ArchiveIoBase import ArchiveIoBase
@@ -49,7 +49,7 @@ class ArchiveIoBaseTests(unittest.TestCase):
 
     def testInitWithConfig(self) -> None:
         """Configuration values returned by ConfigInfo are surfaced on the instance."""
-        config: dict[str, Any] = {
+        config: Dict[str, Any] = {
             "HOST_NAME": "host.example.com",
             "HOST_USERNAME": "user",
             "HOST_PASSWORD": "secret",

@@ -7,7 +7,7 @@ import shutil
 import tempfile
 import time
 from pathlib import Path
-from typing import Iterator
+from typing import Iterator, Tuple
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -34,7 +34,7 @@ def temp_directories() -> Iterator[tuple[str, str]]:
 
 
 @pytest.fixture
-def sample_files(temp_directories) -> tuple[str, str, dict[str, str], dict[str, str]]:
+def sample_files(temp_directories: Tuple[str, str]) -> tuple[str, str, dict[str, str], dict[str, str]]:
     """Create sample files with different timestamps for testing.
 
     Returns:
@@ -83,7 +83,7 @@ def sample_files(temp_directories) -> tuple[str, str, dict[str, str], dict[str, 
 class TestRsyncDataMover:
     """Test suite for RsyncDataMover class."""
 
-    def test_init_default(self):
+    def test_init_default(self) -> None:
         """Test RsyncDataMover initialization with default parameters."""
         mover = RsyncDataMover()
 
@@ -92,14 +92,14 @@ class TestRsyncDataMover:
         assert "--update" in mover.all_options
         assert "--checksum" in mover.all_options
 
-    def test_init_with_dry_run(self):
+    def test_init_with_dry_run(self) -> None:
         """Test RsyncDataMover initialization with dry run enabled."""
         mover = RsyncDataMover(dry_run=True)
 
         assert mover.dry_run
         assert "--dry-run" in mover.all_options
 
-    def test_init_with_custom_rsync_options(self):
+    def test_init_with_custom_rsync_options(self) -> None:
         """Test RsyncDataMover initialization with custom rsync options."""
         custom_options = ["--delete", "--compress-level=9"]
 
@@ -108,7 +108,7 @@ class TestRsyncDataMover:
         for option in custom_options:
             assert option in mover.all_options
 
-    def test_validate_paths_nonexistent_source(self, temp_directories):
+    def test_validate_paths_nonexistent_source(self, temp_directories: Tuple[str, str]) -> None:
         """Test that validation fails when source directory doesn't exist."""
         _source_dir, dest_dir = temp_directories
         nonexistent_source = "/nonexistent/source/path"
@@ -118,7 +118,7 @@ class TestRsyncDataMover:
         with pytest.raises(DataMoveError, match="Source path does not exist"):
             mover._validate_paths(Path(nonexistent_source), Path(dest_dir))
 
-    def test_validate_paths_source_is_file(self, temp_directories):
+    def test_validate_paths_source_is_file(self, temp_directories: Tuple[str, str]) -> None:
         """Test that validation fails when source path is a file, not directory."""
         source_dir, dest_dir = temp_directories
 
@@ -131,7 +131,7 @@ class TestRsyncDataMover:
         with pytest.raises(DataMoveError, match="Source path is not a directory"):
             mover._validate_paths(source_file, Path(dest_dir))
 
-    def test_validate_paths_creates_destination(self):
+    def test_validate_paths_creates_destination(self) -> None:
         """Test that validation creates destination directory if it doesn't exist."""
         source_dir = tempfile.mkdtemp()
         dest_dir = Path(tempfile.gettempdir()) / "test_dest_create"
@@ -150,7 +150,7 @@ class TestRsyncDataMover:
             shutil.rmtree(source_dir, ignore_errors=True)
             shutil.rmtree(dest_dir, ignore_errors=True)
 
-    def test_calculate_checksum(self, temp_directories):
+    def test_calculate_checksum(self, temp_directories: Tuple[str, str]) -> None:
         """Test checksum calculation for files."""
         source_dir, _ = temp_directories
         test_file = Path(source_dir) / "checksum_test.txt"
@@ -167,7 +167,7 @@ class TestRsyncDataMover:
         assert checksum1 != ""  # noqa: PLC1901
 
     @patch("subprocess.run")
-    def test_sync_files_successful_dry_run(self, mock_subprocess, sample_files):
+    def test_sync_files_successful_dry_run(self, mock_subprocess: MagicMock, sample_files: tuple[str, str, dict[str, str], dict[str, str]]) -> None:
         """Test successful file sync in dry run mode."""
         source_dir, dest_dir, _source_files, _ = sample_files
 
@@ -197,7 +197,7 @@ class TestRsyncDataMover:
         assert "--checksum" in call_args
 
     @patch("subprocess.run")
-    def test_sync_files_with_file_patterns(self, mock_subprocess, sample_files):
+    def test_sync_files_with_file_patterns(self, mock_subprocess: MagicMock, sample_files: tuple[str, str, dict[str, str], dict[str, str]]) -> None:
         """Test sync with specific file patterns."""
         source_dir, dest_dir, _source_files, _ = sample_files
 
@@ -219,7 +219,7 @@ class TestRsyncDataMover:
         assert "--exclude" in call_args
 
     @patch("subprocess.run")
-    def test_sync_files_rsync_failure(self, mock_subprocess, temp_directories):
+    def test_sync_files_rsync_failure(self, mock_subprocess: MagicMock, temp_directories: Tuple[str, str]) -> None:
         """Test handling of rsync command failure."""
         source_dir, dest_dir = temp_directories
 
@@ -235,7 +235,7 @@ class TestRsyncDataMover:
         with pytest.raises(DataMoveError, match="Rsync failed with exit code 1"):
             mover.sync_files(source_dir, dest_dir)
 
-    def test_verify_integrity_matching_files(self, sample_files):
+    def test_verify_integrity_matching_files(self, sample_files: tuple[str, str, dict[str, str], dict[str, str]]) -> None:
         """Test integrity verification with matching files."""
         source_dir, dest_dir, _source_files, _ = sample_files
 
@@ -249,7 +249,7 @@ class TestRsyncDataMover:
 
         assert is_valid
 
-    def test_verify_integrity_different_content(self, sample_files):
+    def test_verify_integrity_different_content(self, sample_files: tuple[str, str, dict[str, str], dict[str, str]]) -> None:
         """Test integrity verification with different file content."""
         source_dir, dest_dir, _source_files, _ = sample_files
 
@@ -265,7 +265,7 @@ class TestRsyncDataMover:
 
         assert not is_valid
 
-    def test_verify_integrity_missing_files(self, temp_directories):
+    def test_verify_integrity_missing_files(self, temp_directories: Tuple[str, str]) -> None:
         """Test integrity verification with missing files."""
         source_dir, dest_dir = temp_directories
 
@@ -274,7 +274,7 @@ class TestRsyncDataMover:
 
         assert not is_valid
 
-    def test_verify_integrity_size_mismatch(self, sample_files):
+    def test_verify_integrity_size_mismatch(self, sample_files: tuple[str, str, dict[str, str], dict[str, str]]) -> None:
         """Test integrity verification with size mismatch."""
         source_dir, dest_dir, _source_files, _ = sample_files
 
@@ -290,7 +290,7 @@ class TestRsyncDataMover:
 
         assert not is_valid
 
-    def test_get_file_info_absolute_path(self, sample_files):
+    def test_get_file_info_absolute_path(self, sample_files: tuple[str, str, dict[str, str], dict[str, str]]) -> None:
         """Test getting file info with absolute path."""
         source_dir, _dest_dir, _source_files, _ = sample_files
         test_file = Path(source_dir) / "new_file.txt"
@@ -303,7 +303,7 @@ class TestRsyncDataMover:
         assert file_info["size"] > 0
         assert len(file_info["checksum"]) == 32  # MD5 length
 
-    def test_get_file_info_relative_path(self, sample_files):
+    def test_get_file_info_relative_path(self, sample_files: tuple[str, str, dict[str, str], dict[str, str]]) -> None:
         """Test getting file info with relative path and base path."""
         source_dir, _dest_dir, _source_files, _ = sample_files
 
@@ -314,7 +314,7 @@ class TestRsyncDataMover:
         assert file_info["is_file"]
         assert file_info["size"] > 0
 
-    def test_get_file_info_nonexistent(self, temp_directories):
+    def test_get_file_info_nonexistent(self, temp_directories: Tuple[str, str]) -> None:
         """Test getting file info for non-existent file."""
         source_dir, _dest_dir = temp_directories
 
@@ -323,7 +323,7 @@ class TestRsyncDataMover:
 
         assert not file_info["exists"]
 
-    def test_get_directory_stats(self, sample_files):
+    def test_get_directory_stats(self, sample_files: tuple[str, str, dict[str, str], dict[str, str]]) -> None:
         """Test directory statistics calculation."""
         source_dir, _dest_dir, source_files, _ = sample_files
 
@@ -336,7 +336,7 @@ class TestRsyncDataMover:
         assert stats["total_size_bytes"] > 0
         assert "total_size_human" in stats
 
-    def test_get_directory_stats_nonexistent(self, temp_directories):
+    def test_get_directory_stats_nonexistent(self, temp_directories: Tuple[str, str]) -> None:
         """Test directory statistics for non-existent directory."""
         source_dir, _dest_dir = temp_directories
         nonexistent_path = Path(source_dir) / "nonexistent"
@@ -346,7 +346,7 @@ class TestRsyncDataMover:
 
         assert not stats["exists"]
 
-    def test_human_readable_size(self):
+    def test_human_readable_size(self) -> None:
         """Test human readable size conversion."""
         mover = RsyncDataMover()
 
@@ -356,7 +356,7 @@ class TestRsyncDataMover:
         assert mover._human_readable_size(1024 * 1024 * 1024) == "1.0 GB"
 
     @patch("subprocess.run")
-    def test_copy_nonexistent_files_in_dest(self, mock_subprocess, sample_files):
+    def test_copy_nonexistent_files_in_dest(self, mock_subprocess: MagicMock, sample_files: tuple[str, str, dict[str, str], dict[str, str]]) -> None:
         """Test that files not existing in destination are copied."""
         source_dir, dest_dir, _source_files, _ = sample_files
 
@@ -377,7 +377,7 @@ class TestRsyncDataMover:
         assert "--update" in call_args
 
     @patch("subprocess.run")
-    def test_dont_copy_outdated_files(self, mock_subprocess, sample_files):
+    def test_dont_copy_outdated_files(self, mock_subprocess: MagicMock, sample_files: tuple[str, str, dict[str, str], dict[str, str]]) -> None:
         """Test that files where destination is newer are not copied."""
         source_dir, dest_dir, _source_files, _ = sample_files
 
@@ -404,7 +404,7 @@ class TestRsyncDataMover:
         assert "--checksum" in call_args  # Also verify by checksum, not just timestamp
 
     @patch("subprocess.run")
-    def test_copy_updated_files_only(self, mock_subprocess, sample_files):
+    def test_copy_updated_files_only(self, mock_subprocess: MagicMock, sample_files: tuple[str, str, dict[str, str], dict[str, str]]) -> None:
         """Test that only files where source is newer are copied."""
         source_dir, dest_dir, _source_files, _ = sample_files
 
@@ -431,7 +431,7 @@ class TestRsyncDataMover:
         transfer_stats = result["transfer_stats"]
         assert "transfer_summary" in transfer_stats
 
-    def test_error_nonexistent_source_directory(self, temp_directories):
+    def test_error_nonexistent_source_directory(self, temp_directories: Tuple[str, str]) -> None:
         """Test error when source directory doesn't exist."""
         _source_dir, dest_dir = temp_directories
         nonexistent_source = "/path/that/does/not/exist"
@@ -441,7 +441,7 @@ class TestRsyncDataMover:
         with pytest.raises(DataMoveError, match="Source path does not exist"):
             mover.sync_files(nonexistent_source, dest_dir)
 
-    def test_error_nonexistent_destination_parent(self, temp_directories):
+    def test_error_nonexistent_destination_parent(self, temp_directories: Tuple[str, str]) -> None:
         """Test behavior when destination parent directory doesn't exist."""
         source_dir, _dest_dir = temp_directories
         nonexistent_dest = "/path/that/does/not/exist/destination"
@@ -455,7 +455,7 @@ class TestRsyncDataMover:
                 mover.sync_files(source_dir, nonexistent_dest)
 
     @patch("subprocess.run")
-    def test_validate_paths_called_on_sync(self, mock_subprocess, temp_directories):
+    def test_validate_paths_called_on_sync(self, mock_subprocess: MagicMock, temp_directories: Tuple[str, str]) -> None:
         """Test that _validate_paths is called during sync_files."""
         source_dir, dest_dir = temp_directories
 
@@ -472,7 +472,7 @@ class TestRsyncDataMover:
             mock_validate.assert_called_once_with(Path(source_dir), Path(dest_dir))
 
     @patch("subprocess.run")
-    def test_rsync_command_construction(self, mock_subprocess, temp_directories):
+    def test_rsync_command_construction(self, mock_subprocess: MagicMock, temp_directories: Tuple[str, str]) -> None:
         """Test that rsync command is constructed correctly with source and dest paths."""
         source_dir, dest_dir = temp_directories
 
@@ -496,7 +496,7 @@ class TestRsyncDataMoverIntegration:
     """Integration tests that actually execute rsync commands (optional)."""
 
     @pytest.mark.integration
-    def test_real_rsync_execution(self, sample_files):
+    def test_real_rsync_execution(self, sample_files: tuple[str, str, dict[str, str], dict[str, str]]) -> None:
         """Test actual rsync execution (requires rsync to be installed)."""
         source_dir, dest_dir, _source_files, _ = sample_files
 
@@ -513,7 +513,7 @@ class TestRsyncDataMoverIntegration:
         assert result["destination_path"] == dest_dir
 
     @pytest.mark.integration
-    def test_real_file_sync_and_verification(self, sample_files):
+    def test_real_file_sync_and_verification(self, sample_files: tuple[str, str, dict[str, str], dict[str, str]]) -> None:
         """Test real file sync with integrity verification."""
         source_dir, dest_dir, source_files, _ = sample_files
 
@@ -541,7 +541,7 @@ class TestRsyncDataMoverIntegration:
             assert is_valid
 
     @pytest.mark.integration
-    def test_multiple_sync_operations(self, temp_directories):
+    def test_multiple_sync_operations(self, temp_directories: Tuple[str, str]) -> None:
         """Test using the same mover instance for multiple sync operations."""
         source_dir, dest_dir = temp_directories
 

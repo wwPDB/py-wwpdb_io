@@ -16,6 +16,7 @@ import sys
 import time
 import traceback
 import unittest
+from typing import List, cast
 
 HERE = os.path.abspath(os.path.dirname(__file__))
 TOPDIR = os.path.dirname(HERE)
@@ -31,11 +32,11 @@ SiteConfigSetup().setupEnvironment(TESTOUTPUT, mockTopPath)
 
 from wwpdb.utils.config.ConfigInfo import ConfigInfo  # noqa: E402
 
-from wwpdb.io.file.DataFile import DataFile  # noqa: E402
+from wwpdb.io.file.DataFile import DataFile, DataFileMode  # noqa: E402
 
 
 class DataFileTests(unittest.TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         cI = ConfigInfo()
         self.__testFilePath = cI.get("TEST_FILE_PATH")
         self.__testFile = cI.get("TEST_FILE")
@@ -46,10 +47,10 @@ class DataFileTests(unittest.TestCase):
         self.__outFileList = ["OUTPUT.dat.gz", "OUTPUT.dat", "OUTPUT.dat.bz2", "OUTPUT.dat.Z"]
         self.lfh = sys.stdout
 
-    def tearDown(self):
+    def tearDown(self) -> None:
         pass
 
-    def testPrintInfo(self):
+    def testPrintInfo(self) -> None:
         """"""
         self.lfh.write("\nStarting %s %s\n" % (self.__class__.__name__, sys._getframe().f_code.co_name))
         try:
@@ -60,7 +61,7 @@ class DataFileTests(unittest.TestCase):
             traceback.print_exc(file=sys.stdout)
             self.fail()
 
-    def testCopyTimeModePreserve(self):
+    def testCopyTimeModePreserve(self) -> None:
         self.lfh.write("\nStarting %s %s\n" % (self.__class__.__name__, sys._getframe().f_code.co_name))
         try:
             fPath = os.path.join(self.__testFilePath, self.__testFile)
@@ -81,7 +82,7 @@ class DataFileTests(unittest.TestCase):
             traceback.print_exc(file=sys.stdout)
             self.fail()
 
-    def testCopyTimeModeToday(self):
+    def testCopyTimeModeToday(self) -> None:
         self.lfh.write("\nStarting %s %s\n" % (self.__class__.__name__, sys._getframe().f_code.co_name))
         try:
             fPath = os.path.join(self.__testFilePath, self.__testFile)
@@ -102,7 +103,7 @@ class DataFileTests(unittest.TestCase):
             traceback.print_exc(file=sys.stdout)
             self.fail()
 
-    def testCopyTimeModeNone(self):
+    def testCopyTimeModeNone(self) -> None:
         self.lfh.write("\nStarting %s %s\n" % (self.__class__.__name__, sys._getframe().f_code.co_name))
         try:
             fPath = os.path.join(self.__testFilePath, self.__testFile)
@@ -123,7 +124,7 @@ class DataFileTests(unittest.TestCase):
             traceback.print_exc(file=sys.stdout)
             self.fail()
 
-    def testSymbolicLinks(self):
+    def testSymbolicLinks(self) -> None:
         self.lfh.write("\nStarting %s %s\n" % (self.__class__.__name__, sys._getframe().f_code.co_name))
         try:
             fList = [self.__testFile, self.__testFileGzip, self.__testFileZlib, self.__testFileBzip]
@@ -143,7 +144,7 @@ class DataFileTests(unittest.TestCase):
             self.fail()
 
     @unittest.skip("Not sending email during tests")
-    def testFileEMail(self):  # pragma: no cover
+    def testFileEMail(self) -> None:  # pragma: no cover
         self.lfh.write("\nStarting %s %s\n" % (self.__class__.__name__, sys._getframe().f_code.co_name))
         try:
             fPath = os.path.join(self.__testFilePath, self.__testFile)
@@ -153,7 +154,7 @@ class DataFileTests(unittest.TestCase):
             traceback.print_exc(file=sys.stdout)
             self.fail()
 
-    def testTimes(self):
+    def testTimes(self) -> None:
         """Tests accessing times"""
         self.lfh.write("\nStarting %s %s\n" % (self.__class__.__name__, sys._getframe().f_code.co_name))
         fList = [self.__testFile, self.__testFileGzip, self.__testFileZlib, self.__testFileBzip]
@@ -191,7 +192,7 @@ class DataFileTests(unittest.TestCase):
         # f1 is still nonexistant
         self.assertIsNone(f1.newerThan(f2path))
 
-    def testSymlink(self):
+    def testSymlink(self) -> None:
         """Tests symlink creation"""
         self.lfh.write("\nStarting %s %s\n" % (self.__class__.__name__, sys._getframe().f_code.co_name))
         # Test non existant case
@@ -202,13 +203,13 @@ class DataFileTests(unittest.TestCase):
             if os.path.exists(f):
                 os.remove(f)
 
-        with open(f1path, "w") as f:
+        with open(f1path, "w"):
             pass
 
         d1 = DataFile(f1path)
         d1.symLink(f2path)
 
-    def testMove(self):
+    def testMove(self) -> None:
         """Tests moving file -- and timemodes"""
         self.lfh.write("\nStarting %s %s\n" % (self.__class__.__name__, sys._getframe().f_code.co_name))
 
@@ -224,13 +225,14 @@ class DataFileTests(unittest.TestCase):
         f1.src(f1path)
 
         f3len = 0
-        for tmode in ["preserve", "today", "yesterday", "tomorrow", "lastweek"]:
+        tmode: DataFileMode
+        for tmode in cast("List[DataFileMode]", ["preserve", "today", "yesterday", "tomorrow", "lastweek"]):
             for f in [f1path, f2path]:
                 if os.path.exists(f):
                     os.remove(f)
 
-            with open(f1path, "w") as f:
-                f.write(tmode)
+            with open(f1path, "w") as fh:
+                fh.write(tmode)
 
             d1 = DataFile(f1path)
             d1.timeMode(tmode)

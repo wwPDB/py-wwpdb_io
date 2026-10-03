@@ -15,6 +15,7 @@ Update:  5-Feb-2010 jdw     Add stream method -
 
 import sys
 import traceback
+from typing import Any, List, TextIO
 
 MAX_INDENT = 100
 SPACE = " " * MAX_INDENT
@@ -23,30 +24,30 @@ SPACE = " " * MAX_INDENT
 class FormatOut:
     """"""
 
-    def __init__(self):
-        self.__buffer = []
+    def __init__(self) -> None:
+        self.__buffer: List[str] = []
 
-    def writeStream(self, fObj):
+    def writeStream(self, fObj: TextIO) -> None:
         try:
             fObj.write("".join(self.__buffer))
         except:  # noqa: E722 pylint: disable=bare-except # pragma: no cover
             traceback.print_exc(file=sys.stderr)
 
-    def write(self, filename):
+    def write(self, filename: str) -> None:
         fH = open(filename, "w")
         fH.writelines(self.__buffer)
         fH.close()
 
-    def clear(self):
+    def clear(self) -> None:
         self.__buffer = []
 
-    def indent(self, strIn, indent=0):
+    def indent(self, strIn: str, indent: int = 0) -> None:
         if indent > 0 and indent < MAX_INDENT:
             self.__buffer.append("%s%s" % (SPACE[1:indent], strIn))
         else:
             self.__buffer.append(strIn)
 
-    def autoFormat(self, name, thing, indent=0, indentIncr=3):
+    def autoFormat(self, name: str, thing: Any, indent: int = 0, indentIncr: int = 3) -> None:
         """Print utility for dictionaries of factory data."""
         inOt = str(type(thing)).lower()
         ind = indent + 0
@@ -99,7 +100,7 @@ class FormatOut:
             self.indent("\nAUTOFORMAT: CANNOT PRINT %s TYPE %s\n" % (name, inOt), ind)
 
 
-def unitTest1(fileName="formatOut.log"):  # pragma: no cover
+def unitTest1(fileName: str = "formatOut.log") -> None:  # pragma: no cover
     list_in = ["L1", "L2", "L3", "L4", "L5"]
     tuple_in = ("T1", "T2", "T3", "T4", "T5")
     dict_in = {}

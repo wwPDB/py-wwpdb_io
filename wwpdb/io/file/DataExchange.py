@@ -35,11 +35,11 @@ import shutil
 import sys
 import traceback
 from datetime import datetime
-from typing import Any, TextIO
+from typing import Any, List, Optional, TextIO, Tuple, cast
 
 from wwpdb.utils.config.ConfigInfo import ConfigInfo
 
-from wwpdb.io.locator.PathInfo import PathInfo
+from wwpdb.io.locator.PathInfo import PathInfo, PathInfoStorageType
 
 
 class DataExchange:
@@ -56,7 +56,7 @@ class DataExchange:
         reqObj: Any | None = None,
         depDataSetId: str | None = None,
         wfInstanceId: str | None = None,
-        fileSource: str = "archive",
+        fileSource: PathInfoStorageType = "archive",
         siteId: str | None = None,
         verbose: bool = False,
         log: TextIO = sys.stderr,
@@ -96,7 +96,7 @@ class DataExchange:
             self.__lfh.write("+DataExchange.__setup() - data set %s  instance %s file source %s\n" % (self.__depDataSetId, self.__wfInstanceId, self.__fileSource))
             self.__pI.setDebugFlag(flag=self.__debug)
 
-    def setFileSource(self, fileSource: str) -> None:
+    def setFileSource(self, fileSource: PathInfoStorageType) -> None:
         """Override fileSource="archive" """
         self.__fileSource = fileSource
 
@@ -285,15 +285,15 @@ class DataExchange:
         """Replicate the input diretory in the session directory -"""
         try:
             if self.__fileSource in ["archive", "wf-archive"]:
-                pth = self.__pI.getArchivePath(self.__depDataSetId)
+                pth = self.__pI.getArchivePath(cast("str", self.__depDataSetId))
             elif self.__fileSource == "deposit":
-                pth = self.__pI.getDepositPath(self.__depDataSetId)
+                pth = self.__pI.getDepositPath(cast("str", self.__depDataSetId))
             elif self.__fileSource == "wf-instance":
-                pth = self.__pI.getInstancePath(self.__depDataSetId, self.__wfInstanceId)
+                pth = self.__pI.getInstancePath(cast("str", self.__depDataSetId), self.__wfInstanceId)
             else:
                 return False
 
-            srcPath = os.path.join(pth, dirName)
+            srcPath = os.path.join(cast("str", pth), dirName)
             if not os.access(srcPath, os.R_OK):
                 return False
 
@@ -385,7 +385,7 @@ class DataExchange:
 
     ##
     def getVersionFileList(
-        self, fileSource: str = "archive", contentType: str = "model", formatType: str = "pdbx", partitionNumber: int | str = "1", mileStone: str | None = None
+        self, fileSource: PathInfoStorageType = "archive", contentType: str = "model", formatType: str = "pdbx", partitionNumber: int | str = "1", mileStone: str | None = None
     ) -> list[tuple[str, str, float]]:
         """
         For the input content object return a list of file versions sorted by modification time.
@@ -399,7 +399,7 @@ class DataExchange:
                 self.__pI.setSessionPath(self.__inputSessionPath)
 
             fPattern = self.__pI.getFilePathVersionTemplate(
-                dataSetId=self.__depDataSetId,
+                dataSetId=cast("str", self.__depDataSetId),
                 wfInstanceId=self.__wfInstanceId,
                 contentType=contentType,
                 formatType=formatType,
@@ -407,7 +407,7 @@ class DataExchange:
                 partNumber=partitionNumber,
                 mileStone=mileStone,
             )
-            return self.__getFileList([fPattern], sortFlag=True)
+            return self.__getFileList([cast("str", fPattern)], sortFlag=True)
         except Exception as e:  # noqa: BLE001
             if self.__verbose:
                 self.__lfh.write(
@@ -417,7 +417,9 @@ class DataExchange:
                 traceback.print_exc(file=self.__lfh)
             return []
 
-    def getPartitionFileList(self, fileSource="archive", contentType="model", formatType="pdbx", mileStone=None):
+    def getPartitionFileList(
+        self, fileSource: PathInfoStorageType = "archive", contentType: str = "model", formatType: str = "pdbx", mileStone: Optional[str] = None
+    ) -> List[Tuple[str, str, float]]:
         """
         For the input content object return a list of file partitions sorted by modification time.
 
@@ -430,14 +432,14 @@ class DataExchange:
                 self.__pI.setSessionPath(self.__inputSessionPath)
 
             fPattern = self.__pI.getFilePathPartitionTemplate(
-                dataSetId=self.__depDataSetId,
+                dataSetId=cast("str", self.__depDataSetId),
                 wfInstanceId=self.__wfInstanceId,
                 contentType=contentType,
                 formatType=formatType,
                 fileSource=fileSource,
                 mileStone=mileStone,
             )
-            tL = self.__getFileList([fPattern], sortFlag=True)
+            tL = self.__getFileList([cast("str", fPattern)], sortFlag=True)
             if self.__debug:
                 self.__lfh.write("+DataExchange.getPartionFileList() pattern %r\n" % fPattern)
                 self.__lfh.write("+DataExchange.getPartionFileList() file list %r\n" % tL)
@@ -452,7 +454,7 @@ class DataExchange:
                 traceback.print_exc(file=self.__lfh)
             return []
 
-    def getContentTypeFileList(self, fileSource: str = "archive", contentTypeList: list[str] | None = None) -> list[tuple[str, str, float]]:
+    def getContentTypeFileList(self, fileSource: PathInfoStorageType = "archive", contentTypeList: list[str] | None = None) -> list[tuple[str, str, float]]:
         """
         For the input content object return a list of file versions sorted by modification time.
 
@@ -465,11 +467,13 @@ class DataExchange:
         try:
             if fileSource == "session" and self.__inputSessionPath is not None:
                 self.__pI.setSessionPath(self.__inputSessionPath)
-            fPatternList = []
+            fPatternList: List[str] = []
             for contentType in contentTypeList:
-                fPattern = self.__pI.getFilePathContentTypeTemplate(dataSetId=self.__depDataSetId, wfInstanceId=self.__wfInstanceId, contentType=contentType, fileSource=fileSource)
+                fPattern = self.__pI.getFilePathContentTypeTemplate(
+                    dataSetId=cast("str", self.__depDataSetId), wfInstanceId=self.__wfInstanceId, contentType=contentType, fileSource=fileSource
+                )
 
-                fPatternList.append(fPattern)
+                fPatternList.append(cast("str", fPattern))
             if self.__debug:
                 self.__lfh.write("+DataExchange.getContentTypeFileList() patterns %r\n" % fPatternList)
             return self.__getFileList(fPatternList, sortFlag=True)
@@ -489,12 +493,12 @@ class DataExchange:
 
     def getLogFileList(self, entryId: str, fileSource: str = "archive") -> list[tuple[str, str, float]]:
         if fileSource in ["archive", "wf-archive"]:
-            pth = self.__pI.getArchivePath(entryId)
+            pth = cast("str", self.__pI.getArchivePath(entryId))
             fpat1 = os.path.join(pth, "*log")
             fpat2 = os.path.join(pth, "log", "*")
             patList = [fpat1, fpat2]
         elif fileSource == "deposit":
-            pth = self.__pI.getDepositPath(entryId)
+            pth = cast("str", self.__pI.getDepositPath(entryId))
             fpat1 = os.path.join(pth, "*log")
             fpat2 = os.path.join(pth, "log", "*")
             patList = [fpat1, fpat2]
@@ -557,7 +561,7 @@ class DataExchange:
 
     def __getFilePath(
         self,
-        fileSource: str = "archive",
+        fileSource: PathInfoStorageType = "archive",
         contentType: str = "model",
         formatType: str = "pdbx",
         version: str = "latest",
@@ -571,7 +575,7 @@ class DataExchange:
 
     def __targetFilePath(
         self,
-        fileSource: str = "archive",
+        fileSource: PathInfoStorageType = "archive",
         contentType: str = "model",
         formatType: str = "pdbx",
         version: str = "latest",
@@ -585,15 +589,18 @@ class DataExchange:
         try:
             if fileSource == "session" and self.__inputSessionPath is not None:
                 self.__pI.setSessionPath(self.__inputSessionPath)
-            fP = self.__pI.getFilePath(
-                dataSetId=self.__depDataSetId,
-                wfInstanceId=self.__wfInstanceId,
-                contentType=contentType,
-                formatType=formatType,
-                fileSource=fileSource,
-                versionId=version,
-                partNumber=partitionNumber,
-                mileStone=mileStone,
+            fP = cast(
+                "str",
+                self.__pI.getFilePath(  # cast could still raise exception with split...
+                    dataSetId=self.__depDataSetId,
+                    wfInstanceId=self.__wfInstanceId,
+                    contentType=contentType,
+                    formatType=formatType,
+                    fileSource=fileSource,
+                    versionId=version,
+                    partNumber=partitionNumber,
+                    mileStone=mileStone,
+                ),
             )
             dN, fN = os.path.split(fP)
             return fP, dN, fN

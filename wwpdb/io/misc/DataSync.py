@@ -22,7 +22,7 @@ class DataMoveError(Exception):
 class DataMover(ABC):
     """Abstract base class for data movement operations."""
 
-    def __init__(self, dry_run: bool = False):
+    def __init__(self, dry_run: bool = False) -> None:
         """
         Initialize the data mover.
 
@@ -139,7 +139,7 @@ class RsyncDataMover(DataMover):
         destination_path: Path,
         additional_options: Optional[List[str]] = None,
         sync_directory_contents: bool = True,
-    ) -> subprocess.CompletedProcess:
+    ) -> subprocess.CompletedProcess[str]:
         """
         Execute rsync command with proper error handling.
 

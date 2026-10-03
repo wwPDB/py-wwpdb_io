@@ -30,12 +30,17 @@ classifiers = [
 dependencies = [
     "click",
     "mmcif >= 0.3",
-    "mmcif.utils",
+    "mmcif.utils >= 1.0.0",
     "paramiko",
+    "typing_extensions",
     "wwpdb.utils.config >= 0.40",
 ]
 
 requires-python = ">=3.8"
+
+# During developent - if use something like "mmcif.utils @ file://{root}/../py-mmcif_utils",
+# tool.hatch.metadata]
+#allow-direct-references = true
 
 [project.urls]
 Homepage = "https://github.com/rcsb/py-wwpdb_io"
@@ -90,6 +95,7 @@ ignore = [
   "C402",     #  Unnecessary generator (rewrite as a `dict` comprehension)
   "D419",     # Docstring is empty
   "EXE001",   # Shebang is present but file is not executabl
+  "FA100",    #  Add `from __future__ import annotations` to simplify `typing.Optional`
   "FBT002",   # Boolean default positional argument in function definition
   "FBT001",   # Boolean-typed positional argument in function definition
   "FURB113",  # Use `stPL.extend(...)` instead of repeatedly calling `stPL.append()`
@@ -111,18 +117,20 @@ ignore = [
   "PLR6301",  # Method `` could be a function, class method, or static method
   "PLW1514",  # `open` in text mode without explicit `encoding` argument
   "PT009",    # Use a regular `assert` instead of unittest-style `assertGreater`
-
   "RET504",   # Unnecessary assignment to `X` before `return` statement
   "RUF100",   # RUF REMOVES FLAKE8 noqa!
   "S110",     # `try`-`except`-`pass` detected, consider logging the exception
-  "SIM210", "SIM211",
-"SIM102",   # Use a single `if` statement instead of nested `if` statements
+  "SIM210", 
+  "SIM211",
+  "SIM102",   # Use a single `if` statement instead of nested `if` statements
   "SIM103",   #  Return the condition directly
   "SIM108",   # Use ternary operator
   "SIM115",   # Use context handler for opening files
   "TRY300",   # Consider moving this statement to an `else` block
   "TRY400",   # Use `logging.exception` instead of `logging.error`
   "TRY401",   # Redundant exception object included in `logging.exception` call
+  "UP006",    # Use `list` instead of `List` for type annotation
+  "UP007",    # Use `X | Y` for type annotations
   "UP008",    # Use `super()` instead of `super(__class__, self)`
   "UP031",    # Use format specifiers instead of percent format
   "UP032",    # Use f-string instead of `format` call
@@ -133,8 +141,8 @@ ignore = [
 # -------------------- default environment scripts ------------------
 [tool.hatch.envs.default]
 python = "3.9"
-skip-install = true
-dependencies = ["mypy", "ruff >=0.6.9", "mmcif", "mmcif.utils", "paramiko", "wwpdb.utils.config", "pytest", "wwpdb.utils.testing"]
+# skip-install = true
+dependencies = ["mypy", "ruff >=0.6.9",  "pytest", "wwpdb.utils.testing"]
 
 
 [tool.hatch.envs.default.scripts]
@@ -149,13 +157,13 @@ format = [
 format-python = ["ruff format", "ruff check --fix-only"]
 
 # 'check' only checks but never fixes
-check = ["ruff check --no-fix .", "mypy --non-interactive --install-types -p wwpdb -p tests -p tests-config"]
+check = ["ruff check --no-fix .", "mypy --non-interactive --strict --install-types -p wwpdb -p tests -p tests-config"]
 
 # only checks with ruff (mypy has a lot of false positives)
 check-ruff = "ruff check --no-fix . {args}"
 
 # to complement 'check-ruff'
-check-mypy = "mypy --non-interactive --install-types -p wwpdb -p tests -p tests-config {args}"
+check-mypy = "mypy --non-interactive --install-types --strict -p wwpdb -p tests -p tests-config {args}"
 
 # only check security via Bandit; we require these rules to pass
 check-security = "ruff check --select S --no-fix ."
@@ -170,19 +178,22 @@ run = ["tox"]
 
 # -------------------------  Mypy disable ---------
 [[tool.mypy.overrides]]
-module = ["mmcif_utils.*", "wwpdb.utils.config.*", "mmcif.*", "wwpdb.utils.testing.*"]
-#"mmcif.*", "wwpdb.*", "tests.*", "commonsetup", "gemmi.*"]
+module = ["mmcif.*"]
 ignore_missing_imports = true
 
 [tool.mypy]
 exclude = [
 	"test-output",
 	"wwpdb/io/Archive",
-	"tests/OldTests"
+	"tests/OldTests",
+  "tests/fixtures/site-config/test/test/ConfigInfoFileCache.py"
 ]
+
+# For the mmcif stubs
+mypy_path = "typings"
+
 
 # ------------------------ ruff disable per file
 [tool.ruff.lint.per-file-ignores]
-#"wwpdb/utils/dp/electron_density/*" = ["G004", "G001"]  #  Logging statement uses f-string
-
-#"tests/*" = ["TID252", "PLC1901", "S311", "T201"]
+"tests/*" = ["PT027", "S105", "S106"]
+"tests-config/*" = ["S101"]

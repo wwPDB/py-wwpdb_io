@@ -23,11 +23,14 @@ __version__ = "V0.001"
 
 #
 import logging
-from typing import Any
+from typing import Any, Optional
 
 import paramiko
 
-from wwpdb.io.sftp.ArchiveIoBase import ArchiveIoBase
+# For python 3.8 compatibility
+from typing_extensions import Unpack
+
+from wwpdb.io.sftp.ArchiveIoBase import ArchiveIoBase, ArchiveIoInitConfig, SftpConnectConfig
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger()
@@ -38,7 +41,7 @@ class ArchiveIoSftp(ArchiveIoBase):
     data transfer operations for SFTP protocol
     """
 
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, *args: str, **kwargs: Unpack[ArchiveIoInitConfig]) -> None:
         super(ArchiveIoSftp, self).__init__(*args, **kwargs)
         self.__sftpClient: paramiko.sftp_client.SFTPClient | None = None
         self.__transport: paramiko.Transport | None = None
@@ -62,7 +65,11 @@ class ArchiveIoSftp(ArchiveIoBase):
             logger.error("Failing connect for server %s with %s", self._serverId, str(e))
             return False
 
-    def connect(self, hostName, userName, port=22, pw=None, keyFilePath=None, keyFileType="RSA"):  # pylint: disable=arguments-differ
+    def connect(self, hostName: str, userName: str, **kwargs: Unpack[SftpConnectConfig]) -> bool:  # pylint: disable=arguments-differ
+        port = kwargs.get("port", 22)
+        pw: Optional[str] = kwargs.get("pw")
+        keyFilePath = kwargs.get("keyFilePath")
+        keyFileType = kwargs.get("keyFileType", "RSA")
         try:
             self.__sftpClient = self.__makeSftpClient(hostName=hostName, port=port, userName=userName, pw=pw, keyFilePath=keyFilePath, keyFileType=keyFileType)
             return True

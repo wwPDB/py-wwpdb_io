@@ -17,7 +17,7 @@ __email__ = "ezra.peisach@rcsb.org"
 
 # ruff: noqa: PT027
 import unittest
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timezone, tzinfo
 from unittest import mock
 
 from wwpdb.io.locator.ReleaseFileNames import ReleaseFileNames
@@ -65,7 +65,7 @@ class ReleaseFileNamesTests(unittest.TestCase):
     def testIsOnOrAfter20270717Before(self) -> None:
         class FakeDatetime(datetime):
             @classmethod
-            def now(cls, tz=None) -> FakeDatetime:  # noqa: ANN001
+            def now(cls, tz: tzinfo | None = None) -> FakeDatetime:
                 return cls(2027, 7, 16, tzinfo=tz)
 
         with mock.patch("wwpdb.io.locator.ReleaseFileNames.datetime", FakeDatetime):
@@ -74,7 +74,7 @@ class ReleaseFileNamesTests(unittest.TestCase):
     def testIsOnOrAfter20270717Exact(self) -> None:
         class FakeDatetime(datetime):
             @classmethod
-            def now(cls, tz=None) -> FakeDatetime:  # noqa: ANN001
+            def now(cls, tz: tzinfo | None = None) -> FakeDatetime:
                 return cls(2027, 7, 17, tzinfo=tz)
 
         with mock.patch("wwpdb.io.locator.ReleaseFileNames.datetime", FakeDatetime):
@@ -83,7 +83,7 @@ class ReleaseFileNamesTests(unittest.TestCase):
     def testIsOnOrAfter20270717After(self) -> None:
         class FakeDatetime(datetime):
             @classmethod
-            def now(cls, tz=None) -> FakeDatetime:  # noqa: ANN001
+            def now(cls, tz: tzinfo | None = None) -> FakeDatetime:
                 return cls(2027, 7, 18, tzinfo=tz)
 
         with mock.patch("wwpdb.io.locator.ReleaseFileNames.datetime", FakeDatetime):
@@ -92,7 +92,7 @@ class ReleaseFileNamesTests(unittest.TestCase):
     def testUseBetaFilenamesDefaultAfterCutoff(self) -> None:
         class FakeDatetime(datetime):
             @classmethod
-            def now(cls, tz=None) -> FakeDatetime:  # noqa: ANN001
+            def now(cls, tz: tzinfo | None = None) -> FakeDatetime:
                 return cls(2027, 7, 18, tzinfo=tz)
 
         with mock.patch("wwpdb.io.locator.ReleaseFileNames.datetime", FakeDatetime):

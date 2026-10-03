@@ -65,6 +65,14 @@ class mmCIFUtil:
         """Return first block ID"""
         return self.__blockID
 
+    def GetBlockName(self, blockNumber):
+        """ Return block name for first(blockNumber=0) block, second(blockNumber=1) block, ..., etc
+        """
+        if (blockNumber >= 0) and (blockNumber < len(self.__dataList)):
+            return self.__dataList[blockNumber].getName()
+        #
+        return ""
+
     def GetValueAndItemByBlock(self, blockName: Optional[str], catName: str) -> Tuple[List[Dict[str, str]], List[str]]:
         """Get category values and item names"""
         dList: List[Dict[str, str]] = []
@@ -129,6 +137,16 @@ class mmCIFUtil:
         for row in range(rowNo):
             catObj.setValue(value, itemName, row)
         #
+
+    def appendAttribute(self, catName, itemName):
+        """ Add extra attribute
+        """
+        catObj = self.__container.getObj(catName)
+        if catObj is None:
+            return False
+        #
+        catObj.appendAttributeExtendRows(itemName)
+        return True
 
     def AddBlock(self, blockID: str) -> None:
         """Add Data Block"""

@@ -30,7 +30,7 @@ classifiers = [
 dependencies = [
     "click",
     "mmcif >= 0.3",
-    "mmcif.utils == 1.0.0.dev1",
+    "mmcif.utils >= 1.0.0",
     "paramiko",
     "typing_extensions",
     "wwpdb.utils.config >= 0.40",

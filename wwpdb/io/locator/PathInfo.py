@@ -26,6 +26,7 @@
 # 06-Jun-2023   dh    add getNMRCombinedFilePath()
 # 15-Jun-2023   dh    add getMolecularRestraintsFilePath()
 # 19-Dec-2024   my    add getNMRifFilePath() (DAOTHER-8905)
+#  4-Oct-2026   ep    getFileName() and getWebDownloadPath() raise ValueError if the path cannot be determined
 ##
 """
 Common methods for finding path information for resource and data files in the wwPDB data processing
@@ -94,7 +95,7 @@ class PathInfo:
     def setDebugFlag(self, flag: bool) -> None:
         self.__debug = flag  # pylint: disable=unused-private-member
 
-    def parseFileName(self, fileName: str) -> Tuple[Optional[str], Optional[str], Optional[str], Optional[PathInfoPartitionId], Optional[PathInfoVersionId]]:
+    def parseFileName(self, fileName: str) -> Tuple[Optional[str], Optional[str], Optional[str], Optional[int], Optional[int]]:
         rfc = ReferenceFileComponents(verbose=self.__verbose, log=self.__lfh)
         if rfc.set(fileName=fileName):
             return rfc.get()
@@ -121,7 +122,7 @@ class PathInfo:
         except Exception as _e:  # noqa: F841,BLE001
             return None
 
-    def splitFileName(self, fileName: str) -> Tuple[Optional[str], Optional[str], Optional[str], Optional[PathInfoPartitionId], Optional[PathInfoVersionId]]:
+    def splitFileName(self, fileName: str) -> Tuple[Optional[str], Optional[str], Optional[str], Optional[int], Optional[int]]:
         """
         returns (depositionDataSetId, contentType, contentFormat, filePartionNumber, [versionId (int) or None])
         """
@@ -563,21 +564,24 @@ class PathInfo:
         partNumber: PathInfoPartitionId = "1",
         mileStone: Optional[str] = None,
     ) -> str:
-        return os.path.basename(
-            cast(
-                "str",
-                self.__getStandardPath(
-                    dataSetId=dataSetId,
-                    wfInstanceId=wfInstanceId,
-                    contentTypeBase=contentType,
-                    formatType=formatType,
-                    fileSource=fileSource,
-                    versionId=versionId,
-                    partNumber=partNumber,
-                    mileStone=mileStone,
-                ),
-            )
+        """Returns the file name for the requested data file.
+
+        Raises ValueError if the file path cannot be determined.
+        """
+        fP = self.__getStandardPath(
+            dataSetId=dataSetId,
+            wfInstanceId=wfInstanceId,
+            contentTypeBase=contentType,
+            formatType=formatType,
+            fileSource=fileSource,
+            versionId=versionId,
+            partNumber=partNumber,
+            mileStone=mileStone,
         )
+        if fP is None:
+            err = f"Unable to determine file path for dataSetId={dataSetId!r} contentType={contentType!r} formatType={formatType!r} fileSource={fileSource!r}"
+            raise ValueError(err)
+        return os.path.basename(fP)
 
     def getDirPath(
         self,
@@ -622,22 +626,28 @@ class PathInfo:
         partNumber: PathInfoPartitionId = "1",
         mileStone: Optional[str] = None,
     ) -> str:
-        fn = os.path.basename(
-            cast(
-                "str",
-                self.__getStandardPath(
-                    dataSetId=dataSetId,
-                    wfInstanceId=wfInstanceId,
-                    contentTypeBase=contentType,
-                    formatType=formatType,
-                    fileSource="session-download",
-                    versionId=versionId,
-                    partNumber=partNumber,
-                    mileStone=mileStone,
-                ),
-            )
+        """Returns the web path of the requested data file in the session download area.
+
+        Raises ValueError if the session path is not set or the file path cannot be determined.
+        """
+        if self.__sessionPath is None:
+            err = "Session path is not set - call setSessionPath() first"
+            raise ValueError(err)
+        fP = self.__getStandardPath(
+            dataSetId=dataSetId,
+            wfInstanceId=wfInstanceId,
+            contentTypeBase=contentType,
+            formatType=formatType,
+            fileSource="session-download",
+            versionId=versionId,
+            partNumber=partNumber,
+            mileStone=mileStone,
         )
-        (_p, sId) = os.path.split(cast("str", self.__sessionPath))
+        if fP is None:
+            err = f"Unable to determine session download path for dataSetId={dataSetId!r} contentType={contentType!r} formatType={formatType!r}"
+            raise ValueError(err)
+        fn = os.path.basename(fP)
+        (_p, sId) = os.path.split(self.__sessionPath)
         return os.path.join("/sessions", sId, "downloads", fn)
 
     def getFilePathVersionTemplate(

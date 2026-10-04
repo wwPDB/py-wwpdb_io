@@ -196,4 +196,4 @@ mypy_path = "typings"
 # ------------------------ ruff disable per file
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["PT027", "S105", "S106"]
-"tests-config/*" = ["S101"]
+"tests-config/*" = ["S101", "PT027"]

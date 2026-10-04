@@ -131,8 +131,10 @@ class ReferenceFileInfo:
             return None
 
     def getFormatTypes(self, contentType: Optional[str]) -> List[str]:
+        if contentType is None:
+            return []
         try:
-            return self.__contentD[contentType][0]  # type: ignore[index]
+            return self.__contentD[contentType][0]
         except Exception as _e:  # noqa: F841,BLE001
             return []
 
@@ -177,18 +179,18 @@ class ReferenceFileComponents:
 
     def __reset(self) -> None:
         self.__depositionDataSetId: Optional[str] = None
-        self.__filePartNumber: Optional[DataReferencePartitionId] = None
+        self.__filePartNumber: Optional[int] = None
         self.__contentType: Optional[str] = None
         self.__contentTypeAcronym: Optional[str] = None
         self.__contentFormat: Optional[str] = None
-        self.__versionId: Optional[DataReferenceVersionId] = None
+        self.__versionId: Optional[int] = None
 
     def set(self, fileName: str) -> bool:
         self.__fileName = fileName
         self.__reset()
         return self.__splitFileName()
 
-    def get(self) -> Tuple[Optional[str], Optional[str], Optional[str], Optional[DataReferencePartitionId], Optional[DataReferenceVersionId]]:
+    def get(self) -> Tuple[Optional[str], Optional[str], Optional[str], Optional[int], Optional[int]]:
         """Convenience method returning the elements of the reference file name
         in a single tuple.
         """
@@ -232,16 +234,16 @@ class ReferenceFileComponents:
                 traceback.print_exc(file=self.__lfh)
         return False
 
-    def getVersionId(self) -> Optional[Union[str, int]]:
-        """Return version identifier (integer), current symbolic setting, or None"""
+    def getVersionId(self) -> Optional[int]:
+        """Return version identifier (integer) or None"""
         return self.__versionId
 
     def getDepositionDataSetId(self) -> Optional[str]:
         """Return the data set identier -  (upper case)"""
         return self.__depositionDataSetId
 
-    def getPartitionNumber(self) -> Optional[Union[str, int]]:
-        """Return the file partition number (integer)  or symbolic setting."""
+    def getPartitionNumber(self) -> Optional[int]:
+        """Return the file partition number (integer) or None"""
         return self.__filePartNumber
 
     def getContentTypeAcronym(self) -> Optional[str]:

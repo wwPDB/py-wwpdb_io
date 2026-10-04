@@ -8,6 +8,7 @@
 #   28-Jun-2014  jdw add template examples
 #   23-Oct-2017  jdw update logging
 #   24-Sep-2026  ep  add tests for convenience methods, file sources, templates and error paths
+#   04-Oct-2026  ep  add tests for getFileName()/getWebDownloadPath() errors
 ##
 """
 Skeleton examples for creating standard file names for sequence resources and data files.
@@ -388,6 +389,19 @@ class PathInfoDetailTests(unittest.TestCase):
         pI = PathInfo(siteId=self.__siteId, sessionPath=None)
         self.assertEqual(pI.getArchivePath(self.__dataSetId), self.__archiveDir())
         self.assertEqual(pI.getModelPdbxFilePath(self.__dataSetId, versionId=1), os.path.join(self.__archiveDir(), "%s_model_P1.cif.V1" % self.__dataSetId))
+
+    def testFileNameErrors(self) -> None:
+        """getFileName() and getWebDownloadPath() raise ValueError when no path can be determined"""
+        pI = self.__pI
+        dId = self.__dataSetId
+        with self.assertRaises(ValueError):
+            pI.getFileName(dId, contentType="not-a-content-type", formatType="pdbx", versionId=1)
+        with self.assertRaises(ValueError):
+            pI.getWebDownloadPath(dId, contentType="not-a-content-type", formatType="pdbx", versionId=1)
+
+        pINoSession = PathInfo(siteId=self.__siteId, sessionPath=None)
+        with self.assertRaises(ValueError):
+            pINoSession.getWebDownloadPath(dId, contentType="model", formatType="pdbx", versionId=1)
 
     def testDirPathErrors(self) -> None:
         """Directory methods return None when lookups fail"""

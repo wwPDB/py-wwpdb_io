@@ -23,7 +23,7 @@ __version__ = "V0.001"
 #
 #
 import logging
-from typing import Any, NoReturn, Optional, cast
+from typing import Any, Dict, NoReturn, Optional, cast
 
 # For python 3.8 compatibility
 from typing_extensions import NotRequired, TypedDict, Unpack
@@ -55,15 +55,15 @@ class ArchiveIoBase:
 
         self.__cI = ConfigInfo(siteId=getSiteId())
         #
-        cD = self.__cI.get(self._serverId, {})
-        self._hostName = cD.get("HOST_NAME", None)
-        self._userName = cD.get("HOST_USERNAME", None)
-        self._password = cD.get("HOST_PASSWORD", None)
+        cD: Dict[str, Any] = self.__cI.get(self._serverId, {})
+        self._hostName = cast("str", cD.get("HOST_NAME"))
+        self._userName = cast("str", cD.get("HOST_USERNAME"))
+        self._password = cD.get("HOST_PASSWORD")
         self._hostPort = int(cD.get("HOST_PORT", 22))
-        self._protocol = cD.get("HOST_PROTOCOL", None)
-        self._rootPath: str | None = cD.get("HOST_ROOT_PATH", None)
-        self._keyFilePath = cD.get("HOST_KEY_FILE_PATH", None)
-        self._keyFileType = cD.get("HOST_KEY_FILE_TYPE", None)
+        self._protocol = cD.get("HOST_PROTOCOL")
+        self._rootPath: str | None = cD.get("HOST_ROOT_PATH")
+        self._keyFilePath = cD.get("HOST_KEY_FILE_PATH")
+        self._keyFileType = cast("str", cD.get("HOST_KEY_FILE_TYPE"))
         #
 
     def __raise_unimplemented(self) -> NoReturn:

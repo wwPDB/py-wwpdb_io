@@ -56,7 +56,7 @@ class DataExchange:
         reqObj: Any | None = None,
         depDataSetId: str | None = None,
         wfInstanceId: str | None = None,
-        fileSource: PathInfoStorageType = "archive",
+        fileSource: Optional[PathInfoStorageType] = "archive",  # Optional as externally used as None for some functionality
         siteId: str | None = None,
         verbose: bool = False,
         log: TextIO = sys.stderr,
@@ -211,7 +211,9 @@ class DataExchange:
         Return the full path of the copied file or None
 
         """
-        inpFilePath = self.__getFilePath(fileSource=self.__fileSource, contentType=contentType, formatType=formatType, version=version, partitionNumber=partitionNumber)
+        inpFilePath = self.__getFilePath(
+            fileSource=cast("PathInfoStorageType", self.__fileSource), contentType=contentType, formatType=formatType, version=version, partitionNumber=partitionNumber
+        )
         if self.__verbose:
             self.__lfh.write("+DataExchange.fetch() source type %s format %s version %s path %s\n" % (contentType, formatType, version, inpFilePath))
 
@@ -247,7 +249,9 @@ class DataExchange:
         Return True on success or False otherwise.
 
         """
-        outFilePath = self.__getFilePath(fileSource=self.__fileSource, contentType=contentType, formatType=formatType, version=version, partitionNumber=partitionNumber)
+        outFilePath = self.__getFilePath(
+            fileSource=cast("PathInfoStorageType", self.__fileSource), contentType=contentType, formatType=formatType, version=version, partitionNumber=partitionNumber
+        )
         if self.__verbose:
             self.__lfh.write("+DataExchange.export() destination type %s format %s version %s path %s\n" % (contentType, formatType, version, outFilePath))
 
@@ -325,7 +329,9 @@ class DataExchange:
         Return the full path of the session file or None
 
         """
-        inpFilePath = self.__getFilePath(fileSource=self.__fileSource, contentType=contentType, formatType=formatType, version=version, partitionNumber=partitionNumber)
+        inpFilePath = self.__getFilePath(
+            fileSource=cast("PathInfoStorageType", self.__fileSource), contentType=contentType, formatType=formatType, version=version, partitionNumber=partitionNumber
+        )
         if self.__debug:
             self.__lfh.write("+DataExchange.copyToSession() source file type %s format %s version %s path %s\n" % (contentType, formatType, version, inpFilePath))
 

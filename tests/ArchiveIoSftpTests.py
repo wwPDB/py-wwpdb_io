@@ -25,6 +25,7 @@ import os.path
 import sys
 import time
 import unittest
+from typing import Any, Dict, cast
 
 #
 from wwpdb.utils.config.ConfigInfo import ConfigInfo, getSiteId
@@ -44,14 +45,14 @@ class ArchiveIoSftpTests(unittest.TestCase):
         #
         self.__serverId = "BACKUP_SERVER_RDI2"
         self.__cI = ConfigInfo(siteId=getSiteId(), verbose=self.__verbose, log=self.__lfh)
-        cD = self.__cI.get(self.__serverId, {})
-        self.__hostName = cD.get("HOST_NAME")
-        self.__userName = cD.get("HOST_USERNAME")
-        self.__hostPort = int(cD.get("HOST_PORT"))
+        cD: Dict[str, Any] = self.__cI.get(self.__serverId, {})
+        self.__hostName = cast("str", cD.get("HOST_NAME"))
+        self.__userName = cast("str", cD.get("HOST_USERNAME"))
+        self.__hostPort = int(cast("str", cD.get("HOST_PORT")))
         # self.__protocol = cD.get("HOST_PROTOCOL")
-        self.__rootPath = cD.get("HOST_ROOT_PATH")
+        self.__rootPath = cast("str", cD.get("HOST_ROOT_PATH"))
         self.__keyFilePath = cD.get("HOST_KEY_FILE_PATH")
-        self.__keyFileType = cD.get("HOST_KEY_FILE_TYPE")
+        self.__keyFileType = cast("str", cD.get("HOST_KEY_FILE_TYPE"))
         #
         self.__testLocalFilePath = "./data/TEST-FILE.DAT"
         self.__testLocalOutputFilePath = "./JUNK.JUNK"

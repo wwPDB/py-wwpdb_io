@@ -94,7 +94,7 @@ class PathInfo:
     def setDebugFlag(self, flag: bool) -> None:
         self.__debug = flag  # pylint: disable=unused-private-member
 
-    def parseFileName(self, fileName: str) -> Tuple[Optional[str], Optional[str], Optional[str], Optional[Union[str, int]], Optional[Union[str, int]]]:
+    def parseFileName(self, fileName: str) -> Tuple[Optional[str], Optional[str], Optional[str], Optional[PathInfoPartitionId], Optional[PathInfoVersionId]]:
         rfc = ReferenceFileComponents(verbose=self.__verbose, log=self.__lfh)
         if rfc.set(fileName=fileName):
             return rfc.get()
@@ -121,7 +121,7 @@ class PathInfo:
         except Exception as _e:  # noqa: F841,BLE001
             return None
 
-    def splitFileName(self, fileName: str) -> Tuple[Optional[str], Optional[str], Optional[str], Optional[DataReferencePartitionId], Optional[DataReferenceVersionId]]:
+    def splitFileName(self, fileName: str) -> Tuple[Optional[str], Optional[str], Optional[str], Optional[PathInfoPartitionId], Optional[PathInfoVersionId]]:
         """
         returns (depositionDataSetId, contentType, contentFormat, filePartionNumber, [versionId (int) or None])
         """

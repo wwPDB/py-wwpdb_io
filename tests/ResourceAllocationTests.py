@@ -609,7 +609,7 @@ def test_worker_count_cap_bounds_a_configured_value_with_warning(tmp_path: Path,
     assert any("validation.mogul" in record.getMessage() and "10" in record.getMessage() for record in caplog.records)
 
 
-def test_worker_count_cap_below_a_configured_value_within_the_cpus_does_not_warn_when_not_reduced(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture) -> None:
+def test_worker_count_cap_that_does_not_reduce_a_configured_value_does_not_warn(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture) -> None:
     _with_cpus(monkeypatch, 32)
     with caplog.at_level(logging.WARNING):
         assert _workers(tmp_path, {"validation.mogul": {"cpus": 6}}).get_worker_count("validation.mogul", "cpus / 2", cap=10) == 6
@@ -645,7 +645,7 @@ def test_worker_count_invalid_default_raises_even_when_configured(tmp_path: Path
 
 def test_worker_count_none_default_raises(tmp_path: Path) -> None:
     with pytest.raises(ValueError, match="default"):
-        _workers(tmp_path).get_worker_count("validation.mogul", None)  # type: ignore[arg-type]
+        _workers(tmp_path).get_worker_count("validation.mogul", None)
 
 
 @pytest.mark.parametrize("cap", [0, -1, True, 2.5, "10"])

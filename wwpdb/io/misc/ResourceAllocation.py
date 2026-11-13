@@ -19,8 +19,8 @@ Two kinds of job name are used and they are independent controls:
 * an *operation* name such as ``annot-wwpdb-validate-all-v2`` is what a cluster job requests for itself;
 * a *call-site* name such as ``validation.mogul`` is how many worker processes that piece of code starts
   inside whatever it was given.  Code that starts worker processes asks for it with :meth:`get_worker_count`,
-  passing the count it used before (so an unconfigured site behaves as it did); :meth:`default_worker_count`
-  gives the usual "half the available CPUs" rule.
+  passing the count it used before as the code-owned default (for example ``"cpus / 2"``), so a site without a
+  resource file behaves as it did.
 
 Values:
 
@@ -38,6 +38,10 @@ through to ``defaults`` and an invalid ``defaults`` value falls through to the c
 called without a ``default``, :meth:`~ResourceAllocation.get_cpus` returns every available CPU and
 :meth:`~ResourceAllocation.get_memory_mb` returns ``None``.
 
+A CPU ``default`` supplied by the calling code is an integer or an expression, ``cpus`` or ``cpus / N`` (``cpus`` is the
+number of CPUs available to the process; division rounds down; never less than 1).  It is parsed, never evaluated.  An
+invalid expression is a programming error and raises :class:`ValueError`, in contrast to a mistake in the file.
+
 CPUs are counted from the process affinity mask where the platform provides one, so the number reflects what this
 process may use rather than what the machine has.  Whether that equals a batch scheduler's per-job allocation depends
 on how the scheduler is configured.
@@ -48,6 +52,7 @@ from __future__ import annotations
 import logging
 import os
 import random
+import re
 from typing import Any, Dict, Optional
 
 import yaml
@@ -60,6 +65,9 @@ CONFIG_KEY = "RESOURCE_ALLOCATION_CONFIG_FILE"
 _UNSET: Any = object()  # distinguishes "no default given" from an explicit ``default=None``
 _INVALID: Any = object()  # internal marker for a value that could not be interpreted
 _UNLIMITED: Any = object()  # internal marker for ``memory: all``
+
+# A code-owned CPU default: ``cpus`` or ``cpus / N`` (N a positive whole number).  ASCII digits only.
+_CPU_EXPRESSION = re.compile(r"\s*cpus\s*(?:/\s*([0-9]+)\s*)?", re.ASCII)
 
 
 class ResourceAllocation:
@@ -142,43 +150,71 @@ class ResourceAllocation:
     def get_cpus(self, job_name: str, default: Any = _UNSET) -> Any:
         """Return the CPU count configured for ``job_name``.
 
-        When nothing valid is configured, return ``default`` if one was given, otherwise :meth:`available_cpus`.
+        ``default`` is the value the calling code wants when nothing valid is configured.  It is an integer, ``None``
+        (meaning "no value"), or an expression: ``"cpus"`` or ``"cpus / N"`` where ``cpus`` is :meth:`available_cpus`
+        and N is a positive whole number.  Division rounds down and the result is at least 1, so ``"cpus / 2"`` is the
+        usual "half of what this process may use".  When ``default`` is omitted, every available CPU is returned.
+
+        A ``default`` that is not one of these raises :class:`ValueError` whether or not a value is configured: it is a
+        mistake in the calling code, unlike a mistake in the configuration file, which only logs a warning.
         """
+        fallback = self._code_default(default)
         value = self._lookup(job_name, "cpus", self._resolve_cpu_value)
-        if value is _INVALID:
-            return self.available_cpus() if default is _UNSET else default
-        return value
+        return fallback if value is _INVALID else value
 
-    @staticmethod
-    def default_worker_count(cap: Optional[int] = None) -> int:
-        """Return half the CPUs available to this process, at least 1 and at most ``cap`` (when given).
+    def _code_default(self, default: Any) -> Any:
+        """Validate a caller's CPU default and return its value (``None`` stays ``None``)."""
+        if default is _UNSET:
+            return self.available_cpus()
+        if default is None:
+            return None
+        if isinstance(default, bool):
+            raise ValueError(f"Invalid default {default!r}: expected an integer, None, 'cpus' or 'cpus / N'")  # noqa: TRY004
+        if isinstance(default, int):
+            return default
+        if isinstance(default, str):
+            match = _CPU_EXPRESSION.fullmatch(default)
+            if match is not None:
+                if match.group(1) is None:
+                    return self.available_cpus()
+                divisor = int(match.group(1))
+                if divisor > 0:
+                    return max(1, self.available_cpus() // divisor)
+        raise ValueError(f"Invalid default {default!r}: expected an integer, None, 'cpus' or 'cpus / N' with N greater than zero")
 
-        This is the historical sizing rule for worker pools, applied to the CPUs the process may use rather than to
-        the node's CPUs.  It never returns 0, because ``MultiProcUtil`` treats fewer than one worker as "automatic".
-        """
-        workers = max(1, ResourceAllocation.available_cpus() // 2)
-        return workers if cap is None else max(1, min(cap, workers))
-
-    def get_worker_count(self, call_site: str, legacy_default: int) -> int:
+    def get_worker_count(self, call_site: str, default: Any, cap: Optional[int] = None) -> int:
         """Return how many worker processes the code at ``call_site`` should start.
 
-        When nothing valid is configured for ``call_site``, return ``legacy_default`` unchanged.  A configured value
-        above :meth:`available_cpus` is reduced to it, with a warning.  The result is never below 1.
+        ``default`` is what the calling code used before this class existed, as an integer or an expression (see
+        :meth:`get_cpus`); ``cap`` is an upper limit the calling code already had.  The rules are:
+
+        * The default is validated first, so a wrong default raises :class:`ValueError` even when the file has a value.
+        * When a value is configured for ``call_site`` it is used, reduced to :meth:`available_cpus` if larger.
+        * Otherwise the default is used as given, so an integer such as the number of items is never reduced.
+        * ``cap`` then limits the result, whether it came from the file or from the default.
+        * Every reduction of a configured value is reported with a warning.  The result is at least 1, because
+          ``MultiProcUtil`` treats fewer than one worker as "automatic" and starts twice the node's CPUs.
         """
+        if default is None:
+            raise ValueError("Invalid default None for a worker count: expected an integer, 'cpus' or 'cpus / N'")
+        if cap is not None and (isinstance(cap, bool) or not isinstance(cap, int) or cap < 1):
+            raise ValueError(f"Invalid cap {cap!r}: expected a positive integer")
+
+        resolved_default = self._code_default(default)
         configured = self.get_cpus(call_site, default=None)
         if configured is None:
-            return max(1, legacy_default)
-        available = self.available_cpus()
-        if configured > available:
-            logger.warning(
-                "Resource allocation: %s is configured for %d workers but only %d CPUs are available; using %d",
-                call_site,
-                configured,
-                available,
-                available,
-            )
-            configured = available
-        return max(1, int(configured))
+            workers = resolved_default
+        else:
+            workers = configured
+            available = self.available_cpus()
+            if workers > available:
+                logger.warning("Resource allocation: %s is configured for %d workers but only %d CPUs are available; using %d", call_site, workers, available, available)
+                workers = available
+        if cap is not None and workers > cap:
+            if configured is not None:
+                logger.warning("Resource allocation: %s is configured for %d workers but at most %d are allowed; using %d", call_site, workers, cap, cap)
+            workers = cap
+        return max(1, int(workers))
 
     def _resolve_cpu_value(self, value: Any) -> Any:
         if isinstance(value, bool):

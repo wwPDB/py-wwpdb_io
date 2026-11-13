@@ -6,9 +6,16 @@
 # Two kinds of job name are used and they control different things:
 #   * operation names (for example annot-wwpdb-validate-all-v2) are what a cluster job requests for itself;
 #   * call-site names (for example validation.mogul) are how many worker processes that code starts.
+#
+# Every call site has its own default in the code, which applies when this file says nothing about it.  Delete any
+# line below to go back to that default.  A call-site count above the CPUs available to the process, or above a
+# limit the code already has, is reduced.
 
-defaults:
-  cpus: all/2
+# Optional site-wide values.  They take precedence over the defaults in the code for every name not listed under
+# "jobs", so leave this block out unless that is what is wanted.
+# defaults:
+#   cpus: all/2
+#   memory: 8G
 
 jobs:
   # Operations: what the cluster job requests (memory in MB or with an M/G suffix, number of CPUs).
@@ -22,12 +29,22 @@ jobs:
     memory: 20G
     cpus: 4
 
-  # Call sites: worker processes started inside a job. Counts above the CPUs available to the process are reduced.
+  # Call sites: worker processes started inside a job (illustrative values).
   validation.mogul:
     cpus: 2
   validation.ed_pictures:
     cpus: 2
   validation.diagram:
     cpus: 2
+  ccmodule.instance_reports:
+    cpus: 2
+  ccmodule.assign_validation:
+    cpus: 2
   seqmodule.blast:
     cpus: 4
+  seqmodule.ref_alignments:
+    cpus: 2
+  seqmodule.same_seq_annotation:
+    cpus: 2
+  releasemodule.update:
+    cpus: 2

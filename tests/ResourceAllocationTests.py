@@ -440,17 +440,41 @@ def test_available_cpus_is_at_least_one(tmp_path: Path, monkeypatch: pytest.Monk
 EXAMPLE = Path(__file__).resolve().parent.parent / "examples" / "resource_allocation.yaml"
 
 
+CALL_SITE_KEYS = [
+    "validation.mogul",
+    "validation.ed_pictures",
+    "validation.diagram",
+    "ccmodule.instance_reports",
+    "ccmodule.assign_validation",
+    "seqmodule.blast",
+    "seqmodule.ref_alignments",
+    "seqmodule.same_seq_annotation",
+    "releasemodule.update",
+]
+
+
 def test_example_file_is_valid_and_resolves_validation_values() -> None:
     ra = ResourceAllocation(config_file=str(EXAMPLE))
     assert ra.get_memory_mb("annot-wwpdb-validate-all-v2") == 4096
     assert ra.get_cpus("annot-wwpdb-validate-all-v2") == 3
-    assert ra.get_cpus("validation.mogul", default=None) is not None
     assert ra.get_cpus("seqmodule.blast", default=None) == 4
     assert ra.get_memory_mb("seq-blastp", default=0) == 20480
 
 
+@pytest.mark.parametrize("key", CALL_SITE_KEYS)
+def test_example_file_documents_every_call_site_key(key: str) -> None:
+    assert ResourceAllocation(config_file=str(EXAMPLE)).get_cpus(key, default=None) is not None
+
+
+def test_example_file_does_not_change_unlisted_call_sites() -> None:
+    """The example must not carry a ``defaults`` block that silently overrides every call site's own default."""
+    ra = ResourceAllocation(config_file=str(EXAMPLE))
+    assert ra.get_cpus("some.unlisted.call_site", default=None) is None
+    assert ra.get_memory_mb("some-unlisted-operation", default=None) is None
+
+
 # ---------------------------------------------------------------------------
-# Worker-process counts for call sites inside a job
+# Code-owned CPU defaults: an integer or an expression such as "cpus / 2"
 # ---------------------------------------------------------------------------
 
 
@@ -458,48 +482,173 @@ def _with_cpus(monkeypatch: pytest.MonkeyPatch, count: int) -> None:
     monkeypatch.setattr(os, "sched_getaffinity", lambda _pid: set(range(count)), raising=False)
 
 
-@pytest.mark.parametrize(
-    ("cpus", "cap", "expected"),
-    [(16, None, 8), (64, 10, 10), (8, 10, 4), (3, 10, 1), (2, 10, 1), (1, 10, 1), (1, None, 1)],
-)
-def test_default_worker_count_is_half_the_available_cpus(monkeypatch: pytest.MonkeyPatch, cpus: int, cap: Any, expected: int) -> None:
+@pytest.mark.parametrize(("cpus", "expected"), [(1, 1), (2, 1), (3, 1), (4, 2), (5, 2), (64, 32)])
+def test_expression_default_halves_and_floors_with_a_minimum_of_one(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, cpus: int, expected: int) -> None:
     _with_cpus(monkeypatch, cpus)
-    assert ResourceAllocation.default_worker_count(cap) == expected
-
-
-def test_worker_count_unconfigured_returns_legacy_default_unclamped(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    _with_cpus(monkeypatch, 2)
     ra = ResourceAllocation(config_file=_write(tmp_path, {}))
-    assert ra.get_worker_count("validation.mogul", 40) == 40
+    assert ra.get_cpus("job_a", default="cpus / 2") == expected
 
 
-def test_worker_count_configured_value_beats_legacy_default(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+@pytest.mark.parametrize(("expression", "expected"), [("cpus", 6), ("cpus/2", 3), ("  cpus  /  3  ", 2), ("cpus / 4", 1), ("cpus / 100", 1)])
+def test_expression_default_accepts_the_documented_forms(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, expression: str, expected: int) -> None:
+    _with_cpus(monkeypatch, 6)
+    ra = ResourceAllocation(config_file=_write(tmp_path, {}))
+    assert ra.get_cpus("job_a", default=expression) == expected
+
+
+INVALID_EXPRESSIONS = ["", "cpu / 2", "cpus / 0", "cpus * 2", "cpus / 2.5", "cpus /", "/ 2", "cpus / -1", "cpus / 2 / 2", "2 + 2", "4", "all/2", "__import__('os')", "cpus / ٢"]
+
+
+@pytest.mark.parametrize("expression", INVALID_EXPRESSIONS)
+def test_invalid_expression_default_raises_value_error(tmp_path: Path, expression: str) -> None:
+    ra = ResourceAllocation(config_file=_write(tmp_path, {}))
+    with pytest.raises(ValueError, match="default"):
+        ra.get_cpus("job_a", default=expression)
+
+
+@pytest.mark.parametrize("bad", [True, False, 2.5, ["cpus"], {"cpus": 2}])
+def test_default_of_the_wrong_type_raises_value_error(tmp_path: Path, bad: Any) -> None:
+    ra = ResourceAllocation(config_file=_write(tmp_path, {}))
+    with pytest.raises(ValueError, match="default"):
+        ra.get_cpus("job_a", default=bad)
+
+
+def test_invalid_expression_raises_even_when_the_file_has_a_valid_value(tmp_path: Path) -> None:
+    ra = ResourceAllocation(config_file=_write(tmp_path, {"jobs": {"job_a": {"cpus": 3}}}))
+    with pytest.raises(ValueError, match="default"):
+        ra.get_cpus("job_a", default="cpus * 2")
+
+
+def test_expression_default_is_never_evaluated_as_code(tmp_path: Path) -> None:
+    marker = tmp_path / "evaluated"
+    ra = ResourceAllocation(config_file=_write(tmp_path, {}))
+    with pytest.raises(ValueError, match="default"):
+        ra.get_cpus("job_a", default=f"__import__('pathlib').Path({str(marker)!r}).touch()")
+    assert not marker.exists()
+
+
+def test_no_resource_file_gives_the_code_default(monkeypatch: pytest.MonkeyPatch) -> None:
+    _with_cpus(monkeypatch, 8)
+    monkeypatch.setattr(ConfigInfo, "get", lambda self, keyWord, default=None: default)  # noqa: ARG005
+    ra = ResourceAllocation(site_id="TEST")
+    assert ra.get_cpus("job_a", default="cpus / 2") == 4
+    assert ra.get_cpus("job_a", default=7) == 7
+
+
+@pytest.mark.parametrize("data", [{}, {"jobs": {}}, {"defaults": {}}, {"jobs": {"other": {"cpus": 5}}}, {"jobs": {"job_a": {"memory": "1G"}}}])
+def test_missing_yaml_keys_give_the_code_default(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, data: Dict[str, Any]) -> None:
+    _with_cpus(monkeypatch, 8)
+    ra = ResourceAllocation(config_file=_write(tmp_path, data))
+    assert ra.get_cpus("job_a", default="cpus / 2") == 4
+
+
+def test_malformed_yaml_warns_and_gives_the_code_default(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture) -> None:
+    _with_cpus(monkeypatch, 8)
+    path = tmp_path / "bad.yml"
+    path.write_text("jobs: [unclosed")
+    with caplog.at_level(logging.WARNING):
+        ra = ResourceAllocation(config_file=str(path))
+    assert ra.get_cpus("job_a", default="cpus / 2") == 4
+    assert caplog.records
+
+
+def test_configured_value_overrides_the_code_default(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    _with_cpus(monkeypatch, 8)
+    ra = ResourceAllocation(config_file=_write(tmp_path, {"jobs": {"job_a": {"cpus": 3}}}))
+    assert ra.get_cpus("job_a", default="cpus / 2") == 3
+    assert ra.get_cpus("job_a", default=7) == 3
+
+
+def test_omitted_default_still_returns_every_available_cpu(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    _with_cpus(monkeypatch, 5)
+    ra = ResourceAllocation(config_file=_write(tmp_path, {}))
+    assert ra.get_cpus("job_a") == 5
+
+
+# ---------------------------------------------------------------------------
+# Worker-process counts for call sites inside a job
+# ---------------------------------------------------------------------------
+
+
+def _workers(tmp_path: Path, jobs: Any = None) -> ResourceAllocation:
+    return ResourceAllocation(config_file=_write(tmp_path, {"jobs": jobs or {}}))
+
+
+@pytest.mark.parametrize(("cpus", "expected"), [(16, 8), (3, 1), (2, 1), (1, 1)])
+def test_worker_count_expression_default_is_half_the_cpus_and_at_least_one(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, cpus: int, expected: int) -> None:
+    _with_cpus(monkeypatch, cpus)
+    assert _workers(tmp_path).get_worker_count("validation.mogul", "cpus / 2") == expected
+
+
+def test_worker_count_integer_default_is_not_clamped_by_the_cpus(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    _with_cpus(monkeypatch, 2)
+    assert _workers(tmp_path).get_worker_count("validation.mogul", 40) == 40
+
+
+def test_worker_count_configured_value_beats_the_default(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     _with_cpus(monkeypatch, 16)
-    ra = ResourceAllocation(config_file=_write(tmp_path, {"jobs": {"validation.mogul": {"cpus": 3}}}))
-    assert ra.get_worker_count("validation.mogul", 8) == 3
+    assert _workers(tmp_path, {"validation.mogul": {"cpus": 3}}).get_worker_count("validation.mogul", "cpus / 2") == 3
 
 
 def test_worker_count_configured_above_available_is_clamped_with_warning(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture) -> None:
     _with_cpus(monkeypatch, 4)
-    ra = ResourceAllocation(config_file=_write(tmp_path, {"jobs": {"validation.mogul": {"cpus": 12}}}))
     with caplog.at_level(logging.WARNING):
-        assert ra.get_worker_count("validation.mogul", 2) == 4
+        assert _workers(tmp_path, {"validation.mogul": {"cpus": 20}}).get_worker_count("validation.mogul", "cpus / 2") == 4
     assert any("validation.mogul" in record.getMessage() for record in caplog.records)
 
 
-def test_worker_count_uses_defaults_section(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_worker_count_cap_bounds_the_code_default(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    _with_cpus(monkeypatch, 64)
+    assert _workers(tmp_path).get_worker_count("validation.mogul", "cpus / 2", cap=10) == 10
+
+
+def test_worker_count_cap_bounds_a_configured_value_with_warning(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture) -> None:
+    _with_cpus(monkeypatch, 32)
+    with caplog.at_level(logging.WARNING):
+        assert _workers(tmp_path, {"validation.mogul": {"cpus": 20}}).get_worker_count("validation.mogul", "cpus / 2", cap=10) == 10
+    assert any("validation.mogul" in record.getMessage() and "10" in record.getMessage() for record in caplog.records)
+
+
+def test_worker_count_cap_below_a_configured_value_within_the_cpus_does_not_warn_when_not_reduced(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture) -> None:
+    _with_cpus(monkeypatch, 32)
+    with caplog.at_level(logging.WARNING):
+        assert _workers(tmp_path, {"validation.mogul": {"cpus": 6}}).get_worker_count("validation.mogul", "cpus / 2", cap=10) == 6
+    assert not caplog.records
+
+
+def test_worker_count_without_a_cap_only_the_cpus_limit_a_configured_value(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    _with_cpus(monkeypatch, 4)
+    assert _workers(tmp_path, {"validation.mogul": {"cpus": 20}}).get_worker_count("validation.mogul", "cpus / 2") == 4
+
+
+def test_worker_count_uses_the_defaults_section(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     _with_cpus(monkeypatch, 16)
     ra = ResourceAllocation(config_file=_write(tmp_path, {"defaults": {"cpus": "all/4"}}))
-    assert ra.get_worker_count("validation.mogul", 8) == 4
+    assert ra.get_worker_count("validation.mogul", "cpus / 2") == 4
 
 
-def test_worker_count_invalid_configuration_falls_back_to_legacy_default(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_worker_count_invalid_configuration_falls_back_to_the_default(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     _with_cpus(monkeypatch, 16)
-    ra = ResourceAllocation(config_file=_write(tmp_path, {"jobs": {"validation.mogul": {"cpus": "lots"}}}))
-    assert ra.get_worker_count("validation.mogul", 5) == 5
+    assert _workers(tmp_path, {"validation.mogul": {"cpus": "lots"}}).get_worker_count("validation.mogul", 5) == 5
 
 
 def test_worker_count_is_never_zero(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     _with_cpus(monkeypatch, 1)
-    ra = ResourceAllocation(config_file=_write(tmp_path, {}))
-    assert ra.get_worker_count("validation.mogul", 0) == 1
+    assert _workers(tmp_path).get_worker_count("validation.mogul", 0) == 1
+
+
+@pytest.mark.parametrize("expression", ["cpus * 2", "", "cpus / 0"])
+def test_worker_count_invalid_default_raises_even_when_configured(tmp_path: Path, expression: str) -> None:
+    with pytest.raises(ValueError, match="default"):
+        _workers(tmp_path, {"validation.mogul": {"cpus": 3}}).get_worker_count("validation.mogul", expression)
+
+
+def test_worker_count_none_default_raises(tmp_path: Path) -> None:
+    with pytest.raises(ValueError, match="default"):
+        _workers(tmp_path).get_worker_count("validation.mogul", None)  # type: ignore[arg-type]
+
+
+@pytest.mark.parametrize("cap", [0, -1, True, 2.5, "10"])
+def test_worker_count_invalid_cap_raises(tmp_path: Path, cap: Any) -> None:
+    with pytest.raises(ValueError, match="cap"):
+        _workers(tmp_path).get_worker_count("validation.mogul", "cpus / 2", cap=cap)

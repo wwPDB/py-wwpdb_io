@@ -9,4 +9,5 @@ wwpdb.utils.config
 wwpdb.utils.testing
 pytest
 types-paramiko
+types-PyYAML
 #

@@ -431,3 +431,19 @@ def test_available_cpus_is_at_least_one(tmp_path: Path, monkeypatch: pytest.Monk
     monkeypatch.setattr(os, "cpu_count", lambda: None)
     ra = ResourceAllocation(config_file=_write(tmp_path, {}))
     assert ra.available_cpus() == 1
+
+
+# ---------------------------------------------------------------------------
+# The shipped example
+# ---------------------------------------------------------------------------
+
+EXAMPLE = Path(__file__).resolve().parent.parent / "examples" / "resource_allocation.yaml"
+
+
+def test_example_file_is_valid_and_resolves_validation_values() -> None:
+    ra = ResourceAllocation(config_file=str(EXAMPLE))
+    assert ra.get_memory_mb("annot-wwpdb-validate-all-v2") == 4096
+    assert ra.get_cpus("annot-wwpdb-validate-all-v2") == 3
+    assert ra.get_cpus("validation.mogul", default=None) is not None
+    assert ra.get_cpus("seqmodule.blast", default=None) == 4
+    assert ra.get_memory_mb("seq-blastp", default=0) == 20480

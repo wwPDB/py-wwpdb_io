@@ -30,7 +30,7 @@ def compile_site_config() -> None:
 
 @pytest.fixture
 def mock_config(monkeypatch: pytest.MonkeyPatch) -> None:  # noqa: ARG001
-    with open("./wwpdb/io/tests-io/fixtures/site-config/test/test/ConfigInfoFileCache.json") as fp:
+    with open("./tests/fixtures/site-config/test/test/ConfigInfoFileCache.json") as fp:
         test_config = json.load(fp)
     monkeypatch.setattr(ConfigInfoData, "getConfigDictionary", lambda s: test_config["TEST"])  # noqa: ARG005
     module = importlib.import_module("wwpdb.io.misc.Compression")
@@ -113,7 +113,7 @@ def test_corrupted_file(archive_dir: str) -> None:  # pylint: disable=redefined-
     dep_dir = os.path.join(archive_dir, "D_800001")
     cold_archive = os.path.join(archive_dir, "..", "cold_archive")
     os.makedirs(dep_dir, exist_ok=True)
-    shutil.copy("./wwpdb/io/tests-io/fixtures/corrupt.tar.gz", os.path.join(cold_archive, "D_800001.tar.gz"))
+    shutil.copy("./tests/fixtures/corrupt.tar.gz", os.path.join(cold_archive, "D_800001.tar.gz"))
     compression = Compression(ConfigInfo(), Mock())
 
     with pytest.raises(Exception):

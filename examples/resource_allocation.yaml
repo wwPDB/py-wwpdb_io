@@ -1,0 +1,33 @@
+# Example configuration for wwpdb.io.misc.ResourceAllocation.
+#
+# Point the site-configuration key RESOURCE_ALLOCATION_CONFIG_FILE at a copy of this file.
+# The format is described in the docstring of wwpdb/io/misc/ResourceAllocation.py.
+#
+# Two kinds of job name are used and they control different things:
+#   * operation names (for example annot-wwpdb-validate-all-v2) are what a cluster job requests for itself;
+#   * call-site names (for example validation.mogul) are how many worker processes that code starts.
+
+defaults:
+  cpus: all/2
+
+jobs:
+  # Operations: what the cluster job requests (memory in MB or with an M/G suffix, number of CPUs).
+  annot-wwpdb-validate-all-v2:
+    memory: 4G
+    cpus: 3
+  seq-blastp:
+    memory: 20G
+    cpus: 4
+  seq-blastn:
+    memory: 20G
+    cpus: 4
+
+  # Call sites: worker processes started inside a job. Counts above the CPUs available to the process are reduced.
+  validation.mogul:
+    cpus: 2
+  validation.ed_pictures:
+    cpus: 2
+  validation.diagram:
+    cpus: 2
+  seqmodule.blast:
+    cpus: 4

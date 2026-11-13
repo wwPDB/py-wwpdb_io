@@ -1,5 +1,6 @@
 # ruff: noqa: S101
 
+import logging
 import os
 
 import pytest
@@ -217,9 +218,214 @@ def test_set_cpu_affinity_does_not_call_sched_setaffinity_with_empty_set(tmp_pat
     assert len(calls) == 0
 
 
-def test_get_memory_mb_empty_string_raises_clear_value_error(tmp_path):
+def test_get_memory_mb_empty_string_is_ignored_with_warning(tmp_path, caplog):
     path = tmp_path / "cfg.yml"
     path.write_text(yaml.safe_dump({"jobs": {"job_a": {"memory": ""}}}))
     ra = ResourceAllocation(config_file=str(path))
-    with pytest.raises(ValueError):
+    with caplog.at_level(logging.WARNING):
+        assert ra.get_memory_mb("job_a", default=2000) == 2000
+    assert any("job_a" in r.getMessage() for r in caplog.records)
+
+
+# ---------------------------------------------------------------------------
+# Caller-supplied defaults (an omitted default keeps the original behaviour)
+# ---------------------------------------------------------------------------
+
+
+def _write(tmp_path, data):
+    path = tmp_path / "cfg.yml"
+    path.write_text(yaml.safe_dump(data))
+    return str(path)
+
+
+def test_get_cpus_unconfigured_returns_explicit_default(tmp_path):
+    ra = ResourceAllocation(config_file=_write(tmp_path, {}))
+    assert ra.get_cpus("job_a", default=7) == 7
+
+
+def test_get_cpus_explicit_none_default_is_distinguishable_from_omitted(tmp_path, monkeypatch):
+    monkeypatch.setattr(os, "sched_getaffinity", lambda _pid: {0, 1, 2}, raising=False)
+    ra = ResourceAllocation(config_file=_write(tmp_path, {}))
+    assert ra.get_cpus("job_a", default=None) is None
+    assert ra.get_cpus("job_a") == 3
+
+
+def test_get_cpus_configured_value_beats_default(config_file):
+    ra = ResourceAllocation(config_file=config_file)
+    assert ra.get_cpus("entity_transform_img_generator", default=1) == 4
+
+
+def test_get_memory_mb_unconfigured_returns_explicit_default(tmp_path):
+    ra = ResourceAllocation(config_file=_write(tmp_path, {}))
+    assert ra.get_memory_mb("job_a", default=2000) == 2000
+
+
+def test_get_memory_mb_omitted_default_is_none_and_explicit_none_is_none(tmp_path):
+    ra = ResourceAllocation(config_file=_write(tmp_path, {}))
+    assert ra.get_memory_mb("job_a") is None
+    assert ra.get_memory_mb("job_a", default=None) is None
+
+
+def test_get_memory_mb_explicit_all_is_none_even_with_default(tmp_path):
+    ra = ResourceAllocation(config_file=_write(tmp_path, {"jobs": {"job_a": {"memory": "all"}}}))
+    assert ra.get_memory_mb("job_a", default=2000) is None
+
+
+def test_get_memory_mb_defaults_section_all_is_none_even_with_default(tmp_path):
+    ra = ResourceAllocation(config_file=_write(tmp_path, {"defaults": {"memory": "all"}}))
+    assert ra.get_memory_mb("job_a", default=2000) is None
+
+
+def test_get_memory_mb_job_overrides_defaults_section(tmp_path):
+    ra = ResourceAllocation(config_file=_write(tmp_path, {"defaults": {"memory": "8G"}, "jobs": {"job_a": {"memory": "4G"}}}))
+    assert ra.get_memory_mb("job_a", default=2000) == 4096
+    assert ra.get_memory_mb("job_b", default=2000) == 8192
+
+
+# ---------------------------------------------------------------------------
+# Invalid values: the job value counts as absent, then defaults, then the caller default
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize("bad", [True, False, 0, -2, 1.5, "all/0", "abc", "", "0", "-3", "all/x"])
+def test_invalid_cpu_value_falls_back_to_caller_default(tmp_path, bad, caplog):
+    ra = ResourceAllocation(config_file=_write(tmp_path, {"jobs": {"job_a": {"cpus": bad}}}))
+    with caplog.at_level(logging.WARNING):
+        assert ra.get_cpus("job_a", default=5) == 5
+    assert caplog.records
+
+
+@pytest.mark.parametrize("bad", [True, False, 0, -2, 1.5, "1.5G", "2T", "abc", "", "0", "-3G", "G"])
+def test_invalid_memory_value_falls_back_to_caller_default(tmp_path, bad, caplog):
+    ra = ResourceAllocation(config_file=_write(tmp_path, {"jobs": {"job_a": {"memory": bad}}}))
+    with caplog.at_level(logging.WARNING):
+        assert ra.get_memory_mb("job_a", default=2000) == 2000
+    assert caplog.records
+
+
+def test_invalid_job_cpu_value_uses_valid_defaults_section(tmp_path):
+    ra = ResourceAllocation(config_file=_write(tmp_path, {"defaults": {"cpus": 3}, "jobs": {"job_a": {"cpus": "bogus"}}}))
+    assert ra.get_cpus("job_a", default=9) == 3
+
+
+def test_invalid_job_memory_value_uses_valid_defaults_section(tmp_path):
+    ra = ResourceAllocation(config_file=_write(tmp_path, {"defaults": {"memory": "8G"}, "jobs": {"job_a": {"memory": "bogus"}}}))
+    assert ra.get_memory_mb("job_a", default=2000) == 8192
+
+
+def test_job_and_defaults_both_invalid_use_caller_default(tmp_path):
+    cfg = {"defaults": {"cpus": "bogus", "memory": "bogus"}, "jobs": {"job_a": {"cpus": 0, "memory": 0}}}
+    ra = ResourceAllocation(config_file=_write(tmp_path, cfg))
+    assert ra.get_cpus("job_a", default=2) == 2
+    assert ra.get_memory_mb("job_a", default=1500) == 1500
+
+
+@pytest.mark.parametrize(
+    "cfg",
+    [
+        {"jobs": ["a", "b"]},
+        {"jobs": "text"},
+        {"jobs": {"job_a": 5}},
+        {"jobs": {"job_a": ["cpus"]}},
+        {"defaults": 7},
+        {"defaults": ["cpus"]},
+        {"jobs": None, "defaults": None},
+    ],
+)
+def test_wrongly_shaped_sections_are_ignored(tmp_path, cfg):
+    ra = ResourceAllocation(config_file=_write(tmp_path, cfg))
+    assert ra.get_cpus("job_a", default=2) == 2
+    assert ra.get_memory_mb("job_a", default=1500) == 1500
+
+
+# ---------------------------------------------------------------------------
+# Where the configuration comes from
+# ---------------------------------------------------------------------------
+
+
+class _FakeConfigInfo:
+    def __init__(self, value):
+        self._value = value
+
+    def get(self, key, default=None):
+        return self._value if key == "RESOURCE_ALLOCATION_CONFIG_FILE" else default
+
+
+class _BrokenConfigInfo:
+    def get(self, key, default=None):  # noqa: ARG002
+        raise RuntimeError("site configuration unavailable")
+
+
+def test_config_info_object_supplies_path(config_file):
+    ra = ResourceAllocation(config_info=_FakeConfigInfo(config_file))
+    assert ra.get_cpus("entity_transform_img_generator") == 4
+
+
+def test_config_file_beats_config_info(tmp_path, config_file):
+    ra = ResourceAllocation(config_file=config_file, config_info=_FakeConfigInfo(str(tmp_path / "nope.yml")))
+    assert ra.get_cpus("entity_transform_img_generator") == 4
+
+
+def test_failing_config_info_lookup_does_not_raise(caplog):
+    with caplog.at_level(logging.WARNING):
+        ra = ResourceAllocation(config_info=_BrokenConfigInfo())
+    assert ra.get_cpus("job_a", default=3) == 3
+    assert caplog.records
+
+
+def test_unset_config_path_is_silent(caplog):
+    with caplog.at_level(logging.WARNING):
+        ra = ResourceAllocation(config_info=_FakeConfigInfo(None))
+    assert ra.get_cpus("job_a", default=3) == 3
+    assert not caplog.records
+
+
+def test_configured_but_missing_file_warns_once(tmp_path, caplog):
+    with caplog.at_level(logging.WARNING):
+        ra = ResourceAllocation(config_file=str(tmp_path / "nope.yml"))
+        ra.get_cpus("job_a")
         ra.get_memory_mb("job_a")
+    assert len(caplog.records) == 1
+
+
+def test_configured_but_malformed_file_warns(tmp_path, caplog):
+    path = tmp_path / "bad.yml"
+    path.write_text("key: [unclosed")
+    with caplog.at_level(logging.WARNING):
+        ResourceAllocation(config_file=str(path))
+    assert caplog.records
+
+
+# ---------------------------------------------------------------------------
+# available_cpus()
+# ---------------------------------------------------------------------------
+
+
+def test_available_cpus_uses_affinity_mask(tmp_path, monkeypatch):
+    monkeypatch.setattr(os, "sched_getaffinity", lambda _pid: {4, 5}, raising=False)
+    ra = ResourceAllocation(config_file=_write(tmp_path, {}))
+    assert ra.available_cpus() == 2
+
+
+def test_available_cpus_falls_back_when_affinity_raises_oserror(tmp_path, monkeypatch):
+    def boom(_pid):
+        raise OSError("not permitted")
+
+    monkeypatch.setattr(os, "sched_getaffinity", boom, raising=False)
+    monkeypatch.setattr(os, "cpu_count", lambda: 6)
+    ra = ResourceAllocation(config_file=_write(tmp_path, {}))
+    assert ra.available_cpus() == 6
+
+
+def test_available_cpus_falls_back_when_affinity_missing(tmp_path, monkeypatch):
+    monkeypatch.delattr(os, "sched_getaffinity", raising=False)
+    monkeypatch.setattr(os, "cpu_count", lambda: 3)
+    ra = ResourceAllocation(config_file=_write(tmp_path, {}))
+    assert ra.available_cpus() == 3
+
+
+def test_available_cpus_is_at_least_one(tmp_path, monkeypatch):
+    monkeypatch.delattr(os, "sched_getaffinity", raising=False)
+    monkeypatch.setattr(os, "cpu_count", lambda: None)
+    ra = ResourceAllocation(config_file=_write(tmp_path, {}))
+    assert ra.available_cpus() == 1

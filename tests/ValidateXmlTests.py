@@ -30,11 +30,11 @@ mockTopPath = os.path.join(TOPDIR, "wwpdb", "mock-data")
 
 
 class ReleaseFileNamesTests(unittest.TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         self.__xrayxmlfile = os.path.join(mockTopPath, "MISC", "3ltq_validation.xml")
         self.__nmrxmlfile = os.path.join(mockTopPath, "MISC", "6ne8_validation.xml")
 
-    def testValidate(self):
+    def testValidate(self) -> None:
         """Tests parsing of validation XML file"""
         for fname in [self.__xrayxmlfile, self.__nmrxmlfile]:
             obj = ValidateXml(fname)

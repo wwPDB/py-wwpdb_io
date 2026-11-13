@@ -23,39 +23,54 @@ __version__ = "V0.001"
 #
 #
 import logging
-from typing import Any, NoReturn
+from typing import Any, Dict, NoReturn, Optional, cast
 
+# For python 3.8 compatibility
+from typing_extensions import NotRequired, TypedDict, Unpack
 from wwpdb.utils.config.ConfigInfo import ConfigInfo, getSiteId
 
 logger = logging.getLogger(__name__)
 
 
+class SftpConnectConfig(TypedDict):
+    port: NotRequired[int]
+    pw: NotRequired[Optional[str]]
+    keyFilePath: NotRequired[Optional[str]]
+    keyFileType: NotRequired[str]
+
+
+class ArchiveIoInitConfig(TypedDict):
+    raiseExceptions: NotRequired[bool]
+    siteId: NotRequired[str]
+    serverId: NotRequired[str]
+
+
 class ArchiveIoBase:
     """A base class for for archive data transfer operation utilities."""
 
-    def __init__(self, *args, **kwargs) -> None:  # noqa: ARG002  pylint: disable=unused-argument
+    def __init__(self, *args: str, **kwargs: Unpack[ArchiveIoInitConfig]) -> None:  # noqa: ARG002  pylint: disable=unused-argument
         self._raiseExceptions = kwargs.get("raiseExceptions", False)
         self._siteId = kwargs.get("siteId", getSiteId())
-        self._serverId = kwargs.get("serverId")
+        self._serverId = cast("str", kwargs.get("serverId"))
 
         self.__cI = ConfigInfo(siteId=getSiteId())
         #
-        cD = self.__cI.get(self._serverId, {})
-        self._hostName = cD.get("HOST_NAME", None)
-        self._userName = cD.get("HOST_USERNAME", None)
-        self._password = cD.get("HOST_PASSWORD", None)
+        cD: Dict[str, Any] = self.__cI.get(self._serverId, {})
+        self._hostName = cast("str", cD.get("HOST_NAME"))
+        self._userName = cast("str", cD.get("HOST_USERNAME"))
+        self._password = cD.get("HOST_PASSWORD")
         self._hostPort = int(cD.get("HOST_PORT", 22))
-        self._protocol = cD.get("HOST_PROTOCOL", None)
-        self._rootPath: str | None = cD.get("HOST_ROOT_PATH", None)
-        self._keyFilePath = cD.get("HOST_KEY_FILE_PATH", None)
-        self._keyFileType = cD.get("HOST_KEY_FILE_TYPE", None)
+        self._protocol = cD.get("HOST_PROTOCOL")
+        self._rootPath: str | None = cD.get("HOST_ROOT_PATH")
+        self._keyFilePath = cD.get("HOST_KEY_FILE_PATH")
+        self._keyFileType = cast("str", cD.get("HOST_KEY_FILE_TYPE"))
         #
 
     def __raise_unimplemented(self) -> NoReturn:
         err = "To be implemented in subclass"
         raise NotImplementedError(err)
 
-    def connect(self, hostName, userName, **kwargs):  # noqa: ARG002  pylint: disable=unused-argument
+    def connect(self, hostName: str, userName: str, **kwargs: Unpack[SftpConnectConfig]) -> bool:  # noqa: ARG002  pylint: disable=unused-argument
         self.__raise_unimplemented()
 
     def mkdir(self, path: str, mode: int) -> bool:  # noqa: ARG002  pylint: disable=unused-argument

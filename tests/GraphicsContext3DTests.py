@@ -32,7 +32,7 @@ import sys
 import time
 import traceback
 import unittest
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List, Tuple, cast
 
 from mmcif_utils.persist.PdbxPersist import PdbxPersist
 from mmcif_utils.persist.PdbxPyIoAdapter import PdbxPyIoAdapter as PdbxIoAdapter
@@ -73,7 +73,7 @@ class GraphicsContext3DTests(unittest.TestCase):
         try:
             myPersist = PdbxPersist(self.__verbose, self.__lfh)
             indexD = myPersist.getIndex(dbFileName=persistFilePath)
-            (firstContainerName, _firstContainerType) = indexD["__containers__"][0]
+            (firstContainerName, _firstContainerType) = cast("List[Tuple[str, str]]", indexD["__containers__"])[0]
 
             if self.__debug:  # pragma: no cover
                 self.__lfh.write("GraphicsContext3D.getFirstObject() container name list %r\n" % indexD.items())
@@ -102,7 +102,7 @@ class GraphicsContext3DTests(unittest.TestCase):
 
             self.__lfh.write("Persistent index dictionary %r\n" % indexD.items())
 
-            for containerName, _containerType in indexD["__containers__"]:
+            for containerName, _containerType in cast("List[Tuple[str, str]]", indexD["__containers__"]):
                 objNameList = indexD[containerName]
                 #
                 # For a selection of categories with obvious graphics contexts --
@@ -120,6 +120,7 @@ class GraphicsContext3DTests(unittest.TestCase):
                     if objectName in objNameList:
                         self.__lfh.write("Fetching %s  %s\n" % (containerName, objectName))
                         myObj = myPersist.fetchOneObject(dbFileName=dbFile, containerName=containerName, objectName=objectName)
+                        assert myObj is not None  # noqa: S101  # For type checking
                         aL = myObj.getAttributeList()
                         rowList = myObj.getRowList()
                         for row in rowList:

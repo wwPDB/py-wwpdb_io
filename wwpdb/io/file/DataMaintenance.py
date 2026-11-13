@@ -25,10 +25,11 @@ import shutil
 import sys
 import traceback
 from datetime import datetime
+from typing import List, Optional, TextIO, Tuple, cast
 
 from wwpdb.utils.config.ConfigInfo import ConfigInfo
 
-from wwpdb.io.locator.PathInfo import PathInfo
+from wwpdb.io.locator.PathInfo import PathInfo, PathInfoPartitionId, PathInfoStorageType
 
 
 class DataMaintenance:
@@ -40,28 +41,28 @@ class DataMaintenance:
 
     """
 
-    def __init__(self, siteId=None, testMode=False, verbose=False, log=sys.stderr):
+    def __init__(self, siteId: Optional[str] = None, testMode: bool = False, verbose: bool = False, log: TextIO = sys.stderr) -> None:
         self.__verbose = verbose
         self.__lfh = log
         self.__siteId = siteId
         # In test mode no deletions are performed -
         self.__testMode = testMode
         self.__debug = False
-        self.__sessionPath = None
+        self.__sessionPath: Optional[str] = None
         #
         self.__setup(siteId=siteId)
 
-    def __setup(self, siteId=None):
+    def __setup(self, siteId: Optional[str] = None) -> None:
         self.__siteId = siteId
         self.__cI = ConfigInfo(self.__siteId)
         self.__sessionPath = None
         self.__pI = PathInfo(siteId=self.__siteId, sessionPath=self.__sessionPath, verbose=self.__verbose, log=self.__lfh)
 
-    def setSessionPath(self, inputSessionPath=None):
+    def setSessionPath(self, inputSessionPath: Optional[str] = None) -> None:
         """Override the path to files with fileSource="session" """
         self.__sessionPath = inputSessionPath
 
-    def purgeLogs(self, dataSetId):
+    def purgeLogs(self, dataSetId: str) -> List[str]:
         archivePath = self.__cI.get("SITE_ARCHIVE_STORAGE_PATH")
         dirPath = os.path.join(archivePath, "archive", dataSetId, "log")
         if self.__verbose:
@@ -87,7 +88,7 @@ class DataMaintenance:
             #
         return pthList
 
-    def reversePurge(self, dataSetId, contentType, formatType="pdbx", partitionNumber=1):
+    def reversePurge(self, dataSetId: str, contentType: str, formatType: str = "pdbx", partitionNumber: int = 1) -> List[str]:
         fn = self.__getArchiveFileName(dataSetId, contentType=contentType, formatType=formatType, version="none", partitionNumber=partitionNumber)
 
         archivePath = self.__cI.get("SITE_ARCHIVE_STORAGE_PATH")
@@ -97,7 +98,7 @@ class DataMaintenance:
 
         if len(dirPath) < 2:
             return []
-        fpattern = os.path.join(dirPath, fn + ".V*")
+        fpattern = os.path.join(dirPath, cast("str", fn) + ".V*")
         if self.__verbose:
             self.__lfh.write("+DataMaintenance.__setup() - purging pattern is %s\n" % (fpattern))
 
@@ -121,7 +122,7 @@ class DataMaintenance:
             #
         return fList
 
-    def removeWorkflowDir(self, dataSetId):
+    def removeWorkflowDir(self, dataSetId: str) -> bool:
         if (dataSetId is not None) and dataSetId.startswith("D_") and (len(dataSetId) > 10):
             workflowPath = self.__cI.get("SITE_ARCHIVE_STORAGE_PATH")
             dirPath = os.path.join(workflowPath, "workflow", dataSetId)
@@ -134,28 +135,38 @@ class DataMaintenance:
             return False
         return False
 
-    def getLogFiles(self, dataSetId, fileSource="archive"):
-        pL = []
+    def getLogFiles(self, dataSetId: str, fileSource: PathInfoStorageType = "archive") -> List[str]:
+        pL: List[str] = []
         if fileSource in ["archive"]:
             dirPath = self.__pI.getArchivePath(dataSetId)
         elif fileSource in ["deposit"]:
             dirPath = self.__pI.getDepositPath(dataSetId)
         else:
             return pL
-        fpattern = os.path.join(dirPath, "*.log")
+        fpattern = os.path.join(cast("str", dirPath), "*.log")
         pthList = glob.glob(fpattern)
         return pthList
 
-    def getPurgeCandidates(self, dataSetId, wfInstanceId=None, fileSource="archive", contentType="model", formatType="pdbx", partitionNumber="1", mileStone=None, purgeType="exp"):
+    def getPurgeCandidates(
+        self,
+        dataSetId: str,
+        wfInstanceId: Optional[str] = None,
+        fileSource: PathInfoStorageType = "archive",
+        contentType: str = "model",
+        formatType: str = "pdbx",
+        partitionNumber: str = "1",
+        mileStone: Optional[str] = None,
+        purgeType: str = "exp",
+    ) -> Tuple[Optional[str], List[str], List[str]]:
         """Return the latest version, and candidates for removal and compression.
 
         purgeType = 'exp'    use strategy for experimental and model fileSource V<last>, V2, V1
                     'other'  use strategy for other file types -- V<last> & V1
 
         """
-        latestV = None
-        rmL = []
-        gzL = []
+        latestV: Optional[str] = None
+        rmL: List[str] = []
+        gzL: List[str] = []
         vtL = self.getVersionFileList(
             dataSetId, wfInstanceId=wfInstanceId, fileSource=fileSource, contentType=contentType, formatType=formatType, partitionNumber=partitionNumber, mileStone=mileStone
         )
@@ -187,7 +198,17 @@ class DataMaintenance:
 
         return latestV, rmL, gzL
 
-    def getVersionFileListSnapshot(self, basePath, dataSetId, wfInstanceId=None, fileSource="archive", contentType="model", formatType="pdbx", partitionNumber="1", mileStone=None):
+    def getVersionFileListSnapshot(
+        self,
+        basePath: str,
+        dataSetId: str,
+        wfInstanceId: Optional[str] = None,
+        fileSource: PathInfoStorageType = "archive",
+        contentType: str = "model",
+        formatType: str = "pdbx",
+        partitionNumber: str = "1",
+        mileStone: Optional[str] = None,
+    ) -> List[Tuple[str, str]]:
         """
         For the input content object return a list of file versions in a snapshot directory (recovery mode).
 
@@ -195,7 +216,7 @@ class DataMaintenance:
               List of [(file path, modification date string,size),...]
 
         """
-        pairL = []
+        pairL: List[Tuple[str, str]] = []
         # basePath = '/net/wwpdb_da_data_archive/.snapshot/nightly.1/data'
         try:
             if fileSource == "archive":
@@ -208,21 +229,24 @@ class DataMaintenance:
                 pth = "."
                 snPth = "."
 
-            fPattern = self.__pI.getFilePathVersionTemplate(
-                dataSetId=dataSetId,
-                wfInstanceId=wfInstanceId,
-                contentType=contentType,
-                formatType=formatType,
-                fileSource=fileSource,
-                partNumber=partitionNumber,
-                mileStone=mileStone,
+            fPattern = cast(
+                "str",
+                self.__pI.getFilePathVersionTemplate(
+                    dataSetId=dataSetId,
+                    wfInstanceId=wfInstanceId,
+                    contentType=contentType,
+                    formatType=formatType,
+                    fileSource=fileSource,
+                    partNumber=partitionNumber,
+                    mileStone=mileStone,
+                ),
             )
             _dir, fn = os.path.split(fPattern)
             altPattern = os.path.join(snPth, fn)
             srcL = self.__getFileListWithVersion([altPattern], sortFlag=True)
             for src in srcL:
                 _d, f = os.path.split(src[0])
-                dst = os.path.join(pth, f)
+                dst = os.path.join(cast("str", pth), f)
                 if not os.access(dst, os.F_OK):
                     pairL.append((src[0], dst))
 
@@ -236,7 +260,16 @@ class DataMaintenance:
 
     ##
 
-    def getVersionFileList(self, dataSetId, wfInstanceId=None, fileSource="archive", contentType="model", formatType="pdbx", partitionNumber="1", mileStone=None):
+    def getVersionFileList(
+        self,
+        dataSetId: str,
+        wfInstanceId: Optional[str] = None,
+        fileSource: PathInfoStorageType = "archive",
+        contentType: str = "model",
+        formatType: str = "pdbx",
+        partitionNumber: PathInfoPartitionId = "1",
+        mileStone: Optional[str] = None,
+    ) -> List[Tuple[str, int]]:
         """
         For the input content object return a list of file versions sorted by modification time.
 
@@ -257,14 +290,16 @@ class DataMaintenance:
                 partNumber=partitionNumber,
                 mileStone=mileStone,
             )
-            return self.__getFileListWithVersion([fPattern], sortFlag=True)
+            return self.__getFileListWithVersion([cast("str", fPattern)], sortFlag=True)
         except Exception as e:  # noqa: BLE001
             if self.__verbose:
                 self.__lfh.write("+DataMaintenance.getVersionFileList() failing for data set %s instance %s file source %s err %r\n" % (dataSetId, wfInstanceId, fileSource, str(e)))
                 traceback.print_exc(file=self.__lfh)
             return []
 
-    def getContentTypeFileList(self, dataSetId, wfInstanceId, fileSource="archive", contentTypeList=None):
+    def getContentTypeFileList(
+        self, dataSetId: str, wfInstanceId: Optional[str], fileSource: PathInfoStorageType = "archive", contentTypeList: Optional[List[str]] = None
+    ) -> List[Tuple[str, int]]:
         """
         For the input content object return a list of file versions sorted by modification time.
 
@@ -277,11 +312,11 @@ class DataMaintenance:
         try:
             if fileSource == "session" and self.__sessionPath is not None:
                 self.__pI.setSessionPath(self.__sessionPath)
-            fPatternList = []
+            fPatternList: List[str] = []
             for contentType in contentTypeList:
                 fPattern = self.__pI.getFilePathContentTypeTemplate(dataSetId=dataSetId, wfInstanceId=wfInstanceId, contentType=contentType, fileSource=fileSource)
 
-                fPatternList.append(fPattern)
+                fPatternList.append(cast("str", fPattern))
             if self.__debug:
                 self.__lfh.write("+DataMaintenance.getContentTypeFileList() patterns %r\n" % fPatternList)
             return self.__getFileListWithVersion(fPatternList, sortFlag=True)
@@ -291,19 +326,19 @@ class DataMaintenance:
                 traceback.print_exc(file=self.__lfh)
             return []
 
-    def getMiscFileList(self, fPatternList=None, sortFlag=True):
+    def getMiscFileList(self, fPatternList: Optional[List[str]] = None, sortFlag: bool = True) -> List[Tuple[str, str, float]]:
         if fPatternList is None:
             fPatternList = ["*"]
         return self.__getFileList(fPatternList=fPatternList, sortFlag=sortFlag)
 
-    def getLogFileList(self, entryId, fileSource="archive"):
+    def getLogFileList(self, entryId: str, fileSource: PathInfoStorageType = "archive") -> List[Tuple[str, str, float]]:
         if fileSource in ["archive", "wf-archive"]:
-            pth = self.__pI.getArchivePath(entryId)
+            pth = cast("str", self.__pI.getArchivePath(entryId))
             fpat1 = os.path.join(pth, "*log")
             fpat2 = os.path.join(pth, "log", "*")
             patList = [fpat1, fpat2]
         elif fileSource in ["deposit"]:
-            pth = self.__pI.getDepositPath(entryId)
+            pth = cast("str", self.__pI.getDepositPath(entryId))
             fpat1 = os.path.join(pth, "*log")
             fpat2 = os.path.join(pth, "log", "*")
             patList = [fpat1, fpat2]
@@ -311,7 +346,7 @@ class DataMaintenance:
             return []
         return self.__getFileList(fPatternList=patList, sortFlag=True)
 
-    def __getFileListWithVersion(self, fPatternList=None, sortFlag=False):
+    def __getFileListWithVersion(self, fPatternList: Optional[List[str]] = None, sortFlag: bool = False) -> List[Tuple[str, int]]:
         """
         For the input glob compatible file pattern produce a file list sorted by modification date.
 
@@ -324,12 +359,12 @@ class DataMaintenance:
         if fPatternList is None:
             fPatternList = ["*"]
         try:
-            files = []
+            files: List[str] = []
             for fPattern in fPatternList:
                 if fPattern is not None and len(fPattern) > 0:
                     files.extend(filter(os.path.isfile, glob.glob(fPattern)))
 
-            file_ver_tuple_list = []
+            file_ver_tuple_list: List[Tuple[str, int]] = []
             for f in files:
                 tL = f.split(".")
                 vId = tL[-1]
@@ -351,7 +386,7 @@ class DataMaintenance:
                 traceback.print_exc(file=self.__lfh)
             return []
 
-    def __getFileList(self, fPatternList=None, sortFlag=True):
+    def __getFileList(self, fPatternList: Optional[List[str]] = None, sortFlag: bool = True) -> List[Tuple[str, str, float]]:
         """
         For the input glob compatible file pattern produce a file list sorted by modification date.
 
@@ -364,7 +399,7 @@ class DataMaintenance:
         if fPatternList is None:
             fPatternList = ["*"]
         try:
-            files = []
+            files: List[str] = []
             for fPattern in fPatternList:
                 if fPattern is not None and len(fPattern) > 0:
                     files.extend(filter(os.path.isfile, glob.glob(fPattern)))
@@ -391,7 +426,16 @@ class DataMaintenance:
             return []
 
     ##
-    def __getArchiveFileName(self, dataSetId, wfInstanceId=None, contentType="model", formatType="pdbx", version="latest", partitionNumber="1", mileStone=None):
+    def __getArchiveFileName(
+        self,
+        dataSetId: str,
+        wfInstanceId: Optional[str] = None,
+        contentType: str = "model",
+        formatType: str = "pdbx",
+        version: str = "latest",
+        partitionNumber: PathInfoPartitionId = "1",
+        mileStone: Optional[str] = None,
+    ) -> Optional[str]:
         (_fp, _d, f) = self.__targetFilePath(
             dataSetId=dataSetId,
             wfInstanceId=wfInstanceId,
@@ -430,7 +474,17 @@ class DataMaintenance:
     #     )
     #     return fp
 
-    def __targetFilePath(self, dataSetId, wfInstanceId=None, fileSource="archive", contentType="model", formatType="pdbx", version="latest", partitionNumber="1", mileStone=None):
+    def __targetFilePath(
+        self,
+        dataSetId: str,
+        wfInstanceId: Optional[str] = None,
+        fileSource: PathInfoStorageType = "archive",
+        contentType: str = "model",
+        formatType: str = "pdbx",
+        version: str = "latest",
+        partitionNumber: PathInfoPartitionId = "1",
+        mileStone: Optional[str] = None,
+    ) -> Tuple[Optional[str], Optional[str], Optional[str]]:
         """Return the file path, directory path, and filen ame  for the input content object if this object is valid.
 
         If the file path cannot be verified return None for all values
@@ -438,15 +492,18 @@ class DataMaintenance:
         try:
             if fileSource == "session" and self.__sessionPath is not None:
                 self.__pI.setSessionPath(self.__sessionPath)
-            fP = self.__pI.getFilePath(
-                dataSetId=dataSetId,
-                wfInstanceId=wfInstanceId,
-                contentType=contentType,
-                formatType=formatType,
-                fileSource=fileSource,
-                versionId=version,
-                partNumber=partitionNumber,
-                mileStone=mileStone,
+            fP = cast(
+                "str",
+                self.__pI.getFilePath(
+                    dataSetId=dataSetId,
+                    wfInstanceId=wfInstanceId,
+                    contentType=contentType,
+                    formatType=formatType,
+                    fileSource=fileSource,
+                    versionId=version,
+                    partNumber=partitionNumber,
+                    mileStone=mileStone,
+                ),
             )
             dN, fN = os.path.split(fP)
             return fP, dN, fN

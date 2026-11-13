@@ -22,12 +22,12 @@ from wwpdb.io.file.ValidateXml import ValidateXml  # noqa: F401 pylint: disable=
 
 
 class ImportTests(unittest.TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         pass
 
-    def testInstantiate(self):
-        _vc = DataFile()
-        _vc = mmCIFUtil()  # noqa: F841
+    def testInstantiate(self) -> None:
+        _df = DataFile()  # noqa: F841
+        _mc = mmCIFUtil()  # noqa: F841
         # Will not function without a reqObj
         # vc = DataExchange()
 

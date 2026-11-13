@@ -27,10 +27,10 @@ from wwpdb.io.misc.FormatOut import FormatOut
 
 
 class DataFileTests(unittest.TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         pass
 
-    def testFO(self):
+    def testFO(self) -> None:
         """Tests formatting of interesting structures to ensure does not crash"""
         list_in = ["L1", "L2", "L3", "L4", "L5"]
         tuple_in = ("T1", "T2", "T3", "T4", "T5")

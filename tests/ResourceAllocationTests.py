@@ -447,3 +447,61 @@ def test_example_file_is_valid_and_resolves_validation_values() -> None:
     assert ra.get_cpus("validation.mogul", default=None) is not None
     assert ra.get_cpus("seqmodule.blast", default=None) == 4
     assert ra.get_memory_mb("seq-blastp", default=0) == 20480
+
+
+# ---------------------------------------------------------------------------
+# Worker-process counts for call sites inside a job
+# ---------------------------------------------------------------------------
+
+
+def _with_cpus(monkeypatch: pytest.MonkeyPatch, count: int) -> None:
+    monkeypatch.setattr(os, "sched_getaffinity", lambda _pid: set(range(count)), raising=False)
+
+
+@pytest.mark.parametrize(
+    ("cpus", "cap", "expected"),
+    [(16, None, 8), (64, 10, 10), (8, 10, 4), (3, 10, 1), (2, 10, 1), (1, 10, 1), (1, None, 1)],
+)
+def test_default_worker_count_is_half_the_available_cpus(monkeypatch: pytest.MonkeyPatch, cpus: int, cap: Any, expected: int) -> None:
+    _with_cpus(monkeypatch, cpus)
+    assert ResourceAllocation.default_worker_count(cap) == expected
+
+
+def test_worker_count_unconfigured_returns_legacy_default_unclamped(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    _with_cpus(monkeypatch, 2)
+    ra = ResourceAllocation(config_file=_write(tmp_path, {}))
+    assert ra.get_worker_count("validation.mogul", 40) == 40
+
+
+def test_worker_count_configured_value_beats_legacy_default(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    _with_cpus(monkeypatch, 16)
+    ra = ResourceAllocation(config_file=_write(tmp_path, {"jobs": {"validation.mogul": {"cpus": 3}}}))
+    assert ra.get_worker_count("validation.mogul", 8) == 3
+
+
+def test_worker_count_configured_above_available_is_clamped_with_warning(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+) -> None:
+    _with_cpus(monkeypatch, 4)
+    ra = ResourceAllocation(config_file=_write(tmp_path, {"jobs": {"validation.mogul": {"cpus": 12}}}))
+    with caplog.at_level(logging.WARNING):
+        assert ra.get_worker_count("validation.mogul", 2) == 4
+    assert any("validation.mogul" in record.getMessage() for record in caplog.records)
+
+
+def test_worker_count_uses_defaults_section(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    _with_cpus(monkeypatch, 16)
+    ra = ResourceAllocation(config_file=_write(tmp_path, {"defaults": {"cpus": "all/4"}}))
+    assert ra.get_worker_count("validation.mogul", 8) == 4
+
+
+def test_worker_count_invalid_configuration_falls_back_to_legacy_default(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    _with_cpus(monkeypatch, 16)
+    ra = ResourceAllocation(config_file=_write(tmp_path, {"jobs": {"validation.mogul": {"cpus": "lots"}}}))
+    assert ra.get_worker_count("validation.mogul", 5) == 5
+
+
+def test_worker_count_is_never_zero(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    _with_cpus(monkeypatch, 1)
+    ra = ResourceAllocation(config_file=_write(tmp_path, {}))
+    assert ra.get_worker_count("validation.mogul", 0) == 1

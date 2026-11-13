@@ -18,7 +18,9 @@ Two kinds of job name are used and they are independent controls:
 
 * an *operation* name such as ``annot-wwpdb-validate-all-v2`` is what a cluster job requests for itself;
 * a *call-site* name such as ``validation.mogul`` is how many worker processes that piece of code starts
-  inside whatever it was given.
+  inside whatever it was given.  Code that starts worker processes asks for it with :meth:`get_worker_count`,
+  passing the count it used before (so an unconfigured site behaves as it did); :meth:`default_worker_count`
+  gives the usual "half the available CPUs" rule.
 
 Values:
 
@@ -146,6 +148,37 @@ class ResourceAllocation:
         if value is _INVALID:
             return self.available_cpus() if default is _UNSET else default
         return value
+
+    @staticmethod
+    def default_worker_count(cap: Optional[int] = None) -> int:
+        """Return half the CPUs available to this process, at least 1 and at most ``cap`` (when given).
+
+        This is the historical sizing rule for worker pools, applied to the CPUs the process may use rather than to
+        the node's CPUs.  It never returns 0, because ``MultiProcUtil`` treats fewer than one worker as "automatic".
+        """
+        workers = max(1, ResourceAllocation.available_cpus() // 2)
+        return workers if cap is None else max(1, min(cap, workers))
+
+    def get_worker_count(self, call_site: str, legacy_default: int) -> int:
+        """Return how many worker processes the code at ``call_site`` should start.
+
+        When nothing valid is configured for ``call_site``, return ``legacy_default`` unchanged.  A configured value
+        above :meth:`available_cpus` is reduced to it, with a warning.  The result is never below 1.
+        """
+        configured = self.get_cpus(call_site, default=None)
+        if configured is None:
+            return max(1, legacy_default)
+        available = self.available_cpus()
+        if configured > available:
+            logger.warning(
+                "Resource allocation: %s is configured for %d workers but only %d CPUs are available; using %d",
+                call_site,
+                configured,
+                available,
+                available,
+            )
+            configured = available
+        return max(1, int(configured))
 
     def _resolve_cpu_value(self, value: Any) -> Any:
         if isinstance(value, bool):

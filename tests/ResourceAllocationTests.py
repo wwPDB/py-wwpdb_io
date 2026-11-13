@@ -479,9 +479,7 @@ def test_worker_count_configured_value_beats_legacy_default(tmp_path: Path, monk
     assert ra.get_worker_count("validation.mogul", 8) == 3
 
 
-def test_worker_count_configured_above_available_is_clamped_with_warning(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
-) -> None:
+def test_worker_count_configured_above_available_is_clamped_with_warning(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture) -> None:
     _with_cpus(monkeypatch, 4)
     ra = ResourceAllocation(config_file=_write(tmp_path, {"jobs": {"validation.mogul": {"cpus": 12}}}))
     with caplog.at_level(logging.WARNING):

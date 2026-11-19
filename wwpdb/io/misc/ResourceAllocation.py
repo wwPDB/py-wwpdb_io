@@ -53,7 +53,7 @@ import logging
 import os
 import random
 import re
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Set
 
 import yaml
 from wwpdb.utils.config.ConfigInfo import ConfigInfo
@@ -78,7 +78,7 @@ class ResourceAllocation:
     :param config_info: an existing ``ConfigInfo``-like object (anything with ``get(key)``); takes precedence over ``site_id``.
     """
 
-    def __init__(self, site_id: Optional[str] = None, config_file: Optional[str] = None, config_info: Any = None) -> None:
+    def __init__(self, site_id: Optional[str] = None, config_file: Optional[str] = None, config_info: Optional[ConfigInfo] = None) -> None:
         self._config: Dict[str, Any] = self._load_config(site_id, config_file, config_info)
 
     @staticmethod
@@ -143,9 +143,12 @@ class ResourceAllocation:
     def available_cpus() -> int:
         """Return the number of CPUs this process may use (at least 1)."""
         try:
-            return max(1, len(os.sched_getaffinity(0)))
-        except (AttributeError, OSError):
-            return os.cpu_count() or 1
+            available = _get_affinity()
+        except OSError:
+            available = None
+        if available is not None:
+            return max(1, len(available))
+        return os.cpu_count() or 1
 
     def get_cpus(self, job_name: str, default: Any = _UNSET) -> Any:
         """Return the CPU count configured for ``job_name``.
@@ -285,14 +288,37 @@ class ResourceAllocation:
         if not hasattr(os, "sched_setaffinity"):
             return
 
-        available = list(os.sched_getaffinity(0))
+        current = _get_affinity()
+        if current is None:
+            return
+        available = sorted(current)
         k = min(num_cpus, len(available))
         pinned = set(random.sample(available, k)) if k > 0 else set()  # noqa: S311
         if not pinned:
             # Pinning to zero CPUs is meaningless and os.sched_setaffinity raises OSError (EINVAL) on an empty set,
             # so treat it as a no-op instead of crashing the caller's subprocess spawn.
             return
-        os.sched_setaffinity(0, pinned)
+        _set_affinity(pinned)
+
+
+# os.sched_getaffinity / os.sched_setaffinity exist only on some platforms (Linux), so the ``os`` stubs and pylint on
+# other platforms do not know them.  They are looked up at call time, which also lets tests substitute them.
+
+
+def _get_affinity() -> Optional[Set[int]]:
+    """Return the CPUs this process may use, or ``None`` where the platform has no affinity support."""
+    func = getattr(os, "sched_getaffinity", None)
+    if func is None:
+        return None
+    return set(func(0))  # pylint: disable=not-callable  # pylint infers None off Linux
+
+
+def _set_affinity(cpus: Set[int]) -> None:
+    """Pin this process to ``cpus``; does nothing where the platform has no affinity support."""
+    func = getattr(os, "sched_setaffinity", None)
+    if func is None:
+        return
+    func(0, cpus)  # pylint: disable=not-callable  # pylint infers None off Linux
 
 
 def _positive_int(text: str) -> Optional[int]:

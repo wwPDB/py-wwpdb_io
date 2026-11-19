@@ -3,7 +3,7 @@
 import logging
 import os
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, cast
 
 import pytest
 import yaml
@@ -359,25 +359,25 @@ class _BrokenConfigInfo:
 
 
 def test_config_info_object_supplies_path(config_file: str) -> None:
-    ra = ResourceAllocation(config_info=_FakeConfigInfo(config_file))
+    ra = ResourceAllocation(config_info=cast(ConfigInfo, _FakeConfigInfo(config_file)))
     assert ra.get_cpus("entity_transform_img_generator") == 4
 
 
 def test_config_file_beats_config_info(tmp_path: Path, config_file: str) -> None:
-    ra = ResourceAllocation(config_file=config_file, config_info=_FakeConfigInfo(str(tmp_path / "nope.yml")))
+    ra = ResourceAllocation(config_file=config_file, config_info=cast(ConfigInfo, _FakeConfigInfo(str(tmp_path / "nope.yml"))))
     assert ra.get_cpus("entity_transform_img_generator") == 4
 
 
 def test_failing_config_info_lookup_does_not_raise(caplog: pytest.LogCaptureFixture) -> None:
     with caplog.at_level(logging.WARNING):
-        ra = ResourceAllocation(config_info=_BrokenConfigInfo())
+        ra = ResourceAllocation(config_info=cast(ConfigInfo, _BrokenConfigInfo()))
     assert ra.get_cpus("job_a", default=3) == 3
     assert caplog.records
 
 
 def test_unset_config_path_is_silent(caplog: pytest.LogCaptureFixture) -> None:
     with caplog.at_level(logging.WARNING):
-        ra = ResourceAllocation(config_info=_FakeConfigInfo(None))
+        ra = ResourceAllocation(config_info=cast(ConfigInfo, _FakeConfigInfo(None)))
     assert ra.get_cpus("job_a", default=3) == 3
     assert not caplog.records
 

@@ -82,7 +82,7 @@ class ResourceAllocation:
         self._config: Dict[str, Any] = self._load_config(site_id, config_file, config_info)
 
     @staticmethod
-    def _load_config(site_id: Optional[str], config_file: Optional[str], config_info: Any) -> Dict[str, Any]:
+    def _load_config(site_id: Optional[str], config_file: Optional[str], config_info: Optional[ConfigInfo]) -> Dict[str, Any]:
         path = config_file
         if path is None:
             try:

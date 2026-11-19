@@ -352,10 +352,14 @@ class _FakeConfigInfo:
     def get(self, key: Any, default: Any = None) -> Any:
         return self._value if key == "RESOURCE_ALLOCATION_CONFIG_FILE" else default
 
-
 class _BrokenConfigInfo:
     def get(self, key: Any, default: Any = None) -> Any:  # noqa: ARG002
         raise RuntimeError("site configuration unavailable")
+
+class _MissingKeyConfigInfo:
+    """ The resource config file is not defined - but do not raise an exception"""
+    def get(self, key: Any, default: Any = None) -> Any:
+        return default
 
 
 def test_config_info_object_supplies_path(config_file: str) -> None:
@@ -363,6 +367,20 @@ def test_config_info_object_supplies_path(config_file: str) -> None:
     assert ra.get_cpus("entity_transform_img_generator") == 4
 
 
+def test_config_info_resource_undefined(monkeypatch: pytest.MonkeyPatch) -> None:
+    ra = ResourceAllocation(config_info=cast(ConfigInfo, _MissingKeyConfigInfo()))
+    assert ra.get_cpus("entity_transform_img_generator") >= 1
+
+    with monkeypatch.context() as m:
+        m.setattr(os, "sched_getaffinity", lambda _pid: set(range(8)), raising=False)
+        ra = ResourceAllocation(config_info=cast(ConfigInfo, _MissingKeyConfigInfo()))
+        assert ra.get_cpus("entity_transform_img_generator") == 8
+        assert ra.get_cpus("entity_transform_img_generator", "cpus") == 8
+        assert ra.get_cpus("entity_transform_img_generator", "cpus / 4 ") == 2
+        assert ra.get_cpus("entity_transform_img_generator", "cpus / 3 ") == 2
+        assert ra.get_cpus("entity_transform_img_generator", "cpus/10") == 1
+        
+    
 def test_config_file_beats_config_info(tmp_path: Path, config_file: str) -> None:
     ra = ResourceAllocation(config_file=config_file, config_info=cast(ConfigInfo, _FakeConfigInfo(str(tmp_path / "nope.yml"))))
     assert ra.get_cpus("entity_transform_img_generator") == 4
@@ -396,7 +414,6 @@ def test_configured_but_malformed_file_warns(tmp_path: Path, caplog: pytest.LogC
     with caplog.at_level(logging.WARNING):
         ResourceAllocation(config_file=str(path))
     assert caplog.records
-
 
 # ---------------------------------------------------------------------------
 # available_cpus()

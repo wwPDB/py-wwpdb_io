@@ -213,7 +213,7 @@ class ResourceAllocation:
           ``MultiProcUtil`` treats fewer than one worker as "automatic" and starts twice the node's CPUs.
         """
         if default is None:
-            raise ValueError("Invalid default None for a worker count: expected an integer, 'cpus' or 'cpus / N'")
+            raise ValueError("Invalid default None for a worker count: expected an integer, 'cpus' or 'cpus / N'")  # noqa: EM101
         if cap is not None and (isinstance(cap, bool) or not isinstance(cap, int) or cap < 1):
             raise ValueError(f"Invalid cap {cap!r}: expected a positive integer")
 

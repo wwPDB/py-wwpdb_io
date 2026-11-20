@@ -196,5 +196,6 @@ mypy_path = "typings"
 
 # ------------------------ ruff disable per file
 [tool.ruff.lint.per-file-ignores]
-"tests/*" = ["PT027", "S105", "S106"]
+"tests/*" = ["PT027", "S105", "S106", "SLF001"]
 "tests-config/*" = ["S101", "PT027"]
+"wwpdb/io/misc/ResourceAllocation.py" = ["TRY003", "EM102"]  # Exception messages

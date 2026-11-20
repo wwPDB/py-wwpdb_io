@@ -174,7 +174,7 @@ def test_set_cpu_affinity_randomizes_selection(tmp_path: Path, monkeypatch: pyte
     available = set(range(100))
     monkeypatch.setattr(os, "sched_getaffinity", lambda _pid: available, raising=False)
     calls = []
-    monkeypatch.setattr(os, "sched_setaffinity", lambda pid, cpus: calls.append(cpus), raising=False)
+    monkeypatch.setattr(os, "sched_setaffinity", lambda pid, cpus: calls.append(cpus), raising=False)  # noqa: ARG005
 
     ra = ResourceAllocation(config_file=str(tmp_path / "missing.yml"))
     ra.set_cpu_affinity(5)
@@ -187,7 +187,7 @@ def test_set_cpu_affinity_clamps_to_available_when_requested_exceeds_available(t
     available = {0, 1, 2, 3}
     monkeypatch.setattr(os, "sched_getaffinity", lambda _pid: available, raising=False)
     calls = []
-    monkeypatch.setattr(os, "sched_setaffinity", lambda pid, cpus: calls.append(cpus), raising=False)
+    monkeypatch.setattr(os, "sched_setaffinity", lambda pid, cpus: calls.append(cpus), raising=False)  # noqa: ARG005
 
     ra = ResourceAllocation(config_file=str(tmp_path / "missing.yml"))
     ra.set_cpu_affinity(10)
@@ -352,50 +352,53 @@ class _FakeConfigInfo:
     def get(self, key: Any, default: Any = None) -> Any:
         return self._value if key == "RESOURCE_ALLOCATION_CONFIG_FILE" else default
 
+
 class _BrokenConfigInfo:
     def get(self, key: Any, default: Any = None) -> Any:  # noqa: ARG002
-        raise RuntimeError("site configuration unavailable")
+        raise RuntimeError("site configuration unavailable")  # noqa: TRY003,EM101
+
 
 class _MissingKeyConfigInfo:
-    """ The resource config file is not defined - but do not raise an exception"""
-    def get(self, key: Any, default: Any = None) -> Any:
+    """The resource config file is not defined - but do not raise an exception"""
+
+    def get(self, key: Any, default: Any = None) -> Any:  # noqa: ARG002
         return default
 
 
 def test_config_info_object_supplies_path(config_file: str) -> None:
-    ra = ResourceAllocation(config_info=cast(ConfigInfo, _FakeConfigInfo(config_file)))
+    ra = ResourceAllocation(config_info=cast("ConfigInfo", _FakeConfigInfo(config_file)))
     assert ra.get_cpus("entity_transform_img_generator") == 4
 
 
 def test_config_info_resource_undefined(monkeypatch: pytest.MonkeyPatch) -> None:
-    ra = ResourceAllocation(config_info=cast(ConfigInfo, _MissingKeyConfigInfo()))
+    ra = ResourceAllocation(config_info=cast("ConfigInfo", _MissingKeyConfigInfo()))
     assert ra.get_cpus("entity_transform_img_generator") >= 1
 
     with monkeypatch.context() as m:
         m.setattr(os, "sched_getaffinity", lambda _pid: set(range(8)), raising=False)
-        ra = ResourceAllocation(config_info=cast(ConfigInfo, _MissingKeyConfigInfo()))
+        ra = ResourceAllocation(config_info=cast("ConfigInfo", _MissingKeyConfigInfo()))
         assert ra.get_cpus("entity_transform_img_generator") == 8
         assert ra.get_cpus("entity_transform_img_generator", "cpus") == 8
         assert ra.get_cpus("entity_transform_img_generator", "cpus / 4 ") == 2
         assert ra.get_cpus("entity_transform_img_generator", "cpus / 3 ") == 2
         assert ra.get_cpus("entity_transform_img_generator", "cpus/10") == 1
-        
-    
+
+
 def test_config_file_beats_config_info(tmp_path: Path, config_file: str) -> None:
-    ra = ResourceAllocation(config_file=config_file, config_info=cast(ConfigInfo, _FakeConfigInfo(str(tmp_path / "nope.yml"))))
+    ra = ResourceAllocation(config_file=config_file, config_info=cast("ConfigInfo", _FakeConfigInfo(str(tmp_path / "nope.yml"))))
     assert ra.get_cpus("entity_transform_img_generator") == 4
 
 
 def test_failing_config_info_lookup_does_not_raise(caplog: pytest.LogCaptureFixture) -> None:
     with caplog.at_level(logging.WARNING):
-        ra = ResourceAllocation(config_info=cast(ConfigInfo, _BrokenConfigInfo()))
+        ra = ResourceAllocation(config_info=cast("ConfigInfo", _BrokenConfigInfo()))
     assert ra.get_cpus("job_a", default=3) == 3
     assert caplog.records
 
 
 def test_unset_config_path_is_silent(caplog: pytest.LogCaptureFixture) -> None:
     with caplog.at_level(logging.WARNING):
-        ra = ResourceAllocation(config_info=cast(ConfigInfo, _FakeConfigInfo(None)))
+        ra = ResourceAllocation(config_info=cast("ConfigInfo", _FakeConfigInfo(None)))
     assert ra.get_cpus("job_a", default=3) == 3
     assert not caplog.records
 
@@ -415,6 +418,7 @@ def test_configured_but_malformed_file_warns(tmp_path: Path, caplog: pytest.LogC
         ResourceAllocation(config_file=str(path))
     assert caplog.records
 
+
 # ---------------------------------------------------------------------------
 # available_cpus()
 # ---------------------------------------------------------------------------
@@ -428,7 +432,7 @@ def test_available_cpus_uses_affinity_mask(tmp_path: Path, monkeypatch: pytest.M
 
 def test_available_cpus_falls_back_when_affinity_raises_oserror(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     def boom(_pid: Any) -> Any:
-        raise OSError("not permitted")
+        raise OSError("not permitted")  # noqa: TRY003,EM101
 
     monkeypatch.setattr(os, "sched_getaffinity", boom, raising=False)
     monkeypatch.setattr(os, "cpu_count", lambda: 6)

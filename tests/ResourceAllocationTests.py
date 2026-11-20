@@ -662,7 +662,7 @@ def test_worker_count_invalid_default_raises_even_when_configured(tmp_path: Path
 
 def test_worker_count_none_default_raises(tmp_path: Path) -> None:
     with pytest.raises(ValueError, match="default"):
-        _workers(tmp_path).get_worker_count("validation.mogul", None)
+        _workers(tmp_path).get_worker_count("validation.mogul", None)  # type: ignore[arg-type]
 
 
 @pytest.mark.parametrize("cap", [0, -1, True, 2.5, "10"])

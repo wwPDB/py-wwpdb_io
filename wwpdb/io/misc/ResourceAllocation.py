@@ -53,7 +53,7 @@ import logging
 import os
 import random
 import re
-from typing import Any, Dict, Optional, Set
+from typing import Any, Dict, Optional, Set, Union, overload
 
 import yaml
 from wwpdb.utils.config.ConfigInfo import ConfigInfo
@@ -62,7 +62,15 @@ logger = logging.getLogger(__name__)
 
 CONFIG_KEY = "RESOURCE_ALLOCATION_CONFIG_FILE"
 
-_UNSET: Any = object()  # distinguishes "no default given" from an explicit ``default=None``
+
+class _Unset:
+    """Type of the :data:`_UNSET` sentinel."""
+
+    def __repr__(self) -> str:
+        return "_UNSET"
+
+
+_UNSET = _Unset()  # distinguishes "no default given" from an explicit ``default=None``
 _INVALID: Any = object()  # internal marker for a value that could not be interpreted
 _UNLIMITED: Any = object()  # internal marker for ``memory: all``
 
@@ -150,7 +158,7 @@ class ResourceAllocation:
             return max(1, len(available))
         return os.cpu_count() or 1
 
-    def get_cpus(self, job_name: str, default: Any = _UNSET) -> Any:
+    def get_cpus(self, job_name: str, default: Union[_Unset, int, str, None] = _UNSET) -> Any:
         """Return the CPU count configured for ``job_name``.
 
         ``default`` is the value the calling code wants when nothing valid is configured.  It is an integer, ``None``
@@ -165,7 +173,13 @@ class ResourceAllocation:
         value = self._lookup(job_name, "cpus", self._resolve_cpu_value)
         return fallback if value is _INVALID else value
 
-    def _code_default(self, default: Any) -> Any:
+    @overload
+    def _code_default(self, default: Union[_Unset, int, str]) -> int: ...
+
+    @overload
+    def _code_default(self, default: None) -> None: ...
+
+    def _code_default(self, default: Union[_Unset, int, str, None]) -> Optional[int]:
         """Validate a caller's CPU default and return its value (``None`` stays ``None``)."""
         if default is _UNSET:
             return self.available_cpus()
@@ -185,7 +199,7 @@ class ResourceAllocation:
                     return max(1, self.available_cpus() // divisor)
         raise ValueError(f"Invalid default {default!r}: expected an integer, None, 'cpus' or 'cpus / N' with N greater than zero")
 
-    def get_worker_count(self, call_site: str, default: Any, cap: Optional[int] = None) -> int:
+    def get_worker_count(self, call_site: str, default: Union[int, str], cap: Optional[int] = None) -> int:
         """Return how many worker processes the code at ``call_site`` should start.
 
         ``default`` is what the calling code used before this class existed, as an integer or an expression (see
@@ -241,7 +255,7 @@ class ResourceAllocation:
 
     # -- memory -----------------------------------------------------------------------------------------------
 
-    def get_memory_mb(self, job_name: str, default: Any = _UNSET) -> Optional[int]:
+    def get_memory_mb(self, job_name: str, default: Union[_Unset, int, None] = _UNSET) -> Optional[int]:
         """Return the memory in megabytes configured for ``job_name``.
 
         ``None`` means unconstrained, which is what ``memory: all`` gives.  When nothing valid is configured, return
@@ -249,7 +263,7 @@ class ResourceAllocation:
         """
         value = self._lookup(job_name, "memory", self._resolve_memory_value)
         if value is _INVALID:
-            return None if default is _UNSET else default
+            return None if isinstance(default, _Unset) else default
         if value is _UNLIMITED:
             return None
         return value  # type: ignore[no-any-return]

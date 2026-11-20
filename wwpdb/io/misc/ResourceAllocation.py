@@ -173,11 +173,15 @@ class ResourceAllocation:
         value = self._lookup(job_name, "cpus", self._resolve_cpu_value)
         return fallback if value is _INVALID else value
 
+    # fmt: off
     @overload
-    def _code_default(self, default: Union[_Unset, int, str]) -> int: ...
+    def _code_default(self, default: Union[_Unset, int, str]) -> int:
+        ...
 
     @overload
-    def _code_default(self, default: None) -> None: ...
+    def _code_default(self, default: None) -> None:
+        ...
+    # fmt: on
 
     def _code_default(self, default: Union[_Unset, int, str, None]) -> Optional[int]:
         """Validate a caller's CPU default and return its value (``None`` stays ``None``)."""

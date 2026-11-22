@@ -27,8 +27,6 @@ class DataMover(ABC):
         Initialize the data mover.
 
         Args:
-            source_path: Source directory path
-            destination_path: Destination directory path
             dry_run: If True, simulate operations without actual changes
         """
         self.dry_run = dry_run

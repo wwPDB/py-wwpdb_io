@@ -9,10 +9,12 @@ File layout::
     defaults:            # optional, used for any job that does not set the key itself
       cpus: all/2
       memory: 8G
+      time_limit: 6h
     jobs:
       <job name>:        # an operation name (what the batch job requests) or a call-site name (worker processes)
         cpus: 4
         memory: 16G
+        time_limit: 24h
 
 Two kinds of job name are used and they are independent controls:
 
@@ -32,11 +34,16 @@ Values:
     A positive integer number of megabytes (``2048``), or an integer followed by ``M`` or ``G`` (``512M``, ``16G``).
     ``all`` means unconstrained: :meth:`ResourceAllocation.get_memory_mb` returns ``None``.
 
+``time_limit``
+    How long a cluster job may run: a positive integer number of minutes (``90``), or an integer followed by ``m``,
+    ``h`` or ``d`` (``90m``, ``24h``, ``2d``).  There is no "unlimited" value.  Only operation names use it.
+    :meth:`ResourceAllocation.get_time_limit_minutes` returns minutes, which is what the scheduler's ``--time`` expects.
+
 Resolution order for a key: ``jobs.<job name>.<key>``, then ``defaults.<key>``, then the ``default`` argument of the
 getter.  A value that is not valid is reported with a warning and counts as absent, so an invalid job value falls
 through to ``defaults`` and an invalid ``defaults`` value falls through to the caller's default.  When the getter is
 called without a ``default``, :meth:`~ResourceAllocation.get_cpus` returns every available CPU and
-:meth:`~ResourceAllocation.get_memory_mb` returns ``None``.
+:meth:`~ResourceAllocation.get_memory_mb` and :meth:`~ResourceAllocation.get_time_limit_minutes` return ``None``.
 
 A CPU ``default`` supplied by the calling code is an integer or an expression, ``cpus`` or ``cpus / N`` (``cpus`` is the
 number of CPUs available to the process; division rounds down; never less than 1).  It is parsed, never evaluated.  An
@@ -75,6 +82,7 @@ _INVALID: Any = object()  # internal marker for a value that could not be interp
 _UNLIMITED: Any = object()  # internal marker for ``memory: all``
 
 # A code-owned CPU default: ``cpus`` or ``cpus / N`` (N a positive whole number).  ASCII digits only.
+_TIME_UNIT_MINUTES = {"m": 1, "h": 60, "d": 1440}
 _CPU_EXPRESSION = re.compile(r"\s*cpus\s*(?:/\s*([0-9]+)\s*)?", re.ASCII)
 
 
@@ -295,6 +303,34 @@ class ResourceAllocation:
 
         amount = _positive_int(text)
         return _INVALID if amount is None else amount
+
+    # -- time limit -------------------------------------------------------------------------------------------
+
+    def get_time_limit_minutes(self, job_name: str, default: Union[_Unset, int, None] = _UNSET) -> Optional[int]:
+        """Return the time limit in minutes configured for ``job_name``.
+
+        When nothing valid is configured, return ``default`` if one was given, otherwise ``None``.
+        """
+        value = self._lookup(job_name, "time_limit", self._resolve_time_limit_value)
+        if value is _INVALID:
+            return None if isinstance(default, _Unset) else default
+        return value  # type: ignore[no-any-return]
+
+    @staticmethod
+    def _resolve_time_limit_value(value: Any) -> Any:
+        if isinstance(value, bool):
+            return _INVALID
+        if isinstance(value, int):
+            return value if value > 0 else _INVALID
+        if not isinstance(value, str):
+            return _INVALID
+
+        text = value.strip()
+        factor = _TIME_UNIT_MINUTES.get(text[-1:].lower())
+        amount = _positive_int(text[:-1] if factor else text)
+        if amount is None:
+            return _INVALID
+        return amount * (factor or 1)
 
     # -- affinity ---------------------------------------------------------------------------------------------
 

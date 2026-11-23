@@ -16,12 +16,15 @@
 # defaults:
 #   cpus: all/2
 #   memory: 8G
+#   time_limit: 6h
 
 jobs:
-  # Operations: what the cluster job requests (memory in MB or with an M/G suffix, number of CPUs).
+  # Operations: what the cluster job requests (memory in MB or with an M/G suffix, number of CPUs, and how long it
+  # may run: minutes, or a number with m, h or d).  Without time_limit a job gets the scheduler wrapper's own default.
   annot-wwpdb-validate-all-v2:
     memory: 4G
     cpus: 3
+    time_limit: 24h
   seq-blastp:
     memory: 20G
     cpus: 4

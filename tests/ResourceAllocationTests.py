@@ -673,3 +673,47 @@ def test_worker_count_none_default_raises(tmp_path: Path) -> None:
 def test_worker_count_invalid_cap_raises(tmp_path: Path, cap: Any) -> None:
     with pytest.raises(ValueError, match="cap"):
         _workers(tmp_path).get_worker_count("validation.mogul", "cpus / 2", cap=cap)
+
+
+# ---------------------------------------------------------------------------
+# Time limit (minutes)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    ("value", "minutes"),
+    [(120, 120), ("120", 120), ("90m", 90), ("24h", 1440), ("2d", 2880), (" 3H ", 180)],
+)
+def test_get_time_limit_minutes_accepts_minutes_hours_and_days(tmp_path: Path, value: Any, minutes: int) -> None:
+    ra = ResourceAllocation(config_file=_write(tmp_path, {"jobs": {"job_a": {"time_limit": value}}}))
+    assert ra.get_time_limit_minutes("job_a") == minutes
+
+
+def test_get_time_limit_minutes_unconfigured_returns_explicit_default(tmp_path: Path) -> None:
+    ra = ResourceAllocation(config_file=_write(tmp_path, {"jobs": {"job_a": {"memory": "4G"}}}))
+    assert ra.get_time_limit_minutes("job_a", default=90) == 90
+
+
+def test_get_time_limit_minutes_omitted_default_is_none(tmp_path: Path) -> None:
+    ra = ResourceAllocation(config_file=_write(tmp_path, {}))
+    assert ra.get_time_limit_minutes("job_a") is None
+    assert ra.get_time_limit_minutes("job_a", default=None) is None
+
+
+def test_get_time_limit_minutes_job_overrides_defaults_section(tmp_path: Path) -> None:
+    ra = ResourceAllocation(config_file=_write(tmp_path, {"defaults": {"time_limit": "6h"}, "jobs": {"job_a": {"time_limit": "24h"}}}))
+    assert ra.get_time_limit_minutes("job_a", default=90) == 1440
+    assert ra.get_time_limit_minutes("job_b", default=90) == 360
+
+
+@pytest.mark.parametrize("bad", ["", "soon", "0", 0, -5, "-2h", "1.5h", "h", True, [1], "all"])
+def test_get_time_limit_minutes_invalid_value_is_ignored_with_warning(tmp_path: Path, caplog: pytest.LogCaptureFixture, bad: Any) -> None:
+    ra = ResourceAllocation(config_file=_write(tmp_path, {"jobs": {"job_a": {"time_limit": bad}}}))
+    with caplog.at_level(logging.WARNING):
+        assert ra.get_time_limit_minutes("job_a", default=90) == 90
+    assert "time_limit" in caplog.text
+
+
+def test_get_time_limit_minutes_invalid_job_value_falls_through_to_defaults(tmp_path: Path) -> None:
+    ra = ResourceAllocation(config_file=_write(tmp_path, {"defaults": {"time_limit": "6h"}, "jobs": {"job_a": {"time_limit": "soon"}}}))
+    assert ra.get_time_limit_minutes("job_a", default=90) == 360
